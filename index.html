@@ -52,21 +52,30 @@
         .rank-badge {
             display: inline-flex;
             align-items: center;
-            padding: 2px 6px;
+            padding: 2px 4px; /* Reduced padding for icon only */
             border-radius: 4px;
             font-size: 0.75rem;
             font-weight: bold;
             background: rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.1);
+            vertical-align: middle;
         }
         .rank-img {
             height: 20px;
-            margin-right: 4px;
+            width: auto;
+            display: block;
         }
         
         .msg-bubble {
             max-width: 85%;
             word-wrap: break-word;
+        }
+
+        /* Default PFP Placeholder */
+        .default-pfp {
+            background-color: #374151;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%239ca3af" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>');
+            background-size: cover;
         }
     </style>
 </head>
@@ -113,14 +122,20 @@
                     <button class="md:hidden text-gray-400 hover:text-white" onclick="toggleMobileMenu()">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
-                    <h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1>
+                    <!-- Header Title Changeable -->
+                    <div class="flex items-center gap-2" id="header-title-container">
+                        <h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1>
+                    </div>
                 </div>
                 <div class="flex items-center gap-3">
+                    <button id="back-to-public-btn" onclick="returnToPublicChat()" class="hidden bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded border border-gray-700 transition-colors text-ruby-500 font-bold">
+                        <i class="fas fa-arrow-left mr-1"></i> Public Chat
+                    </button>
                     <button onclick="copyInviteLink()" class="bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded border border-gray-700 transition-colors">
                         <i class="fas fa-link mr-1"></i> Invite
                     </button>
                     <div class="relative group cursor-pointer" onclick="openProfile(currentUser.uid)">
-                        <img id="header-avatar" src="https://picsum.photos/40/40" class="w-9 h-9 rounded-full border border-gray-600 object-cover bg-gray-800">
+                        <img id="header-avatar" src="" class="w-9 h-9 rounded-full border border-gray-600 object-cover bg-gray-800 default-pfp">
                         <div class="w-2.5 h-2.5 bg-green-500 rounded-full absolute bottom-0 right-0 border border-gray-900"></div>
                     </div>
                 </div>
@@ -168,7 +183,7 @@
         <div class="bg-gray-900 rounded-xl w-full max-w-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <!-- Modal Header / Banner -->
             <div class="relative h-32 bg-gray-800 cursor-pointer group" onclick="if(isEditingProfile) triggerBannerUpload()">
-                <img id="profile-banner-img" src="https://picsum.photos/600/200" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                <img id="profile-banner-img" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity bg-gray-800">
                 <div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity edit-overlay hidden">
                     <i class="fas fa-camera text-white text-2xl drop-shadow-lg"></i>
                 </div>
@@ -179,7 +194,7 @@
             <div class="px-6 pb-6 -mt-12 flex flex-col items-center relative overflow-y-auto">
                 <!-- Avatar -->
                 <div class="relative mb-3 group cursor-pointer" onclick="if(isEditingProfile) triggerAvatarUpload()">
-                    <img id="profile-avatar-img" src="https://picsum.photos/100/100" class="w-24 h-24 rounded-full border-4 border-gray-900 object-cover bg-gray-800">
+                    <img id="profile-avatar-img" src="" class="w-24 h-24 rounded-full border-4 border-gray-900 object-cover bg-gray-800 default-pfp">
                     <div class="absolute inset-0 rounded-full flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity edit-overlay hidden">
                         <i class="fas fa-camera text-white drop-shadow-lg"></i>
                     </div>
@@ -187,9 +202,17 @@
 
                 <!-- View Mode Data -->
                 <div id="profile-view-mode" class="text-center w-full">
-                    <h2 id="profile-username" class="text-2xl font-bold text-white mb-1">User</h2>
-                    <div id="profile-rank-badge" class="mb-4 flex justify-center">
-                        <!-- Rank Badge -->
+                    <div class="flex items-center justify-center gap-2 mb-1">
+                        <h2 id="profile-username" class="text-2xl font-bold text-white">User</h2>
+                        <!-- Like Button -->
+                        <button id="like-btn" onclick="toggleLike()" class="text-gray-500 hover:text-ruby-500 transition-colors">
+                            <i class="fas fa-heart text-xl"></i>
+                            <span id="profile-likes-count" class="text-xs font-bold ml-1">0</span>
+                        </button>
+                    </div>
+                    
+                    <div id="profile-rank-badge" class="mb-4 flex justify-center h-8">
+                        <!-- Rank Badge (Icon Only) -->
                     </div>
                     
                     <div class="grid grid-cols-2 gap-4 w-full mb-6">
@@ -207,7 +230,7 @@
                         Edit Profile
                     </button>
                     <div id="private-msg-container" class="w-full mt-2 hidden">
-                        <button onclick="startPrivateChat()" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 rounded transition-colors shadow-lg shadow-ruby-500/20">
+                        <button onclick="initiatePrivateChat()" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 rounded transition-colors shadow-lg shadow-ruby-500/20">
                             <i class="fas fa-envelope mr-2"></i>Send Message
                         </button>
                     </div>
@@ -264,7 +287,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc, where, serverTimestamp, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // --- Configuration ---
         const firebaseConfig = {
@@ -281,9 +304,12 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // --- Constants ---
+        // Default PFP is handled via CSS class "default-pfp" if URL is empty, or we set this data URI
+        const DEFAULT_PFP = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%239ca3af" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
 
         // --- Rank System ---
-        // Ordered from highest priority to lowest
         const RANKS = [
             { name: "Developer", img: "developer.gif", msgs: 0, invites: 50, isStaff: true },
             { name: "Founder", img: "founder.gif", msgs: 0, invites: 45, isStaff: true },
@@ -297,7 +323,6 @@
             { name: "Trial Mod", img: "trial-mod.png", msgs: 0, invites: 5, isStaff: true },
             { name: "Site Helper", img: "site-helper.gif", msgs: 0, invites: 3, isStaff: true },
             { name: "Staff", img: "st.gif", msgs: 0, invites: 0, isStaff: true },
-            // Msg Ranks
             { name: "Bean", img: "bean.png", msgs: 57000, invites: 0 },
             { name: "Heart 4", img: "heart4.gif", msgs: 54500, invites: 0 },
             { name: "Heart 3", img: "heart3.gif", msgs: 52000, invites: 0 },
@@ -333,6 +358,11 @@
         let viewingUserId = null;
         let allUsersCache = [];
         
+        // Chat State
+        let currentChatId = 'global'; // 'global' or 'uid1_uid2'
+        let currentChatPartner = null;
+        let unsubscribeChat = null;
+
         // --- Helper: Get Rank ---
         function getRankData(rankName) {
             return RANKS.find(r => r.name === rankName) || RANKS[RANKS.length - 1];
@@ -340,29 +370,22 @@
 
         function calculateRank(currentData) {
             let qualifiedRank = RANKS[RANKS.length - 1]; // Default VIP
-            
-            // Check invite ranks
             for (const r of RANKS) {
                 if (r.invites > 0 && currentData.invites >= r.invites) {
                     qualifiedRank = r;
-                    break; // Found highest invite rank
+                    break; 
                 }
             }
-            
-            // Check message ranks if not staff (prevents auto-downgrade of manual staff)
             if (!qualifiedRank.isStaff) {
                 for (const r of RANKS) {
                     if (r.msgs > 0 && currentData.messages >= r.msgs) {
                         const qIndex = RANKS.indexOf(qualifiedRank);
                         const nIndex = RANKS.indexOf(r);
-                        if (nIndex < qIndex) {
-                            qualifiedRank = r;
-                        }
+                        if (nIndex < qIndex) qualifiedRank = r;
                         break; 
                     }
                 }
             }
-            
             return qualifiedRank.name;
         }
 
@@ -384,8 +407,12 @@
                 const userRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userRef);
                 
+                // Dev Check
+                let initialRank = "VIP";
+                if(user.email === "dev@gmail.com") initialRank = "Developer";
+
                 if (!userSnap.exists()) {
-                    // Check for invite ref in URL
+                    // Check invite
                     const urlParams = new URLSearchParams(window.location.search);
                     const referrerId = urlParams.get('ref');
                     
@@ -404,14 +431,21 @@
                     await setDoc(userRef, {
                         username: user.displayName || user.email.split('@')[0],
                         email: user.email,
-                        photoURL: user.photoURL || "https://picsum.photos/100/100",
+                        photoURL: DEFAULT_PFP, // Gray Human
                         bannerURL: "https://picsum.photos/600/200",
-                        rank: "VIP",
+                        rank: initialRank,
                         messages: 0,
                         invites: 0,
+                        likes: 0,
+                        likedBy: [],
                         status: "online",
                         lastSeen: serverTimestamp()
                     });
+                } else {
+                    // Force developer rank if needed
+                    if(user.email === "dev@gmail.com" && userSnap.data().rank !== "Developer") {
+                        await updateDoc(userRef, { rank: "Developer" });
+                    }
                 }
                 
                 // Listen to own user data
@@ -419,7 +453,6 @@
                     userData = doc.data();
                     updateHeaderProfile();
                     
-                    // Admin Check
                     const r = getRankData(userData.rank);
                     if (r && r.isStaff) {
                         document.getElementById('admin-panel-btn-container').classList.remove('hidden');
@@ -428,9 +461,12 @@
                     }
                 });
                 
+                // Initialize Chat (Global)
+                loadChat('global');
+                
                 // Start Presence
                 updatePresence();
-                setInterval(updatePresence, 60000); // Every minute
+                setInterval(updatePresence, 60000); 
                 
             } else {
                 currentUser = null;
@@ -469,35 +505,77 @@
         });
 
         // --- Chat Logic ---
-        const chatFeed = document.getElementById('chat-feed');
-        const q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(50));
+        function loadChat(chatId, partner = null) {
+            currentChatId = chatId;
+            currentChatPartner = partner;
+            
+            // UI Updates
+            const titleContainer = document.getElementById('header-title-container');
+            const backBtn = document.getElementById('back-to-public-btn');
+            
+            if (chatId === 'global') {
+                titleContainer.innerHTML = '<h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1>';
+                backBtn.classList.add('hidden');
+            } else {
+                // Private Mode
+                const name = partner ? partner.username : "Private Chat";
+                titleContainer.innerHTML = `<h1 class="text-xl font-bold tracking-tight text-white"><i class="fas fa-lock text-xs mr-2 text-ruby-500"></i>${name}</h1>`;
+                backBtn.classList.remove('hidden');
+            }
+            
+            // Unsubscribe previous listener
+            if (unsubscribeChat) unsubscribeChat();
+            
+            const chatFeed = document.getElementById('chat-feed');
+            chatFeed.innerHTML = '<div class="text-center text-gray-500 mt-10">Loading messages...</div>';
+
+            let q;
+            if (chatId === 'global') {
+                q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(50));
+            } else {
+                // Private Chat Collection
+                q = query(collection(db, "direct_messages", chatId, "messages"), orderBy("timestamp", "desc"), limit(50));
+            }
+            
+            unsubscribeChat = onSnapshot(q, (snapshot) => {
+                if(snapshot.empty) {
+                     chatFeed.innerHTML = '<div class="text-center text-gray-600 mt-10">No messages yet. Say hi!</div>';
+                     return;
+                }
+                const msgs = [];
+                snapshot.forEach(doc => msgs.push({id: doc.id, ...doc.data()}));
+                msgs.reverse();
+                chatFeed.innerHTML = msgs.map(msg => renderMessage(msg)).join('');
+                chatFeed.scrollTop = chatFeed.scrollHeight;
+            });
+        }
         
-        onSnapshot(q, (snapshot) => {
-            if(chatFeed.innerText === "Loading chat...") chatFeed.innerHTML = "";
-            const msgs = [];
-            snapshot.forEach(doc => msgs.push({id: doc.id, ...doc.data()}));
-            msgs.reverse(); // Now Old -> New
-            chatFeed.innerHTML = msgs.map(msg => renderMessage(msg)).join('');
-            chatFeed.scrollTop = chatFeed.scrollHeight;
-        });
+        window.returnToPublicChat = () => loadChat('global');
 
         function renderMessage(msg) {
             const isMe = currentUser && msg.uid === currentUser.uid;
             const rankObj = getRankData(msg.rank || "VIP");
-            const rankImg = rankObj ? `<img src="custom ranks/${rankObj.img}" class="rank-img" onerror="this.style.display='none'"><span class="ml-1">${rankObj.name}</span>` : msg.rank;
+            
+            // Rank Icon Only
+            const rankHtml = rankObj 
+                ? `<img src="custom ranks/${rankObj.img}" class="rank-img" title="${rankObj.name}" onerror="this.style.display='none'">` 
+                : '';
             
             const date = msg.timestamp ? new Date(msg.timestamp.toDate()) : new Date();
             const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            // Use generic PFP if msg photo is missing or broken (handled by onerror in img tag normally, but here just use helper)
+            const pfp = msg.photoURL || DEFAULT_PFP;
 
             return `
                 <div class="flex gap-3 mb-4 ${isMe ? 'flex-row-reverse' : ''} group">
-                    <img src="${msg.photoURL || 'https://picsum.photos/40/40'}" 
+                    <img src="${pfp}" 
                          onclick="openProfile('${msg.uid}')"
-                         class="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 border border-gray-700 bg-gray-800 object-cover">
+                         class="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 border border-gray-700 bg-gray-800 object-cover default-pfp">
                     <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%]">
                         <div class="flex items-center gap-2 mb-1">
                             <span class="text-xs text-gray-400 hover:text-white cursor-pointer" onclick="openProfile('${msg.uid}')">${msg.username}</span>
-                            <div class="rank-badge text-gray-300 border-gray-600">${rankImg}</div>
+                            <div class="rank-badge text-gray-300 border-gray-600">${rankHtml}</div>
                             <span class="text-[10px] text-gray-600">${timeStr}</span>
                         </div>
                         <div class="msg-bubble px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-ruby-500 text-white rounded-tr-none' : 'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700'}">
@@ -517,25 +595,32 @@
             input.value = '';
 
             try {
-                // Check if rank upgrade needed based on new message count
+                // Rank Calc Logic
                 const newMsgCount = (userData.messages || 0) + 1;
                 const tempUserData = { ...userData, messages: newMsgCount };
                 const newRank = calculateRank(tempUserData);
                 
-                await addDoc(collection(db, "messages"), {
+                const msgPayload = {
                     text: text,
                     uid: currentUser.uid,
                     username: userData.username,
                     photoURL: userData.photoURL,
                     rank: newRank, 
                     timestamp: serverTimestamp()
-                });
+                };
 
-                const userRef = doc(db, "users", currentUser.uid);
-                await updateDoc(userRef, {
-                    messages: newMsgCount,
-                    rank: newRank 
-                });
+                if (currentChatId === 'global') {
+                     await addDoc(collection(db, "messages"), msgPayload);
+                     // Update stats only on global chat
+                     const userRef = doc(db, "users", currentUser.uid);
+                     await updateDoc(userRef, {
+                        messages: newMsgCount,
+                        rank: newRank 
+                     });
+                } else {
+                     // Private Chat
+                     await addDoc(collection(db, "direct_messages", currentChatId, "messages"), msgPayload);
+                }
                 
             } catch(err) {
                 console.error("Msg Error", err);
@@ -555,7 +640,6 @@
             snapshot.forEach(doc => {
                 const d = doc.data();
                 const uId = doc.id;
-                // Check if active in last 5 mins
                 const lastSeen = d.lastSeen ? d.lastSeen.toDate() : new Date(0);
                 const isOnline = (now - lastSeen) < 5 * 60 * 1000; 
                 if (isOnline) onlineCnt++;
@@ -567,15 +651,22 @@
             
             userListEl.innerHTML = users.map(u => {
                 const rankObj = getRankData(u.rank);
+                const rankHtml = rankObj ? `<img src="custom ranks/${rankObj.img}" class="h-4 w-auto" title="${rankObj.name}">` : '';
+                const pfp = u.photoURL || DEFAULT_PFP;
+                
                 return `
                 <div class="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors" onclick="openProfile('${u.uid}')">
                     <div class="relative">
-                        <img src="${u.photoURL}" class="w-8 h-8 rounded-full object-cover bg-gray-800">
+                        <img src="${pfp}" class="w-8 h-8 rounded-full object-cover bg-gray-800 default-pfp">
                         <div class="w-2 h-2 rounded-full absolute bottom-0 right-0 border border-gray-900 ${u.isOnline ? 'bg-green-500' : 'bg-gray-500'}"></div>
                     </div>
-                    <div class="overflow-hidden">
-                        <div class="text-sm font-medium truncate ${u.isStaff ? 'text-ruby-500' : 'text-gray-300'}">${u.username}</div>
-                        <div class="text-[10px] text-gray-500 truncate">${rankObj ? rankObj.name : u.rank}</div>
+                    <div class="overflow-hidden flex-1">
+                        <div class="text-sm font-medium truncate flex items-center gap-2 ${u.isStaff ? 'text-ruby-500' : 'text-gray-300'}">
+                            ${u.username}
+                        </div>
+                        <div class="flex items-center mt-0.5">
+                             ${rankHtml}
+                        </div>
                     </div>
                 </div>
                 `;
@@ -593,6 +684,8 @@
             const editBtn = document.getElementById('edit-profile-btn');
             const editOverlays = document.querySelectorAll('.edit-overlay');
             const privateMsgBtn = document.getElementById('private-msg-container');
+            const likeBtn = document.getElementById('like-btn');
+            const likeCount = document.getElementById('profile-likes-count');
             
             modal.classList.remove('hidden');
             
@@ -606,23 +699,39 @@
                 data = userData; 
                 editBtn.classList.remove('hidden');
                 privateMsgBtn.classList.add('hidden');
+                // Cannot like self? Let's allow it or disable. Usually disable.
+                likeBtn.classList.add('pointer-events-none', 'opacity-50');
             } else {
                 const snap = await getDoc(doc(db, "users", uid));
                 if (snap.exists()) data = snap.data();
                 editBtn.classList.add('hidden');
                 if(currentUser) privateMsgBtn.classList.remove('hidden');
+                likeBtn.classList.remove('pointer-events-none', 'opacity-50');
             }
             
+            // Populate
             document.getElementById('profile-username').innerText = data.username || "Unknown";
             document.getElementById('profile-stats-msgs').innerText = data.messages || 0;
             document.getElementById('profile-stats-invites').innerText = data.invites || 0;
-            document.getElementById('profile-avatar-img').src = data.photoURL || "https://picsum.photos/100/100";
+            document.getElementById('profile-avatar-img').src = data.photoURL || DEFAULT_PFP;
             document.getElementById('profile-banner-img').src = data.bannerURL || "https://picsum.photos/600/200";
+            
+            // Likes logic
+            likeCount.innerText = data.likes || 0;
+            const likedBy = data.likedBy || [];
+            if (currentUser && likedBy.includes(currentUser.uid)) {
+                likeBtn.classList.add('text-ruby-500');
+                likeBtn.classList.remove('text-gray-500');
+            } else {
+                likeBtn.classList.add('text-gray-500');
+                likeBtn.classList.remove('text-ruby-500');
+            }
             
             const rankObj = getRankData(data.rank);
             const rankHTML = rankObj 
                 ? `<div class="bg-gray-800 border border-gray-600 px-3 py-1 rounded-full flex items-center gap-2">
                      <img src="custom ranks/${rankObj.img}" class="h-6" onerror="this.style.display='none'">
+                     <!-- Still show name in profile modal for clarity -->
                      <span class="font-bold text-sm text-gray-200">${rankObj.name}</span>
                    </div>`
                 : `<span class="bg-gray-800 px-3 py-1 rounded text-sm">${data.rank}</span>`;
@@ -647,6 +756,53 @@
                 editMode.classList.add('hidden');
                 editOverlays.forEach(el => el.classList.add('hidden'));
             }
+        };
+
+        window.toggleLike = async () => {
+            if (!currentUser || !viewingUserId || viewingUserId === currentUser.uid) return;
+            
+            const userRef = doc(db, "users", viewingUserId);
+            const likeBtn = document.getElementById('like-btn');
+            const likeCountEl = document.getElementById('profile-likes-count');
+            
+            // Optimistic UI update
+            const isLiked = likeBtn.classList.contains('text-ruby-500');
+            let count = parseInt(likeCountEl.innerText) || 0;
+            
+            if (isLiked) {
+                likeBtn.classList.remove('text-ruby-500');
+                likeBtn.classList.add('text-gray-500');
+                likeCountEl.innerText = Math.max(0, count - 1);
+                await updateDoc(userRef, {
+                    likes: Math.max(0, count - 1),
+                    likedBy: arrayRemove(currentUser.uid)
+                });
+            } else {
+                likeBtn.classList.add('text-ruby-500');
+                likeBtn.classList.remove('text-gray-500');
+                likeCountEl.innerText = count + 1;
+                await updateDoc(userRef, {
+                    likes: count + 1,
+                    likedBy: arrayUnion(currentUser.uid)
+                });
+            }
+        };
+        
+        window.initiatePrivateChat = async () => {
+            if (!currentUser || !viewingUserId) return;
+            
+            // Construct Chat ID
+            const uid1 = currentUser.uid;
+            const uid2 = viewingUserId;
+            // Alphabetical order to ensure both users get same ID
+            const chatId = uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+            
+            // Fetch partner data to display name
+            const snap = await getDoc(doc(db, "users", viewingUserId));
+            const partner = snap.exists() ? snap.data() : { username: "User" };
+            
+            closeProfile();
+            loadChat(chatId, { ...partner, uid: viewingUserId });
         };
 
         function handleFileUpload(file) {
@@ -723,7 +879,7 @@
                     <tr class="hover:bg-gray-800 transition-colors">
                         <td class="p-4">
                             <div class="flex items-center gap-3">
-                                <img src="${u.photoURL}" class="w-8 h-8 rounded-full bg-gray-700">
+                                <img src="${u.photoURL || DEFAULT_PFP}" class="w-8 h-8 rounded-full bg-gray-700 default-pfp">
                                 <div>
                                     <div class="font-bold text-gray-200">${u.username}</div>
                                     <div class="text-xs text-gray-500">${u.email}</div>
@@ -787,63 +943,13 @@
         };
         
         window.updateHeaderProfile = () => {
-            if(userData) document.getElementById('header-avatar').src = userData.photoURL;
+            if(userData) document.getElementById('header-avatar').src = userData.photoURL || DEFAULT_PFP;
         };
         
         function escapeHtml(text) {
             const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
             return text.replace(/[&<>"']/g, function(m) { return map[m]; });
         }
-        
-        window.startPrivateChat = () => {
-            alert("Private messaging feature would open a separate collection query here. For this demo, please use the public chat.");
-        };
-
-        /*
-        ==========================================================================
-        REQUIRED FIRESTORE RULES
-        Copy and paste this into the "Rules" tab of your Firestore Database.
-        ==========================================================================
-
-        rules_version = '2';
-        service cloud.firestore {
-          match /databases/{database}/documents {
-            
-            // 1. Helper to check if signed in
-            function isSignedIn() {
-              return request.auth != null;
-            }
-            
-            // 2. Helper to check if user is an ADMIN
-            function isAdmin() {
-              // Ensure the user document exists and check the rank
-              let userRank = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.rank;
-              // List all staff ranks here
-              return userRank in ['Developer', 'Founder', 'CEO', 'Head Owner', 'Owner', 'Manager', 'Super Admin', 'Admin', 'Moderator'];
-            }
-        
-            match /users/{userId} {
-              // Everyone can read profiles
-              allow read: if isSignedIn();
-              
-              // Only user can create their own profile
-              allow create: if isSignedIn() && request.auth.uid == userId;
-              
-              // Updates allowed if:
-              // 1. It is the user updating their own profile
-              // 2. OR the requester is an Admin (to change ranks)
-              allow update: if isSignedIn() && (
-                (request.auth.uid == userId) || isAdmin()
-              );
-            }
-        
-            match /messages/{messageId} {
-              allow read, create: if isSignedIn();
-            }
-          }
-        }
-        */
-
     </script>
 </body>
 </html>
