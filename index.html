@@ -220,6 +220,45 @@
             from { opacity: 0; transform: scale(0.95); }
             to { opacity: 1; transform: scale(1); }
         }
+
+        /* Image Editor Styles */
+        #editor-canvas {
+            background-color: #000;
+            cursor: move;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        .filter-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            transform: scale(1.1);
+            border-color: #e0115f;
+        }
+        
+        /* Media Chat Styles */
+        .chat-media-img {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .chat-media-img:hover {
+            transform: scale(1.02);
+        }
+        .chat-media-video {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 12px;
+        }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -365,6 +404,12 @@
                 </div>
                 
                 <form id="message-form" class="flex items-center gap-2 max-w-5xl mx-auto">
+                    <!-- Media Upload Button -->
+                    <button type="button" onclick="document.getElementById('chat-file-input').click()" class="bg-gray-800 hover:bg-gray-700 text-gray-300 w-12 h-12 rounded-full flex items-center justify-center transition-colors border border-gray-700" title="Send Image/Video">
+                        <i class="fas fa-paperclip"></i>
+                    </button>
+                    <input type="file" id="chat-file-input" accept="image/*,video/*" hidden onchange="handleChatMediaUpload(this.files)">
+
                     <input type="text" id="message-input" autocomplete="off" placeholder="Type a message..." class="flex-1 bg-gray-950 border border-gray-700 text-gray-100 rounded-full px-5 py-3 focus:outline-none focus:border-ruby-500 transition-all">
                     <button type="submit" class="bg-ruby-500 hover:bg-ruby-600 text-white w-12 h-12 rounded-full flex items-center justify-center transition-transform hover:scale-105 shadow-lg shadow-ruby-500/20">
                         <i class="fas fa-paper-plane"></i>
@@ -395,6 +440,57 @@
 
     <!-- PM Layer (Floating Windows) -->
     <div id="pm-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-40"></div>
+
+    <!-- Image Editor Modal -->
+    <div id="image-editor-modal" class="fixed inset-0 z-[60] bg-black/95 hidden flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-lg bg-gray-900 rounded-xl border border-gray-700 shadow-2xl p-4">
+            <h3 class="text-white font-bold mb-4 flex justify-between">
+                <span>Edit Profile Picture</span>
+                <button onclick="closeEditor()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </h3>
+            
+            <div class="flex justify-center mb-4 overflow-hidden relative" style="height: 300px;">
+                <canvas id="editor-canvas" width="300" height="300"></canvas>
+                <!-- Circle Overlay Guide -->
+                <div class="absolute inset-0 pointer-events-none flex items-center justify-center">
+                    <div class="w-[300px] h-[300px] rounded-full border-2 border-ruby-500 opacity-50"></div>
+                </div>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- Transform Controls -->
+                <div class="flex justify-between items-center bg-gray-800 p-2 rounded">
+                    <span class="text-xs text-gray-400 uppercase font-bold">Transform</span>
+                    <div class="flex gap-2">
+                        <button onclick="editorRotate()" class="p-2 bg-gray-700 hover:bg-gray-600 rounded text-white" title="Rotate 90deg"><i class="fas fa-undo"></i></button>
+                        <button onclick="editorFlip('h')" class="p-2 bg-gray-700 hover:bg-gray-600 rounded text-white" title="Flip Horizontal"><i class="fas fa-arrows-alt-h"></i></button>
+                        <button onclick="editorFlip('v')" class="p-2 bg-gray-700 hover:bg-gray-600 rounded text-white" title="Flip Vertical"><i class="fas fa-arrows-alt-v"></i></button>
+                    </div>
+                </div>
+                
+                <!-- Filters -->
+                <div class="bg-gray-800 p-2 rounded">
+                    <span class="text-xs text-gray-400 uppercase font-bold block mb-2">Effects</span>
+                    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+                        <button onclick="editorFilter('none')" class="filter-btn active bg-gray-600 text-[10px] flex items-center justify-center text-white" title="Normal">None</button>
+                        <button onclick="editorFilter('grayscale(1)')" class="filter-btn bg-gray-500" style="filter: grayscale(1); background-image: linear-gradient(45deg, #ff0000, #0000ff);" title="B&W"></button>
+                        <button onclick="editorFilter('sepia(1)')" class="filter-btn bg-yellow-700" style="filter: sepia(1); background-image: linear-gradient(45deg, #ff0000, #0000ff);" title="Vintage"></button>
+                        <button onclick="editorFilter('invert(1)')" class="filter-btn bg-white" style="filter: invert(1); background-image: linear-gradient(45deg, #ff0000, #0000ff);" title="Invert"></button>
+                        <button onclick="editorFilter('contrast(1.5)')" class="filter-btn bg-gray-800" style="filter: contrast(1.5); background-image: linear-gradient(45deg, #ff0000, #0000ff);" title="Vivid"></button>
+                        <button onclick="editorFilter('blur(2px)')" class="filter-btn bg-gray-400" style="filter: blur(2px); background-image: linear-gradient(45deg, #ff0000, #0000ff);" title="Blur"></button>
+                    </div>
+                </div>
+                
+                <!-- Hint -->
+                <div class="text-[10px] text-gray-500 text-center">Drag image to move</div>
+
+                <div class="flex gap-3 mt-4">
+                    <button onclick="saveEditor()" class="flex-1 bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 rounded transition-colors">Apply & Save</button>
+                    <button onclick="closeEditor()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded transition-colors">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Profile Modal -->
     <div id="profile-modal" class="fixed inset-0 z-40 bg-black/80 hidden flex items-center justify-center p-4">
@@ -792,7 +888,7 @@
         let loginTime = 0;
         let isEditingProfile = false;
         let viewingUserId = null;
-        let viewingUserRank = 'VIP'; // Default
+        let viewingUserRank = 'VIP'; 
         let allUsersCache = [];
         let punishmentInterval = null;
         
@@ -804,6 +900,14 @@
         let typingTimeout = null;
         let activeAdminTab = 'users';
         let currentStaffAction = null;
+
+        // Image Editor State
+        let currentEditorImage = null;
+        let editorConfig = { x: 0, y: 0, scale: 1, rotation: 0, flipH: 1, flipV: 1, filter: 'none' };
+        let isEditorDragging = false;
+        let editorDragStart = { x: 0, y: 0 };
+        let pendingAvatar = null;
+        let pendingBanner = null;
 
         // PM Floating State
         const activeFloatingPMs = new Set();
@@ -852,8 +956,7 @@
             
             const qualifiedRankIdx = getRankIndex(qualifiedRank.name);
             
-            // PREVENT DEMOTION LOGIC:
-            // Only return qualifiedRank if it's Higher (lower index) than current manual rank.
+            // PREVENT DEMOTION LOGIC
             if (qualifiedRankIdx < currentRankIdx) {
                 return qualifiedRank.name;
             }
@@ -862,18 +965,13 @@
         }
         
         function getNextRankInfo(currentMsgCount, currentRankName) {
-             // Filter for message-based ranks and sort ascending (Bot -> Bean)
              const msgRanks = RANKS.filter(r => r.msgs > 0 && !r.isStaff).sort((a,b) => a.msgs - b.msgs);
-             
-             // Find current rank in the progression ladder
              const idx = msgRanks.findIndex(r => r.name === currentRankName);
              let nextRank = null;
 
              if (idx !== -1 && idx < msgRanks.length - 1) {
-                 // If currently in a message rank, next target is the immediate next rank
                  nextRank = msgRanks[idx + 1];
              } else if (idx === -1) {
-                 // Fallback for non-ladder ranks (e.g. VIP/Staff): Find based on raw count
                  nextRank = msgRanks.find(r => r.msgs > currentMsgCount);
              }
 
@@ -900,7 +998,7 @@
                 return;
             }
             
-            // KICK (Temp Ban)
+            // KICK
             if (userData.kickedUntil) {
                 const until = userData.kickedUntil.toMillis();
                 if (until > now) {
@@ -922,7 +1020,7 @@
                 }
             }
             
-            // UNMUTE CHECK
+            // UNMUTE
             if (userData.mutedUntil) {
                 const until = userData.mutedUntil.toMillis();
                 if (now > until) {
@@ -1005,9 +1103,9 @@
                     if(punishmentInterval) clearInterval(punishmentInterval);
                     punishmentInterval = setInterval(checkPunishments, 1000);
 
-                    updateHeaderProfile();
-                    updateHeaderStatusColor();
-                    updateHeaderProgression(); 
+                    window.updateHeaderProfile();
+                    window.updateHeaderStatusColor();
+                    window.updateHeaderProgression(); 
                     
                     const r = getRankData(userData.rank);
                     if (r && r.isStaff) {
@@ -1032,7 +1130,7 @@
         });
 
         // --- NEW: Header Progression UI ---
-        function updateHeaderProgression() {
+        window.updateHeaderProgression = () => {
             const container = document.getElementById('header-progression');
             const bar = document.getElementById('header-xp-bar');
             const text = document.getElementById('header-xp-text');
@@ -1050,8 +1148,6 @@
             
             if (nextInfo) {
                 container.classList.remove('hidden');
-                // Calculate percentage relative to the gap between previous rank and next rank?
-                // Simple version: Total messages / Needed messages.
                 const pct = Math.min(100, (userData.messages / nextInfo.needed) * 100);
                 bar.style.width = `${pct}%`;
                 text.innerText = `${userData.messages} / ${nextInfo.needed}`;
@@ -1059,6 +1155,9 @@
                 container.classList.add('hidden');
             }
         }
+        
+        window.updateHeaderProfile = () => { if(userData) document.getElementById('header-avatar').src = userData.photoURL || DEFAULT_PFP; };
+        window.updateHeaderStatusColor = () => { if(!userData) return; const el = document.getElementById('header-status-dot'); el.className = "w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900"; if (userData.presence === 'away') el.classList.add('bg-yellow-500'); else if (userData.presence === 'dnd') el.classList.add('bg-red-500'); else el.classList.add('bg-green-500'); };
 
         async function updatePresence() {
             if(!currentUser) return;
@@ -1187,7 +1286,7 @@
                         const isMe = currentUser && m.uid === currentUser.uid;
                         if (!isMe && m.timestamp && (Date.now() - m.timestamp.toMillis() < 5000)) {
                              const settings = userData?.settings || { soundMsg: true, soundMention: true };
-                             const text = m.text.toLowerCase();
+                             const text = (m.text || "").toLowerCase();
                              const myName = userData?.username?.toLowerCase();
                              
                              if (settings.soundMention && myName && text.includes(`@${myName}`)) {
@@ -1254,7 +1353,7 @@
                 <div class="flex justify-center my-6 animate-pulse-fast">
                     <div class="bg-gray-900/80 border border-ruby-500/50 px-6 py-2 rounded-full flex items-center gap-3 shadow-lg shadow-ruby-500/10">
                          <i class="fas fa-bullhorn text-ruby-500"></i>
-                         <span class="text-ruby-500 text-sm font-bold tracking-wide uppercase">${escapeHtml(msg.text)}</span>
+                         <span class="text-ruby-500 text-sm font-bold tracking-wide uppercase">${escapeHtml(msg.text || "")}</span>
                     </div>
                 </div>`;
             }
@@ -1266,7 +1365,7 @@
             const isStaff = myRankInfo?.isStaff;
             const deleteBtn = isStaff ? `<button onclick="deleteMessage('${msg.id}')" class="text-gray-500 hover:text-red-500 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Message"><i class="fas fa-trash"></i></button>` : '';
 
-            const isMention = !isMe && userData?.username && msg.text.toLowerCase().includes(`@${userData.username.toLowerCase()}`);
+            const isMention = !isMe && userData?.username && (msg.text || "").toLowerCase().includes(`@${userData.username.toLowerCase()}`);
             const mentionClass = isMention ? 'bg-yellow-900/40 border-yellow-600/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] text-yellow-100' : '';
 
             const rankHtml = rankObj 
@@ -1290,7 +1389,6 @@
                 `;
             }
             
-            // Reaction Logic
             const reactions = msg.reactions || [];
             const reactionCount = reactions.length;
             const reactionHtml = reactionCount > 0 ? `
@@ -1304,6 +1402,16 @@
                 bubbleClass += ` bg-ruby-500 text-white rounded-tr-none`;
             } else {
                 bubbleClass += ` bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700 ${mentionClass}`;
+            }
+            
+            // Media Content
+            let mediaHtml = '';
+            if (msg.mediaURL) {
+                if (msg.mediaType.startsWith('image/')) {
+                    mediaHtml = `<img src="${msg.mediaURL}" class="chat-media-img mb-2" onclick="window.open('${msg.mediaURL}', '_blank')">`;
+                } else if (msg.mediaType.startsWith('video/')) {
+                    mediaHtml = `<video src="${msg.mediaURL}" controls class="chat-media-video mb-2"></video>`;
+                }
             }
 
             return `
@@ -1322,9 +1430,10 @@
                         ${replyHtml}
                         
                         <div class="${bubbleClass}" ondblclick="toggleReaction('${msg.id}')" title="Double click to heart">
-                            ${escapeHtml(msg.text)}
+                            ${mediaHtml}
+                            ${msg.text ? escapeHtml(msg.text) : ''}
                             ${reactionHtml}
-                            <button onclick="replyToMessage('${msg.id}', '${msg.username}', '${escapeHtml(msg.text).replace(/'/g, "\\'")}')" 
+                            <button onclick="replyToMessage('${msg.id}', '${msg.username}', '${escapeHtml(msg.text || "Media").replace(/'/g, "\\'")}')" 
                                     class="absolute top-1/2 -translate-y-1/2 ${isMe ? '-left-8' : '-right-8'} text-gray-500 hover:text-ruby-500 opacity-0 group-hover/bubble:opacity-100 transition-opacity p-1">
                                 <i class="fas fa-reply"></i>
                             </button>
@@ -1358,6 +1467,51 @@
             return { muted: false };
         }
 
+        window.handleChatMediaUpload = (files) => {
+            if (files.length === 0) return;
+            const file = files[0];
+            const reader = new FileReader();
+            
+            // Limit check (simulated)
+            if (file.size > 2000000) { // 2MB limit for Data URL safety
+                alert("File too large. Please keep under 2MB for this demo.");
+                return;
+            }
+
+            reader.onload = async (e) => {
+                const base64 = e.target.result;
+                const type = file.type;
+                
+                if(!confirm("Send this file?")) return;
+
+                try {
+                    const newMsgCount = (userData.messages || 0) + 1;
+                    const tempUserData = { ...userData, messages: newMsgCount };
+                    const newRank = calculateRank(tempUserData);
+                    
+                    const msgPayload = {
+                        text: "",
+                        mediaURL: base64,
+                        mediaType: type,
+                        uid: currentUser.uid,
+                        username: userData.username,
+                        photoURL: userData.photoURL || DEFAULT_PFP,
+                        rank: newRank, 
+                        timestamp: serverTimestamp()
+                    };
+
+                    if (currentChatId === 'global') {
+                         await addDoc(collection(db, "messages"), msgPayload);
+                         await updateDoc(doc(db, "users", currentUser.uid), { messages: newMsgCount, rank: newRank });
+                    } else {
+                         await addDoc(collection(db, "direct_messages", currentChatId, "messages"), msgPayload);
+                    }
+                } catch(err) { console.error("Media Upload Error", err); }
+            };
+            reader.readAsDataURL(file);
+            document.getElementById('chat-file-input').value = ''; // Reset
+        };
+
         document.getElementById('message-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             const input = document.getElementById('message-input');
@@ -1375,8 +1529,6 @@
 
             try {
                 const newMsgCount = (userData.messages || 0) + 1;
-                
-                // Use new sticky rank logic
                 const tempUserData = { ...userData, messages: newMsgCount };
                 const newRank = calculateRank(tempUserData);
                 
@@ -1396,15 +1548,10 @@
 
                 if (currentChatId === 'global') {
                      await addDoc(collection(db, "messages"), msgPayload);
-                     const userRef = doc(db, "users", currentUser.uid);
-                     await updateDoc(userRef, {
-                        messages: newMsgCount,
-                        rank: newRank 
-                     });
+                     await updateDoc(doc(db, "users", currentUser.uid), { messages: newMsgCount, rank: newRank });
                 } else {
                      await addDoc(collection(db, "direct_messages", currentChatId, "messages"), msgPayload);
                 }
-                
             } catch(err) {
                 console.error("Msg Error", err);
             }
@@ -1455,13 +1602,11 @@
 
         window.openFloatingChat = (targetUid, username, avatar) => {
             document.getElementById('pm-dropdown').classList.add('hidden');
-            
             if (activeFloatingPMs.has(targetUid)) {
                 const existing = document.getElementById(`pm-box-${targetUid}`);
                 if (existing) bringToFront(existing);
                 return;
             }
-
             const box = document.createElement('div');
             box.id = `pm-box-${targetUid}`;
             box.className = 'pm-box';
@@ -1469,7 +1614,6 @@
             box.style.top = `${offset}px`;
             box.style.left = `${offset}px`;
             box.style.zIndex = ++zIndexCounter;
-
             box.innerHTML = `
                 <div class="pm-header">
                     <div class="flex items-center gap-3">
@@ -1480,9 +1624,7 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <button class="text-gray-400 hover:text-white transition-colors close-pm-btn">
-                            <i class="fas fa-times"></i>
-                        </button>
+                        <button class="text-gray-400 hover:text-white transition-colors close-pm-btn"><i class="fas fa-times"></i></button>
                     </div>
                 </div>
                 <div class="pm-messages scrollbar-thin" id="pm-msgs-${targetUid}">
@@ -1495,54 +1637,31 @@
                 </div>
                 <div class="resize-handle"></div>
             `;
-
             document.getElementById('pm-layer').appendChild(box);
             activeFloatingPMs.add(targetUid);
             initDraggable(box);
-
             const chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
             const q = query(collection(db, "direct_messages", chatId, "messages"), orderBy("timestamp", "desc"), limit(50));
-            
             const unsubscribe = onSnapshot(q, (snapshot) => {
                 const container = document.getElementById(`pm-msgs-${targetUid}`);
                 if (!container) return; 
-                
                 if (snapshot.empty) {
-                    container.innerHTML = `
-                        <div class="flex flex-col items-center justify-center h-full text-gray-500 opacity-50">
-                            <i class="fas fa-comment-dots text-4xl mb-2"></i>
-                            <div class="text-xs">No messages yet</div>
-                        </div>`;
+                    container.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-500 opacity-50"><i class="fas fa-comment-dots text-4xl mb-2"></i><div class="text-xs">No messages yet</div></div>`;
                     return;
                 }
-
                 const msgs = [];
                 snapshot.forEach(doc => msgs.push(doc.data()));
                 msgs.reverse();
-
                 container.innerHTML = msgs.map((m, idx) => {
                     const isMe = m.uid === currentUser.uid;
                     const prevM = msgs[idx-1];
                     const showAvatar = !isMe && (!prevM || prevM.uid !== m.uid);
                     const spacer = (!prevM || prevM.uid !== m.uid) ? 'mt-2' : 'mt-0.5';
-                    
-                    return `
-                        <div class="flex ${isMe ? 'justify-end' : 'justify-start'} ${spacer} items-end gap-2 group">
-                            ${!isMe ? `<div class="w-6 h-6 flex-shrink-0">${showAvatar ? `<img src="${avatar}" class="w-6 h-6 rounded-full">` : ''}</div>` : ''}
-                            <div class="${isMe ? 'pm-bubble-me' : 'pm-bubble-them'} max-w-[75%] break-words">
-                                ${escapeHtml(m.text)}
-                            </div>
-                        </div>
-                    `;
+                    return `<div class="flex ${isMe ? 'justify-end' : 'justify-start'} ${spacer} items-end gap-2 group">${!isMe ? `<div class="w-6 h-6 flex-shrink-0">${showAvatar ? `<img src="${avatar}" class="w-6 h-6 rounded-full">` : ''}</div>` : ''}<div class="${isMe ? 'pm-bubble-me' : 'pm-bubble-them'} max-w-[75%] break-words">${escapeHtml(m.text)}</div></div>`;
                 }).join('');
                 container.scrollTop = container.scrollHeight;
             });
-
-            box.querySelector('.close-pm-btn').addEventListener('click', () => {
-                unsubscribe();
-                box.remove();
-                activeFloatingPMs.delete(targetUid);
-            });
+            box.querySelector('.close-pm-btn').addEventListener('click', () => { unsubscribe(); box.remove(); activeFloatingPMs.delete(targetUid); });
         };
 
         window.sendFloatingMessage = async (e, targetUid, targetUsername) => {
@@ -1550,94 +1669,26 @@
             const input = document.getElementById(`pm-input-${targetUid}`);
             const text = input.value.trim();
             if (!text) return;
-            
             const muteStatus = checkMuteStatus();
-            if (muteStatus.muted) {
-                alert(`You have been muted/restricted. Reason: ${muteStatus.reason}`);
-                return;
-            }
-            
+            if (muteStatus.muted) { alert(`You have been muted/restricted. Reason: ${muteStatus.reason}`); return; }
             input.value = '';
             const chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
-            
-            try {
-                await addDoc(collection(db, "direct_messages", chatId, "messages"), {
-                    text: text,
-                    uid: currentUser.uid,
-                    username: userData.username,
-                    photoURL: userData.photoURL || DEFAULT_PFP,
-                    rank: userData.rank,
-                    timestamp: serverTimestamp()
-                });
-            } catch (err) { console.error(err); }
+            try { await addDoc(collection(db, "direct_messages", chatId, "messages"), { text: text, uid: currentUser.uid, username: userData.username, photoURL: userData.photoURL || DEFAULT_PFP, rank: userData.rank, timestamp: serverTimestamp() }); } catch (err) { console.error(err); }
         };
 
         function initDraggable(box) {
             const header = box.querySelector('.pm-header');
             const resize = box.querySelector('.resize-handle');
             box.addEventListener('mousedown', () => bringToFront(box));
-
-            let isDragging = false;
-            let startX, startY, initialLeft, initialTop;
-
-            header.addEventListener('mousedown', (e) => {
-                if (e.target.closest('button')) return; 
-                isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                initialLeft = box.offsetLeft;
-                initialTop = box.offsetTop;
-                box.style.cursor = 'grabbing';
-                header.style.cursor = 'grabbing';
-                e.preventDefault();
-            });
-
-            let isResizing = false;
-            let resizeStartX, resizeStartY, initialWidth, initialHeight;
-
-            resize.addEventListener('mousedown', (e) => {
-                e.stopPropagation();
-                isResizing = true;
-                resizeStartX = e.clientX;
-                resizeStartY = e.clientY;
-                initialWidth = box.offsetWidth;
-                initialHeight = box.offsetHeight;
-                document.body.style.cursor = 'nwse-resize';
-                e.preventDefault();
-            });
-
-            window.addEventListener('mousemove', (e) => {
-                if (isDragging) {
-                    const dx = e.clientX - startX;
-                    const dy = e.clientY - startY;
-                    box.style.left = `${initialLeft + dx}px`;
-                    box.style.top = `${initialTop + dy}px`;
-                }
-                if (isResizing) {
-                    const dx = e.clientX - resizeStartX;
-                    const dy = e.clientY - resizeStartY;
-                    const newW = Math.max(300, initialWidth + dx);
-                    const newH = Math.max(300, initialHeight + dy);
-                    box.style.width = `${newW}px`;
-                    box.style.height = `${newH}px`;
-                }
-            });
-
-            window.addEventListener('mouseup', () => {
-                isDragging = false;
-                isResizing = false;
-                if(box) {
-                    box.style.cursor = '';
-                    header.style.cursor = 'grab';
-                }
-                document.body.style.cursor = '';
-            });
+            let isDragging = false; let startX, startY, initialLeft, initialTop;
+            header.addEventListener('mousedown', (e) => { if (e.target.closest('button')) return; isDragging = true; startX = e.clientX; startY = e.clientY; initialLeft = box.offsetLeft; initialTop = box.offsetTop; box.style.cursor = 'grabbing'; header.style.cursor = 'grabbing'; e.preventDefault(); });
+            let isResizing = false; let resizeStartX, resizeStartY, initialWidth, initialHeight;
+            resize.addEventListener('mousedown', (e) => { e.stopPropagation(); isResizing = true; resizeStartX = e.clientX; resizeStartY = e.clientY; initialWidth = box.offsetWidth; initialHeight = box.offsetHeight; document.body.style.cursor = 'nwse-resize'; e.preventDefault(); });
+            window.addEventListener('mousemove', (e) => { if (isDragging) { const dx = e.clientX - startX; const dy = e.clientY - startY; box.style.left = `${initialLeft + dx}px`; box.style.top = `${initialTop + dy}px`; } if (isResizing) { const dx = e.clientX - resizeStartX; const dy = e.clientY - resizeStartY; const newW = Math.max(300, initialWidth + dx); const newH = Math.max(300, initialHeight + dy); box.style.width = `${newW}px`; box.style.height = `${newH}px`; } });
+            window.addEventListener('mouseup', () => { isDragging = false; isResizing = false; if(box) { box.style.cursor = ''; header.style.cursor = 'grab'; } document.body.style.cursor = ''; });
         }
 
-        function bringToFront(el) {
-            zIndexCounter++;
-            el.style.zIndex = zIndexCounter;
-        }
+        function bringToFront(el) { zIndexCounter++; el.style.zIndex = zIndexCounter; }
 
         // --- Online Users Sidebar (Sorted) ---
         const userListEl = document.getElementById('user-list');
@@ -1648,64 +1699,14 @@
             const users = [];
             const now = new Date();
             let onlineCnt = 0;
-            
-            snapshot.forEach(doc => {
-                const d = doc.data();
-                const uId = doc.id;
-                const lastSeen = d.lastSeen ? d.lastSeen.toDate() : new Date(0);
-                const isOnline = (now - lastSeen) < 5 * 60 * 1000; 
-                if (isOnline) onlineCnt++;
-                users.push({ uid: uId, ...d, isOnline });
-            });
-            
-            users.sort((a, b) => {
-                const rankA = getRankIndex(a.rank);
-                const rankB = getRankIndex(b.rank);
-                if (rankA !== rankB) return rankA - rankB; 
-                return a.username.localeCompare(b.username);
-            });
-            
-            allUsersCache = users; 
-            onlineCountEl.innerText = onlineCnt;
-            
-            if(!document.getElementById('admin-modal').classList.contains('hidden')) {
-                document.getElementById('admin-stat-users').innerText = users.length;
-                document.getElementById('admin-stat-online').innerText = onlineCnt;
-                renderAdminTable();
-            }
-
-            userListEl.innerHTML = users.map(u => {
-                const rankObj = getRankData(u.rank);
-                const rankHtml = rankObj ? `<img src="custom ranks/${rankObj.img}" class="h-5 w-auto" title="${rankObj.name}">` : '';
-                const pfp = u.photoURL || DEFAULT_PFP;
-                
-                let statusColorClass = 'bg-gray-500';
-                if (u.isOnline) {
-                    if (u.presence === 'away') statusColorClass = 'bg-yellow-500';
-                    else if (u.presence === 'dnd') statusColorClass = 'bg-red-500';
-                    else statusColorClass = 'bg-green-500';
-                }
-                
-                return `
-                <div class="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors" onclick="openProfile('${u.uid}')">
-                    <div class="relative">
-                        <img src="${pfp}" class="w-8 h-8 rounded-full object-cover bg-gray-800 default-pfp">
-                        <div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 ${statusColorClass}"></div>
-                    </div>
-                    <div class="overflow-hidden flex-1">
-                        <div class="text-sm font-medium truncate flex items-center gap-2 ${u.isStaff ? 'text-ruby-500' : 'text-gray-300'}">
-                            ${u.username}
-                        </div>
-                        <div class="flex items-center mt-0.5 rank-badge p-0">
-                             ${rankHtml}
-                        </div>
-                    </div>
-                </div>
-                `;
-            }).join('');
+            snapshot.forEach(doc => { const d = doc.data(); const uId = doc.id; const lastSeen = d.lastSeen ? d.lastSeen.toDate() : new Date(0); const isOnline = (now - lastSeen) < 5 * 60 * 1000; if (isOnline) onlineCnt++; users.push({ uid: uId, ...d, isOnline }); });
+            users.sort((a, b) => { const rankA = getRankIndex(a.rank); const rankB = getRankIndex(b.rank); if (rankA !== rankB) return rankA - rankB; return a.username.localeCompare(b.username); });
+            allUsersCache = users; onlineCountEl.innerText = onlineCnt;
+            if(!document.getElementById('admin-modal').classList.contains('hidden')) { document.getElementById('admin-stat-users').innerText = users.length; document.getElementById('admin-stat-online').innerText = onlineCnt; renderAdminTable(); }
+            userListEl.innerHTML = users.map(u => { const rankObj = getRankData(u.rank); const rankHtml = rankObj ? `<img src="custom ranks/${rankObj.img}" class="h-5 w-auto" title="${rankObj.name}">` : ''; const pfp = u.photoURL || DEFAULT_PFP; let statusColorClass = 'bg-gray-500'; if (u.isOnline) { if (u.presence === 'away') statusColorClass = 'bg-yellow-500'; else if (u.presence === 'dnd') statusColorClass = 'bg-red-500'; else statusColorClass = 'bg-green-500'; } return `<div class="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors" onclick="openProfile('${u.uid}')"><div class="relative"><img src="${pfp}" class="w-8 h-8 rounded-full object-cover bg-gray-800 default-pfp"><div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 ${statusColorClass}"></div></div><div class="overflow-hidden flex-1"><div class="text-sm font-medium truncate flex items-center gap-2 ${u.isStaff ? 'text-ruby-500' : 'text-gray-300'}">${u.username}</div><div class="flex items-center mt-0.5 rank-badge p-0">${rankHtml}</div></div></div>`; }).join('');
         });
 
-        // --- Profile System ---
+        // --- Profile System (Existing) ---
         window.openProfile = async (uid) => {
             viewingUserId = uid;
             const modal = document.getElementById('profile-modal');
@@ -1807,230 +1808,166 @@
                 document.getElementById('pref-sound-mention').checked = true;
             }
         };
-        
-        window.closeProfile = () => document.getElementById('profile-modal').classList.add('hidden');
-        window.toggleProfileEdit = () => {
-            isEditingProfile = !isEditingProfile;
-            const viewMode = document.getElementById('profile-view-mode');
-            const editMode = document.getElementById('profile-edit-mode');
-            const editOverlays = document.querySelectorAll('.edit-overlay');
-            if (isEditingProfile) {
-                viewMode.classList.add('hidden'); editMode.classList.remove('hidden'); editOverlays.forEach(el => el.classList.remove('hidden'));
-            } else {
-                viewMode.classList.remove('hidden'); editMode.classList.add('hidden'); editOverlays.forEach(el => el.classList.add('hidden'));
-            }
-        };
-        window.toggleLike = async () => { if (!currentUser || !viewingUserId || viewingUserId === currentUser.uid) return; const userRef = doc(db, "users", viewingUserId); const likeBtn = document.getElementById('like-btn'); const likeCountEl = document.getElementById('profile-likes-count'); const isLiked = likeBtn.classList.contains('text-ruby-500'); let count = parseInt(likeCountEl.innerText) || 0; if (isLiked) { likeBtn.classList.remove('text-ruby-500'); likeBtn.classList.add('text-gray-500'); likeCountEl.innerText = Math.max(0, count - 1); await updateDoc(userRef, { likes: Math.max(0, count - 1), likedBy: arrayRemove(currentUser.uid) }); } else { likeBtn.classList.add('text-ruby-500'); likeBtn.classList.remove('text-gray-500'); likeCountEl.innerText = count + 1; await updateDoc(userRef, { likes: count + 1, likedBy: arrayUnion(currentUser.uid) }); } };
-        window.initiatePrivateChat = async (floating = false) => { if (!currentUser || !viewingUserId) return; const snap = await getDoc(doc(db, "users", viewingUserId)); const partner = snap.exists() ? snap.data() : { username: "User", photoURL: DEFAULT_PFP }; closeProfile(); if (floating) openFloatingChat(viewingUserId, partner.username, partner.photoURL || DEFAULT_PFP); else { const uid1 = currentUser.uid; const uid2 = viewingUserId; const chatId = uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; loadChat(chatId, { ...partner, uid: viewingUserId }); } };
-        function handleFileUpload(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); }); }
-        window.triggerAvatarUpload = () => document.getElementById('avatar-upload').click();
-        window.triggerBannerUpload = () => document.getElementById('banner-upload').click();
-        let pendingAvatar = null; let pendingBanner = null;
-        document.getElementById('avatar-upload').addEventListener('change', async (e) => { if(e.target.files[0]) { const b64 = await handleFileUpload(e.target.files[0]); document.getElementById('profile-avatar-img').src = b64; pendingAvatar = b64; } });
-        document.getElementById('banner-upload').addEventListener('change', async (e) => { if(e.target.files[0]) { const b64 = await handleFileUpload(e.target.files[0]); document.getElementById('profile-banner-img').src = b64; pendingBanner = b64; } });
-        window.saveProfileChanges = async () => { if (!currentUser) return; const newName = document.getElementById('edit-username-input').value; const newBio = document.getElementById('edit-bio-input').value; const newStatus = document.getElementById('edit-status-input').value; const soundMsg = document.getElementById('pref-sound-msg').checked; const soundMention = document.getElementById('pref-sound-mention').checked; const updatePayload = { username: newName, bio: newBio, presence: newStatus, settings: { soundMsg, soundMention } }; if (pendingAvatar) updatePayload.photoURL = pendingAvatar; if (pendingBanner) updatePayload.bannerURL = pendingBanner; try { await updateDoc(doc(db, "users", currentUser.uid), updatePayload); pendingAvatar = null; pendingBanner = null; toggleProfileEdit(); } catch(e) { alert("Error saving profile."); } };
-        
-        // --- Staff Action Logic ---
-        window.openStaffActionMenu = () => {
-            const menu = document.getElementById('staff-action-menu');
-            const adminActions = document.getElementById('admin-actions-only');
-            const myRankIdx = getRankIndex(userData.rank);
-            const targetRankIdx = getRankIndex(viewingUserRank);
-            
-            // Check Hierarchy (Lower index is higher rank. Equal index is same rank.)
-            if (targetRankIdx <= myRankIdx) {
-                alert("You cannot perform actions on a user with equal or higher rank.");
-                return;
-            }
 
-            // Moderator is index around 9. Any index < 9 is higher.
-            const modIdx = getRankIndex("Moderator");
-            
-            // Populate Ranks for dropdown (Lower than current user only)
-            const rankSelect = document.getElementById('staff-rank-select');
-            rankSelect.innerHTML = RANKS.filter((r, idx) => idx > myRankIdx).map(r => `<option value="${r.name}">${r.name}</option>`).join('');
-
-            menu.classList.remove('hidden');
-            
-            if (myRankIdx < modIdx) {
-                // Higher than mod (Admin+)
-                adminActions.classList.remove('hidden');
-            } else {
-                adminActions.classList.add('hidden');
+        // Ensure triggerAvatarUpload calls openEditor now instead of direct set
+        document.getElementById('avatar-upload').addEventListener('change', async (e) => {
+            if(e.target.files[0]) {
+                const b64 = await handleFileUpload(e.target.files[0]);
+                openEditor(b64);
+                // Clear input so same file can be selected again
+                e.target.value = '';
             }
-        };
-        
-        window.closeStaffActionMenu = () => document.getElementById('staff-action-menu').classList.add('hidden');
-        
-        window.showStaffInput = (action) => {
-            currentStaffAction = action;
-            document.getElementById('staff-action-menu').classList.add('hidden');
-            document.getElementById('staff-input-modal').classList.remove('hidden');
-            document.getElementById('staff-input-title').innerText = action.toUpperCase() + " USER";
-            document.getElementById('staff-action-duration').value = 1;
-            document.getElementById('staff-action-unit').value = 'days';
-            document.getElementById('staff-action-reason').value = "";
-            
-            const durGroup = document.getElementById('staff-duration-group');
-            if (action === 'ban') durGroup.classList.add('hidden');
-            else durGroup.classList.remove('hidden');
-        };
-        
-        window.closeStaffInput = () => document.getElementById('staff-input-modal').classList.add('hidden');
-        
-        document.getElementById('staff-action-confirm-btn').addEventListener('click', async () => {
-            if (!viewingUserId || !currentStaffAction) return;
-            const durationVal = parseInt(document.getElementById('staff-action-duration').value) || 0;
-            const unit = document.getElementById('staff-action-unit').value;
-            const reason = document.getElementById('staff-action-reason').value || "No reason provided";
-            const targetRef = doc(db, "users", viewingUserId);
-            
-            // Re-check hierarchy just in case
-            if (getRankIndex(viewingUserRank) <= getRankIndex(userData.rank)) {
-                alert("Action blocked: Target rank too high.");
-                return;
-            }
+        });
 
-            // Calculate milliseconds
-            let multiplier = 1;
-            if (unit === 'minutes') multiplier = 60 * 1000;
-            else if (unit === 'hours') multiplier = 60 * 60 * 1000;
-            else if (unit === 'days') multiplier = 24 * 60 * 60 * 1000;
-            
-            const durationMs = durationVal * multiplier;
-            const now = new Date();
-            const until = new Date(now.getTime() + durationMs);
-            
-            // Construct payload
-            const updates = {};
-            let sysMsg = "";
-            let privateMsg = "";
-            let durationStr = durationVal > 0 ? `${durationVal} ${unit}` : "Permanent";
-            
-            // Get target username for global message (we might need to fetch or use profile data)
-            const targetName = document.getElementById('profile-username').innerText;
-
-            if (currentStaffAction === 'mute') {
-                updates.mutedUntil = durationVal > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000); // Perm = long time
-                updates.muteReason = reason;
-                sysMsg = `User ${targetName} has been muted for: ${reason}.`;
-                privateMsg = `You have been muted. Reason: ${reason}. Duration: ${durationStr}.`;
-            } else if (currentStaffAction === 'kick') {
-                updates.kickedUntil = durationVal > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000);
-                updates.kickReason = reason;
-                sysMsg = `User ${targetName} has been kicked/suspended.`;
-            } else if (currentStaffAction === 'ban') {
-                updates.banned = true;
-                updates.banReason = reason;
-                sysMsg = `User ${targetName} has been banned.`;
-            }
-            
-            try {
-                await updateDoc(targetRef, updates);
-                // Global Message
-                await addDoc(collection(db, "messages"), {
-                    text: sysMsg,
-                    isSystem: true,
-                    timestamp: serverTimestamp()
-                });
+        // --- IMAGE EDITOR LOGIC ---
+        const editorCanvas = document.getElementById('editor-canvas');
+        const editorCtx = editorCanvas.getContext('2d');
+        
+        window.openEditor = (imageSrc) => {
+            const img = new Image();
+            img.onload = () => {
+                currentEditorImage = img;
+                editorConfig = { x: 0, y: 0, scale: 1, rotation: 0, flipH: 1, flipV: 1, filter: 'none' };
+                // Fit image initially
+                const scaleX = editorCanvas.width / img.width;
+                const scaleY = editorCanvas.height / img.height;
+                const scale = Math.max(scaleX, scaleY);
+                editorConfig.scale = scale;
                 
-                // Private Message (Only for Mute typically, kick/ban see overlay)
-                if (currentStaffAction === 'mute') {
-                    await addDoc(collection(db, "messages"), {
-                        text: privateMsg,
-                        isSystem: true,
-                        privateTo: viewingUserId,
-                        timestamp: serverTimestamp()
-                    });
-                }
-
-                closeStaffInput();
-                closeProfile();
-                alert("Action executed.");
-            } catch(e) { alert("Error: " + e.message); }
+                document.getElementById('image-editor-modal').classList.remove('hidden');
+                drawEditor();
+            };
+            img.src = imageSrc;
+        };
+        
+        window.closeEditor = () => {
+            document.getElementById('image-editor-modal').classList.add('hidden');
+            currentEditorImage = null;
+        };
+        
+        window.drawEditor = () => {
+            if (!currentEditorImage) return;
+            editorCtx.clearRect(0, 0, editorCanvas.width, editorCanvas.height);
+            editorCtx.save();
+            
+            // Translate to center
+            editorCtx.translate(editorCanvas.width / 2, editorCanvas.height / 2);
+            
+            // Apply Transforms
+            editorCtx.rotate(editorConfig.rotation * Math.PI / 180);
+            editorCtx.scale(editorConfig.flipH, editorConfig.flipV);
+            editorCtx.filter = editorConfig.filter;
+            
+            // Draw Image
+            // We need to account for panning (x,y) but relative to the current transform state is tricky.
+            // Simplified: Panning moves the image draw position.
+            editorCtx.drawImage(
+                currentEditorImage, 
+                -currentEditorImage.width * editorConfig.scale / 2 + editorConfig.x, 
+                -currentEditorImage.height * editorConfig.scale / 2 + editorConfig.y, 
+                currentEditorImage.width * editorConfig.scale, 
+                currentEditorImage.height * editorConfig.scale
+            );
+            
+            editorCtx.restore();
+        };
+        
+        window.editorRotate = () => {
+            editorConfig.rotation = (editorConfig.rotation + 90) % 360;
+            drawEditor();
+        };
+        
+        window.editorFlip = (axis) => {
+            if (axis === 'h') editorConfig.flipH *= -1;
+            if (axis === 'v') editorConfig.flipV *= -1;
+            drawEditor();
+        };
+        
+        window.editorFilter = (filter) => {
+            editorConfig.filter = filter;
+            drawEditor();
+        };
+        
+        // Editor Dragging
+        editorCanvas.addEventListener('mousedown', (e) => {
+            isEditorDragging = true;
+            editorDragStart = { x: e.clientX, y: e.clientY };
         });
         
-        window.executeRankChange = async () => {
-            if (!viewingUserId) return;
-            const newRank = document.getElementById('staff-rank-select').value;
-            if(!confirm(`Change user rank to ${newRank}?`)) return;
-            
-            try {
-                await updateDoc(doc(db, "users", viewingUserId), { rank: newRank });
-                closeStaffActionMenu();
-                // Refresh profile view
-                openProfile(viewingUserId);
-            } catch(e) { alert("Error: " + e.message); }
+        window.addEventListener('mousemove', (e) => {
+            if (isEditorDragging && currentEditorImage) {
+                const dx = e.clientX - editorDragStart.x;
+                const dy = e.clientY - editorDragStart.y;
+                
+                // Adjust for rotation? No, let's keep movement intuitive to screen space usually requiring inverse transform logic.
+                // For simplicity in this demo, let's just move x/y directly. 
+                // Note: If rotated 90deg, x becomes y visually. This might feel weird without math adjustments.
+                // Simple fix: Transform the delta vector by the inverse rotation.
+                
+                const rad = -editorConfig.rotation * Math.PI / 180;
+                const rx = dx * Math.cos(rad) - dy * Math.sin(rad);
+                const ry = dx * Math.sin(rad) + dy * Math.cos(rad);
+                
+                editorConfig.x += (rx * editorConfig.flipH);
+                editorConfig.y += (ry * editorConfig.flipV);
+                
+                editorDragStart = { x: e.clientX, y: e.clientY };
+                drawEditor();
+            }
+        });
+        
+        window.addEventListener('mouseup', () => {
+            isEditorDragging = false;
+        });
+        
+        window.saveEditor = () => {
+            // Create a temp canvas to crop/save exactly what we see?
+            // Or just use the editor canvas content.
+            const dataUrl = editorCanvas.toDataURL('image/jpeg', 0.9);
+            pendingAvatar = dataUrl;
+            document.getElementById('profile-avatar-img').src = dataUrl;
+            closeEditor();
         };
 
+        // ... [Rest of existing code: staff actions, profile logic, etc.] ...
+        // Re-injecting necessary functions to ensure no breakage.
+        
+        window.saveProfileChanges = async () => { if (!currentUser) return; const newName = document.getElementById('edit-username-input').value; const newBio = document.getElementById('edit-bio-input').value; const newStatus = document.getElementById('edit-status-input').value; const soundMsg = document.getElementById('pref-sound-msg').checked; const soundMention = document.getElementById('pref-sound-mention').checked; const updatePayload = { username: newName, bio: newBio, presence: newStatus, settings: { soundMsg, soundMention } }; if (pendingAvatar) updatePayload.photoURL = pendingAvatar; if (pendingBanner) updatePayload.bannerURL = pendingBanner; try { await updateDoc(doc(db, "users", currentUser.uid), updatePayload); pendingAvatar = null; pendingBanner = null; toggleProfileEdit(); } catch(e) { alert("Error saving profile."); } };
+        window.toggleProfileEdit = () => { isEditingProfile = !isEditingProfile; const viewMode = document.getElementById('profile-view-mode'); const editMode = document.getElementById('profile-edit-mode'); const editOverlays = document.querySelectorAll('.edit-overlay'); if (isEditingProfile) { viewMode.classList.add('hidden'); editMode.classList.remove('hidden'); editOverlays.forEach(el => el.classList.remove('hidden')); } else { viewMode.classList.remove('hidden'); editMode.classList.add('hidden'); editOverlays.forEach(el => el.classList.add('hidden')); } };
+        window.closeProfile = () => document.getElementById('profile-modal').classList.add('hidden');
+        window.triggerAvatarUpload = () => document.getElementById('avatar-upload').click();
+        window.triggerBannerUpload = () => document.getElementById('banner-upload').click();
+        document.getElementById('banner-upload').addEventListener('change', async (e) => { if(e.target.files[0]) { const b64 = await handleFileUpload(e.target.files[0]); document.getElementById('profile-banner-img').src = b64; pendingBanner = b64; } });
+        
+        function handleFileUpload(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); }); }
+        
+        // ... [Staff Logic remains] ...
+        window.openStaffActionMenu = () => { const menu = document.getElementById('staff-action-menu'); const adminActions = document.getElementById('admin-actions-only'); const myRankIdx = getRankIndex(userData.rank); const targetRankIdx = getRankIndex(viewingUserRank); if (targetRankIdx <= myRankIdx) { alert("Action blocked: Rank too high."); return; } const modIdx = getRankIndex("Moderator"); const rankSelect = document.getElementById('staff-rank-select'); rankSelect.innerHTML = RANKS.filter((r, idx) => idx > myRankIdx).map(r => `<option value="${r.name}">${r.name}</option>`).join(''); menu.classList.remove('hidden'); if (myRankIdx < modIdx) { adminActions.classList.remove('hidden'); } else { adminActions.classList.add('hidden'); } };
+        window.closeStaffActionMenu = () => document.getElementById('staff-action-menu').classList.add('hidden');
+        window.showStaffInput = (action) => { currentStaffAction = action; document.getElementById('staff-action-menu').classList.add('hidden'); document.getElementById('staff-input-modal').classList.remove('hidden'); document.getElementById('staff-input-title').innerText = action.toUpperCase() + " USER"; document.getElementById('staff-action-duration').value = 1; document.getElementById('staff-action-unit').value = 'days'; document.getElementById('staff-action-reason').value = ""; const durGroup = document.getElementById('staff-duration-group'); if (action === 'ban') durGroup.classList.add('hidden'); else durGroup.classList.remove('hidden'); };
+        window.closeStaffInput = () => document.getElementById('staff-input-modal').classList.add('hidden');
+        document.getElementById('staff-action-confirm-btn').addEventListener('click', async () => { if (!viewingUserId || !currentStaffAction) return; const durationVal = parseInt(document.getElementById('staff-action-duration').value) || 0; const unit = document.getElementById('staff-action-unit').value; const reason = document.getElementById('staff-action-reason').value || "No reason"; const targetRef = doc(db, "users", viewingUserId); if (getRankIndex(viewingUserRank) <= getRankIndex(userData.rank)) { alert("Action blocked."); return; } let multiplier = 1; if (unit === 'minutes') multiplier = 60 * 1000; else if (unit === 'hours') multiplier = 60 * 60 * 1000; else if (unit === 'days') multiplier = 24 * 60 * 60 * 1000; const durationMs = durationVal * multiplier; const now = new Date(); const until = new Date(now.getTime() + durationMs); const updates = {}; let sysMsg = ""; let privateMsg = ""; let durationStr = durationVal > 0 ? `${durationVal} ${unit}` : "Permanent"; const targetName = document.getElementById('profile-username').innerText; if (currentStaffAction === 'mute') { updates.mutedUntil = durationVal > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000); updates.muteReason = reason; sysMsg = `User ${targetName} has been muted for: ${reason}.`; privateMsg = `You have been muted. Reason: ${reason}. Duration: ${durationStr}.`; } else if (currentStaffAction === 'kick') { updates.kickedUntil = durationVal > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000); updates.kickReason = reason; sysMsg = `User ${targetName} has been kicked/suspended.`; } else if (currentStaffAction === 'ban') { updates.banned = true; updates.banReason = reason; sysMsg = `User ${targetName} has been banned.`; } try { await updateDoc(targetRef, updates); await addDoc(collection(db, "messages"), { text: sysMsg, isSystem: true, timestamp: serverTimestamp() }); if (currentStaffAction === 'mute') { await addDoc(collection(db, "messages"), { text: privateMsg, isSystem: true, privateTo: viewingUserId, timestamp: serverTimestamp() }); } closeStaffInput(); closeProfile(); alert("Action executed."); } catch(e) { alert("Error: " + e.message); } });
+        window.executeRankChange = async () => { if (!viewingUserId) return; const newRank = document.getElementById('staff-rank-select').value; if(!confirm(`Change user rank to ${newRank}?`)) return; try { await updateDoc(doc(db, "users", viewingUserId), { rank: newRank }); closeStaffActionMenu(); openProfile(viewingUserId); } catch(e) { alert("Error: " + e.message); } };
+        
+        // --- Admin Functions ---
+        window.openAdminPanel = () => { document.getElementById('admin-modal').classList.remove('hidden'); renderAdminTable(); };
+        window.closeAdminPanel = () => document.getElementById('admin-modal').classList.add('hidden');
+        window.switchAdminTab = (tab) => { activeAdminTab = tab; document.getElementById('tab-btn-users').classList.toggle('admin-tab-active', tab === 'users'); document.getElementById('tab-btn-broadcast').classList.toggle('admin-tab-active', tab === 'broadcast'); document.getElementById('admin-tab-users').classList.toggle('hidden', tab !== 'users'); document.getElementById('admin-tab-broadcast').classList.toggle('hidden', tab !== 'broadcast'); };
+        function renderAdminTable() { if (activeAdminTab !== 'users') return; const tbody = document.getElementById('admin-user-table'); const search = document.getElementById('admin-search').value.toLowerCase(); const filtered = allUsersCache.filter(u => u.username.toLowerCase().includes(search) || u.email.toLowerCase().includes(search)); tbody.innerHTML = filtered.map(u => { const rankOptions = RANKS.map(r => `<option value="${r.name}" ${u.rank === r.name ? 'selected' : ''}>${r.name}</option>`).join(''); let statusText = u.isOnline ? `<span class="text-green-500 font-bold">Online</span>` : `<span class="text-gray-500">Offline</span>`; if (u.banned) statusText = `<span class="text-red-500 font-bold bg-red-500/10 px-2 rounded">BANNED</span>`; return `<tr class="hover:bg-gray-800 transition-colors"><td class="p-4"><div class="flex items-center gap-3"><img src="${u.photoURL || DEFAULT_PFP}" class="w-8 h-8 rounded-full bg-gray-700 default-pfp"><div><div class="font-bold text-gray-200">${u.username}</div><div class="text-xs text-gray-500">${u.email}</div></div></div></td><td class="p-4 text-sm">${statusText}</td><td class="p-4"><span class="text-xs text-gray-500">Use Profile</span></td><td class="p-4 text-center"><div class="text-xs text-gray-400 flex flex-col items-center"><div><span class="text-ruby-500 font-bold">${u.messages || 0}</span> msgs</div><div><span class="text-blue-400 font-bold">${u.invites || 0}</span> inv</div></div></td><td class="p-4 text-right"><button onclick="openProfile('${u.uid}')" class="p-2 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"><i class="fas fa-bolt"></i> Actions</button></td></tr>`; }).join(''); }
+        document.getElementById('admin-search').addEventListener('input', renderAdminTable);
+        window.adminClearChat = async () => { if(!confirm("Are you sure?")) return; const q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(50)); const snap = await getDocs(q); snap.forEach(async (d) => { await deleteDoc(d.ref); }); alert("Chat cleared."); };
+        window.sendBroadcast = async () => { const text = document.getElementById('broadcast-input').value; if (!text.trim()) return; try { await addDoc(collection(db, "messages"), { text: text, isSystem: true, timestamp: serverTimestamp() }); document.getElementById('broadcast-input').value = ''; alert("Broadcast sent!"); } catch(e) { alert("Error: " + e.message); } };
+        function escapeHtml(text) { const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }; return text.replace(/[&<>"']/g, function(m) { return map[m]; }); }
+        
+        // Utils
+        window.toggleMobileMenu = () => { const sidebar = document.getElementById('right-sidebar'); const overlay = document.getElementById('mobile-menu-overlay'); sidebar.classList.toggle('transform'); sidebar.classList.toggle('translate-x-full'); if (sidebar.classList.contains('translate-x-full')) overlay.classList.add('hidden'); else overlay.classList.remove('hidden'); };
+        window.copyInviteLink = () => { if(!currentUser) return; const url = `${window.location.origin}${window.location.pathname}?ref=${currentUser.uid}`; navigator.clipboard.writeText(url); alert("Invite link copied!"); };
+        window.toggleLike = async () => { if (!currentUser || !viewingUserId || viewingUserId === currentUser.uid) return; const userRef = doc(db, "users", viewingUserId); const likeBtn = document.getElementById('like-btn'); const likeCountEl = document.getElementById('profile-likes-count'); const isLiked = likeBtn.classList.contains('text-ruby-500'); let count = parseInt(likeCountEl.innerText) || 0; if (isLiked) { likeBtn.classList.remove('text-ruby-500'); likeBtn.classList.add('text-gray-500'); likeCountEl.innerText = Math.max(0, count - 1); await updateDoc(userRef, { likes: Math.max(0, count - 1), likedBy: arrayRemove(currentUser.uid) }); } else { likeBtn.classList.add('text-ruby-500'); likeBtn.classList.remove('text-gray-500'); likeCountEl.innerText = count + 1; await updateDoc(userRef, { likes: count + 1, likedBy: arrayUnion(currentUser.uid) }); } };
+        window.initiatePrivateChat = async (floating = false) => { if (!currentUser || !viewingUserId) return; const snap = await getDoc(doc(db, "users", viewingUserId)); const partner = snap.exists() ? snap.data() : { username: "User", photoURL: DEFAULT_PFP }; closeProfile(); if (floating) openFloatingChat(viewingUserId, partner.username, partner.photoURL || DEFAULT_PFP); else { const uid1 = currentUser.uid; const uid2 = viewingUserId; const chatId = uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; loadChat(chatId, { ...partner, uid: viewingUserId }); } };
         window.toggleUserMenu = (e) => { e.stopPropagation(); const dropdown = document.getElementById('user-menu-dropdown'); const pmDropdown = document.getElementById('pm-dropdown'); pmDropdown.classList.add('hidden'); if (dropdown.classList.contains('hidden')) dropdown.classList.remove('hidden'); else dropdown.classList.add('hidden'); const closeFn = (ev) => { const container = e.currentTarget.closest('.relative'); if(!container.contains(ev.target)) { dropdown.classList.add('hidden'); document.removeEventListener('click', closeFn); } }; document.addEventListener('click', closeFn); };
         window.openWallet = () => { if (!userData) return; document.getElementById('wallet-coins').innerText = (userData.coins || 0).toLocaleString(); document.getElementById('wallet-gems').innerText = (userData.gems || 0).toLocaleString(); document.getElementById('wallet-modal').classList.remove('hidden'); };
         window.closeWallet = () => document.getElementById('wallet-modal').classList.add('hidden');
         window.logoutUser = () => signOut(auth).catch(e => alert(e.message));
-
-        // --- Admin Panel (Legacy kept, but new system is primary for mods) ---
-        window.openAdminPanel = () => { document.getElementById('admin-modal').classList.remove('hidden'); renderAdminTable(); };
-        window.closeAdminPanel = () => document.getElementById('admin-modal').classList.add('hidden');
-        window.switchAdminTab = (tab) => {
-            activeAdminTab = tab;
-            document.getElementById('tab-btn-users').classList.toggle('admin-tab-active', tab === 'users');
-            document.getElementById('tab-btn-broadcast').classList.toggle('admin-tab-active', tab === 'broadcast');
-            document.getElementById('admin-tab-users').classList.toggle('hidden', tab !== 'users');
-            document.getElementById('admin-tab-broadcast').classList.toggle('hidden', tab !== 'broadcast');
-        };
-
-        function renderAdminTable() {
-            if (activeAdminTab !== 'users') return;
-            const tbody = document.getElementById('admin-user-table');
-            const search = document.getElementById('admin-search').value.toLowerCase();
-            const filtered = allUsersCache.filter(u => u.username.toLowerCase().includes(search) || u.email.toLowerCase().includes(search));
-            
-            tbody.innerHTML = filtered.map(u => {
-                const rankOptions = RANKS.map(r => `<option value="${r.name}" ${u.rank === r.name ? 'selected' : ''}>${r.name}</option>`).join('');
-                let statusText = u.isOnline ? `<span class="text-green-500 font-bold">Online</span>` : `<span class="text-gray-500">Offline</span>`;
-                if (u.banned) statusText = `<span class="text-red-500 font-bold bg-red-500/10 px-2 rounded">BANNED</span>`;
-                
-                return `
-                    <tr class="hover:bg-gray-800 transition-colors">
-                        <td class="p-4">
-                            <div class="flex items-center gap-3">
-                                <img src="${u.photoURL || DEFAULT_PFP}" class="w-8 h-8 rounded-full bg-gray-700 default-pfp">
-                                <div>
-                                    <div class="font-bold text-gray-200">${u.username}</div>
-                                    <div class="text-xs text-gray-500">${u.email}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="p-4 text-sm">${statusText}</td>
-                        <td class="p-4">
-                            <!-- Legacy Rank Change (Admin Only) -->
-                             <span class="text-xs text-gray-500">Use Profile</span>
-                        </td>
-                        <td class="p-4 text-center">
-                            <div class="text-xs text-gray-400 flex flex-col items-center">
-                                <div><span class="text-ruby-500 font-bold">${u.messages || 0}</span> msgs</div>
-                                <div><span class="text-blue-400 font-bold">${u.invites || 0}</span> inv</div>
-                            </div>
-                        </td>
-                        <td class="p-4 text-right">
-                             <button onclick="openProfile('${u.uid}')" class="p-2 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"><i class="fas fa-bolt"></i> Actions</button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-        
-        window.adminClearChat = async () => { if(!confirm("Are you sure? This deletes the last 50 messages permanently.")) return; const q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(50)); const snap = await getDocs(q); snap.forEach(async (d) => { await deleteDoc(d.ref); }); alert("Chat cleared."); };
-        window.sendBroadcast = async () => { const text = document.getElementById('broadcast-input').value; if (!text.trim()) return; try { await addDoc(collection(db, "messages"), { text: text, isSystem: true, timestamp: serverTimestamp() }); document.getElementById('broadcast-input').value = ''; alert("Broadcast sent!"); } catch(e) { alert("Error: " + e.message); } };
-        
-        document.getElementById('admin-search').addEventListener('input', renderAdminTable);
-
-        // --- Utils ---
-        window.toggleMobileMenu = () => { const sidebar = document.getElementById('right-sidebar'); const overlay = document.getElementById('mobile-menu-overlay'); sidebar.classList.toggle('transform'); sidebar.classList.toggle('translate-x-full'); if (sidebar.classList.contains('translate-x-full')) overlay.classList.add('hidden'); else overlay.classList.remove('hidden'); };
-        window.copyInviteLink = () => { if(!currentUser) return; const url = `${window.location.origin}${window.location.pathname}?ref=${currentUser.uid}`; navigator.clipboard.writeText(url); alert("Invite link copied!"); };
-        window.updateHeaderProfile = () => { if(userData) document.getElementById('header-avatar').src = userData.photoURL || DEFAULT_PFP; };
-        window.updateHeaderStatusColor = () => { if(!userData) return; const el = document.getElementById('header-status-dot'); el.className = "w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900"; if (userData.presence === 'away') el.classList.add('bg-yellow-500'); else if (userData.presence === 'dnd') el.classList.add('bg-red-500'); else el.classList.add('bg-green-500'); };
-        function escapeHtml(text) { const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }; return text.replace(/[&<>"']/g, function(m) { return map[m]; }); }
     </script>
 </body>
 </html>
