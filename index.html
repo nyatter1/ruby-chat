@@ -224,6 +224,14 @@
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
 
+    <!-- Punishment Overlay (Black Screen for Ban/Kick) -->
+    <div id="punishment-overlay" class="fixed inset-0 z-[100] bg-black hidden flex flex-col items-center justify-center p-8 text-center">
+        <i class="fas fa-ban text-6xl text-red-600 mb-6 animate-pulse"></i>
+        <h1 id="punish-title" class="text-4xl font-bold text-white mb-4">ACCESS DENIED</h1>
+        <p id="punish-message" class="text-xl text-gray-300 mb-8 max-w-2xl">You have been banned from this server.</p>
+        <div id="punish-timer" class="text-2xl font-mono text-ruby-500 font-bold hidden"></div>
+    </div>
+
     <!-- Auth Container -->
     <div id="auth-container" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-950 bg-opacity-95 hidden">
         <div class="bg-gray-900 p-8 rounded-xl shadow-2xl border border-gray-800 w-full max-w-md relative overflow-hidden">
@@ -390,7 +398,7 @@
 
     <!-- Profile Modal -->
     <div id="profile-modal" class="fixed inset-0 z-40 bg-black/80 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-900 rounded-xl w-full max-w-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div class="bg-gray-900 rounded-xl w-full max-w-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative">
             <!-- Modal Header / Banner -->
             <div class="relative h-32 bg-gray-800 cursor-pointer group" onclick="if(isEditingProfile) triggerBannerUpload()">
                 <img id="profile-banner-img" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity bg-gray-800">
@@ -398,6 +406,11 @@
                     <i class="fas fa-camera text-white text-2xl drop-shadow-lg"></i>
                 </div>
                 <button onclick="closeProfile()" class="absolute top-2 right-2 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors z-10"><i class="fas fa-times"></i></button>
+                
+                <!-- Staff Action Button (Lightning) -->
+                <button id="staff-action-btn" onclick="openStaffActionMenu()" class="hidden absolute top-2 left-2 bg-yellow-500 hover:bg-yellow-400 text-black w-8 h-8 rounded-full flex items-center justify-center transition-colors z-10 shadow-lg shadow-yellow-500/50">
+                    <i class="fas fa-bolt"></i>
+                </button>
             </div>
 
             <!-- Profile Info -->
@@ -419,6 +432,10 @@
                             <i class="fas fa-heart text-xl"></i>
                             <span id="profile-likes-count" class="text-xs font-bold ml-1">0</span>
                         </button>
+                    </div>
+                    
+                    <div id="profile-status-badges" class="flex justify-center gap-2 mb-2">
+                        <!-- Badges for Muted/Banned/Kicked injected here -->
                     </div>
                     
                     <div id="profile-rank-badge" class="mb-4 flex justify-center h-8"></div>
@@ -495,6 +512,63 @@
                 <!-- Hidden File Inputs -->
                 <input type="file" id="avatar-upload" accept="image/*" class="hidden">
                 <input type="file" id="banner-upload" accept="image/*" class="hidden">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Staff Action Menu -->
+    <div id="staff-action-menu" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-yellow-500"><i class="fas fa-bolt mr-2"></i>Staff Actions</h3>
+                <button onclick="closeStaffActionMenu()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="space-y-3">
+                <button onclick="showStaffInput('mute')" class="w-full bg-gray-800 hover:bg-yellow-900/40 text-yellow-500 border border-yellow-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
+                    <i class="fas fa-microphone-slash"></i> Mute User
+                </button>
+                
+                <div id="admin-actions-only" class="space-y-3 hidden">
+                    <button onclick="showStaffInput('kick')" class="w-full bg-gray-800 hover:bg-orange-900/40 text-orange-500 border border-orange-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-sign-out-alt"></i> Kick User (Temp Ban)
+                    </button>
+                    
+                    <button onclick="showStaffInput('ban')" class="w-full bg-gray-800 hover:bg-red-900/40 text-red-500 border border-red-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-ban"></i> Ban User (Perm)
+                    </button>
+                    
+                    <div class="bg-gray-800 p-3 rounded border border-gray-700">
+                        <label class="block text-xs text-gray-400 uppercase font-bold mb-2">Rank User</label>
+                        <div class="flex gap-2">
+                             <select id="staff-rank-select" class="flex-1 bg-gray-900 text-white text-sm rounded p-2 border border-gray-700 focus:outline-none"></select>
+                             <button onclick="executeRankChange()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 rounded font-bold text-sm">Set</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Staff Input Modal (Duration/Reason) -->
+    <div id="staff-input-modal" class="fixed inset-0 z-[60] bg-black/90 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm">
+            <h3 id="staff-input-title" class="text-xl font-bold text-white mb-4">Action</h3>
+            
+            <div id="staff-duration-group" class="mb-4">
+                <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Duration (Days)</label>
+                <input type="number" id="staff-action-duration" min="0" max="1000" value="1" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none">
+                <p class="text-[10px] text-gray-500 mt-1">Max 1000 days. 0 for permanent (if applicable).</p>
+            </div>
+            
+            <div class="mb-6">
+                <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Reason</label>
+                <input type="text" id="staff-action-reason" placeholder="Reason for this action..." class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none">
+            </div>
+            
+            <div class="flex gap-3">
+                <button id="staff-action-confirm-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded">Confirm</button>
+                <button onclick="closeStaffInput()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded">Cancel</button>
             </div>
         </div>
     </div>
@@ -701,6 +775,7 @@
         let isEditingProfile = false;
         let viewingUserId = null;
         let allUsersCache = [];
+        let punishmentInterval = null;
         
         // Chat State
         let currentChatId = 'global'; 
@@ -709,6 +784,7 @@
         let replyToData = null;
         let typingTimeout = null;
         let activeAdminTab = 'users';
+        let currentStaffAction = null;
 
         // PM Floating State
         const activeFloatingPMs = new Set();
@@ -762,6 +838,49 @@
              }
              return null; 
         }
+        
+        function checkPunishments() {
+            if (!userData) return;
+            const overlay = document.getElementById('punishment-overlay');
+            const title = document.getElementById('punish-title');
+            const msg = document.getElementById('punish-message');
+            const timer = document.getElementById('punish-timer');
+            const now = Date.now();
+            
+            // BAN
+            if (userData.banned) {
+                overlay.classList.remove('hidden');
+                title.innerText = "YOU HAVE BEEN BANNED";
+                msg.innerText = `Reason: ${userData.banReason || "Violation of rules"}`;
+                timer.classList.add('hidden');
+                return;
+            }
+            
+            // KICK (Temp Ban)
+            if (userData.kickedUntil) {
+                const until = userData.kickedUntil.toMillis();
+                if (until > now) {
+                    overlay.classList.remove('hidden');
+                    title.innerText = "YOU HAVE BEEN KICKED";
+                    msg.innerText = `Reason: ${userData.kickReason || "Temporary Suspension"}`;
+                    timer.classList.remove('hidden');
+                    
+                    const diff = until - now;
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+                    timer.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+                    return;
+                } else {
+                    // Expired
+                     const userRef = doc(db, "users", currentUser.uid);
+                     updateDoc(userRef, { kickedUntil: null, kickReason: null });
+                }
+            }
+            
+            overlay.classList.add('hidden');
+        }
 
         // --- Auth Logic ---
         window.toggleAuthMode = () => {
@@ -805,11 +924,6 @@
                     });
                 } else {
                     const d = userSnap.data();
-                    if (d.banned) {
-                         await signOut(auth);
-                         alert("You are permanently banned from this server.");
-                         return;
-                    }
                     if(user.email === "dev@gmail.com" && d.rank !== "Developer") {
                         await updateDoc(userRef, { rank: "Developer" });
                     }
@@ -823,22 +937,10 @@
                     userData = doc.data();
                     if (!userData) return;
                     
-                    // Ban Check Real-time
-                    if (userData.banned) {
-                        alert("You have been banned.");
-                        signOut(auth);
-                        window.location.reload();
-                        return;
-                    }
-                    
-                    // Kick Check
-                    if (userData.forceLogoutAt && userData.forceLogoutAt.toMillis() > loginTime) {
-                        alert("You have been kicked by an administrator.");
-                        signOut(auth);
-                        window.location.reload();
-                        return;
-                    }
-                    
+                    checkPunishments();
+                    if(punishmentInterval) clearInterval(punishmentInterval);
+                    punishmentInterval = setInterval(checkPunishments, 1000);
+
                     updateHeaderProfile();
                     updateHeaderStatusColor();
                     updateHeaderProgression(); 
@@ -861,6 +963,7 @@
                 userData = null;
                 authContainer.classList.remove('hidden');
                 appContainer.classList.add('hidden');
+                if(punishmentInterval) clearInterval(punishmentInterval);
             }
         });
 
@@ -964,7 +1067,6 @@
             
             createUserWithEmailAndPassword(auth, email, pass).then(async (cred) => {
                 updateProfile(cred.user, { displayName: user });
-                // Handle Referral
                 if (referralUid) {
                     try {
                         const refRef = doc(db, "users", referralUid);
@@ -1052,7 +1154,6 @@
         };
 
         function renderMessage(msg) {
-            // System Broadcast
             if (msg.isSystem) {
                 return `
                 <div class="flex justify-center my-6 animate-pulse-fast">
@@ -1112,6 +1213,25 @@
                 </div>
             `;
         }
+        
+        // Helper to check mute status
+        function checkMuteStatus() {
+            if (userData.banned) return { muted: true, reason: userData.banReason || "Banned" };
+            if (userData.kickedUntil && userData.kickedUntil.toMillis() > Date.now()) return { muted: true, reason: userData.kickReason || "Kicked" };
+            if (userData.mutedUntil) {
+                 const until = userData.mutedUntil.toMillis();
+                 if (until > Date.now()) {
+                     const diff = until - Date.now();
+                     const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                     const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                     return { muted: true, reason: userData.muteReason, duration: `${days}d ${hours}h` };
+                 } else {
+                     // Auto unmute locally, logic will eventually clear in db or be ignored
+                     return { muted: false };
+                 }
+            }
+            return { muted: false };
+        }
 
         document.getElementById('message-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -1119,8 +1239,9 @@
             const text = input.value.trim();
             if (!text || !currentUser || !userData) return;
             
-            if (userData.muted) {
-                alert("You are muted and cannot send messages.");
+            const muteStatus = checkMuteStatus();
+            if (muteStatus.muted) {
+                alert(`You have been muted/restricted. Reason: ${muteStatus.reason}. ${muteStatus.duration ? 'Duration: ' + muteStatus.duration : ''}`);
                 return;
             }
 
@@ -1192,12 +1313,10 @@
 
         function renderPMDropdown() {
             const list = document.getElementById('pm-list');
-            
             if (allUsersCache.length === 0) {
                 list.innerHTML = '<div class="p-3 text-center text-xs text-gray-500">No users found</div>';
                 return;
             }
-
             list.innerHTML = allUsersCache.filter(u => u.uid !== currentUser.uid).map(u => `
                 <div class="flex items-center gap-3 p-3 hover:bg-gray-800 cursor-pointer border-b border-gray-800 last:border-0" onclick="openFloatingChat('${u.uid}', '${u.username}', '${u.photoURL || DEFAULT_PFP}')">
                     <img src="${u.photoURL || DEFAULT_PFP}" class="w-10 h-10 rounded-full bg-gray-700 object-cover">
@@ -1224,7 +1343,6 @@
             const box = document.createElement('div');
             box.id = `pm-box-${targetUid}`;
             box.className = 'pm-box';
-            
             const offset = activeFloatingPMs.size * 30 + 100;
             box.style.top = `${offset}px`;
             box.style.left = `${offset}px`;
@@ -1311,8 +1429,13 @@
             const text = input.value.trim();
             if (!text) return;
             
-            input.value = '';
+            const muteStatus = checkMuteStatus();
+            if (muteStatus.muted) {
+                alert(`You have been muted/restricted. Reason: ${muteStatus.reason}`);
+                return;
+            }
             
+            input.value = '';
             const chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
             
             try {
@@ -1330,7 +1453,6 @@
         function initDraggable(box) {
             const header = box.querySelector('.pm-header');
             const resize = box.querySelector('.resize-handle');
-            
             box.addEventListener('mousedown', () => bringToFront(box));
 
             let isDragging = false;
@@ -1414,7 +1536,6 @@
                 users.push({ uid: uId, ...d, isOnline });
             });
             
-            // Sort Users: High Rank -> Alphabetical
             users.sort((a, b) => {
                 const rankA = getRankIndex(a.rank);
                 const rankB = getRankIndex(b.rank);
@@ -1462,7 +1583,7 @@
             }).join('');
         });
 
-        // --- Profile System (Same as before) ---
+        // --- Profile System ---
         window.openProfile = async (uid) => {
             viewingUserId = uid;
             const modal = document.getElementById('profile-modal');
@@ -1471,8 +1592,11 @@
             const privateMsgBtn = document.getElementById('private-msg-container');
             const likeBtn = document.getElementById('like-btn');
             const likeCount = document.getElementById('profile-likes-count');
+            const staffActionBtn = document.getElementById('staff-action-btn');
+            const badgeContainer = document.getElementById('profile-status-badges');
             
             modal.classList.remove('hidden');
+            // Reset to view mode
             isEditingProfile = false;
             document.getElementById('profile-view-mode').classList.remove('hidden');
             document.getElementById('profile-edit-mode').classList.add('hidden');
@@ -1484,20 +1608,37 @@
                 editBtn.classList.remove('hidden');
                 privateMsgBtn.classList.add('hidden');
                 likeBtn.classList.add('pointer-events-none', 'opacity-50');
+                staffActionBtn.classList.add('hidden'); // Cant punish self
             } else {
                 const snap = await getDoc(doc(db, "users", uid));
                 if (snap.exists()) data = snap.data();
                 editBtn.classList.add('hidden');
                 if(currentUser) privateMsgBtn.classList.remove('hidden');
                 likeBtn.classList.remove('pointer-events-none', 'opacity-50');
+                
+                // Show Staff Action Button if user is Staff
+                const myRankObj = getRankData(userData.rank);
+                if (myRankObj && myRankObj.isStaff) {
+                    staffActionBtn.classList.remove('hidden');
+                } else {
+                    staffActionBtn.classList.add('hidden');
+                }
             }
             
+            // Populate Data
             document.getElementById('profile-username').innerText = data.username || "Unknown";
             document.getElementById('profile-stats-msgs').innerText = data.messages || 0;
             document.getElementById('profile-stats-invites').innerText = data.invites || 0;
             document.getElementById('profile-avatar-img').src = data.photoURL || DEFAULT_PFP;
             document.getElementById('profile-banner-img').src = data.bannerURL || "https://picsum.photos/600/200";
             likeCount.innerText = data.likes || 0;
+            
+            // Badges
+            let badges = '';
+            if (data.banned) badges += '<span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded font-bold">BANNED</span>';
+            else if (data.kickedUntil && data.kickedUntil.toMillis() > Date.now()) badges += '<span class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded font-bold">KICKED</span>';
+            if (data.mutedUntil && data.mutedUntil.toMillis() > Date.now()) badges += '<span class="bg-yellow-500 text-black text-xs px-2 py-0.5 rounded font-bold">MUTED</span>';
+            badgeContainer.innerHTML = badges;
             
             const likedBy = data.likedBy || [];
             if (currentUser && likedBy.includes(currentUser.uid)) {
@@ -1553,48 +1694,114 @@
                 viewMode.classList.remove('hidden'); editMode.classList.add('hidden'); editOverlays.forEach(el => el.classList.add('hidden'));
             }
         };
-        window.toggleLike = async () => { /* same like logic */
-            if (!currentUser || !viewingUserId || viewingUserId === currentUser.uid) return;
-            const userRef = doc(db, "users", viewingUserId);
-            const likeBtn = document.getElementById('like-btn');
-            const likeCountEl = document.getElementById('profile-likes-count');
-            const isLiked = likeBtn.classList.contains('text-ruby-500');
-            let count = parseInt(likeCountEl.innerText) || 0;
-            if (isLiked) {
-                likeBtn.classList.remove('text-ruby-500'); likeBtn.classList.add('text-gray-500'); likeCountEl.innerText = Math.max(0, count - 1);
-                await updateDoc(userRef, { likes: Math.max(0, count - 1), likedBy: arrayRemove(currentUser.uid) });
-            } else {
-                likeBtn.classList.add('text-ruby-500'); likeBtn.classList.remove('text-gray-500'); likeCountEl.innerText = count + 1;
-                await updateDoc(userRef, { likes: count + 1, likedBy: arrayUnion(currentUser.uid) });
-            }
-        };
-        window.initiatePrivateChat = async (floating = false) => {
-            if (!currentUser || !viewingUserId) return;
-            const snap = await getDoc(doc(db, "users", viewingUserId));
-            const partner = snap.exists() ? snap.data() : { username: "User", photoURL: DEFAULT_PFP };
-            closeProfile();
-            if (floating) openFloatingChat(viewingUserId, partner.username, partner.photoURL || DEFAULT_PFP);
-            else { const uid1 = currentUser.uid; const uid2 = viewingUserId; const chatId = uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; loadChat(chatId, { ...partner, uid: viewingUserId }); }
-        };
+        window.toggleLike = async () => { if (!currentUser || !viewingUserId || viewingUserId === currentUser.uid) return; const userRef = doc(db, "users", viewingUserId); const likeBtn = document.getElementById('like-btn'); const likeCountEl = document.getElementById('profile-likes-count'); const isLiked = likeBtn.classList.contains('text-ruby-500'); let count = parseInt(likeCountEl.innerText) || 0; if (isLiked) { likeBtn.classList.remove('text-ruby-500'); likeBtn.classList.add('text-gray-500'); likeCountEl.innerText = Math.max(0, count - 1); await updateDoc(userRef, { likes: Math.max(0, count - 1), likedBy: arrayRemove(currentUser.uid) }); } else { likeBtn.classList.add('text-ruby-500'); likeBtn.classList.remove('text-gray-500'); likeCountEl.innerText = count + 1; await updateDoc(userRef, { likes: count + 1, likedBy: arrayUnion(currentUser.uid) }); } };
+        window.initiatePrivateChat = async (floating = false) => { if (!currentUser || !viewingUserId) return; const snap = await getDoc(doc(db, "users", viewingUserId)); const partner = snap.exists() ? snap.data() : { username: "User", photoURL: DEFAULT_PFP }; closeProfile(); if (floating) openFloatingChat(viewingUserId, partner.username, partner.photoURL || DEFAULT_PFP); else { const uid1 = currentUser.uid; const uid2 = viewingUserId; const chatId = uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`; loadChat(chatId, { ...partner, uid: viewingUserId }); } };
         function handleFileUpload(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); }); }
         window.triggerAvatarUpload = () => document.getElementById('avatar-upload').click();
         window.triggerBannerUpload = () => document.getElementById('banner-upload').click();
         let pendingAvatar = null; let pendingBanner = null;
         document.getElementById('avatar-upload').addEventListener('change', async (e) => { if(e.target.files[0]) { const b64 = await handleFileUpload(e.target.files[0]); document.getElementById('profile-avatar-img').src = b64; pendingAvatar = b64; } });
         document.getElementById('banner-upload').addEventListener('change', async (e) => { if(e.target.files[0]) { const b64 = await handleFileUpload(e.target.files[0]); document.getElementById('profile-banner-img').src = b64; pendingBanner = b64; } });
-        window.saveProfileChanges = async () => {
-            if (!currentUser) return;
-            const newName = document.getElementById('edit-username-input').value; const newStatus = document.getElementById('edit-status-input').value; const soundMsg = document.getElementById('pref-sound-msg').checked; const soundMention = document.getElementById('pref-sound-mention').checked;
-            const updatePayload = { username: newName, presence: newStatus, settings: { soundMsg, soundMention } };
-            if (pendingAvatar) updatePayload.photoURL = pendingAvatar; if (pendingBanner) updatePayload.bannerURL = pendingBanner;
-            try { await updateDoc(doc(db, "users", currentUser.uid), updatePayload); pendingAvatar = null; pendingBanner = null; toggleProfileEdit(); } catch(e) { alert("Error saving profile. Image might be too large."); }
+        window.saveProfileChanges = async () => { if (!currentUser) return; const newName = document.getElementById('edit-username-input').value; const newStatus = document.getElementById('edit-status-input').value; const soundMsg = document.getElementById('pref-sound-msg').checked; const soundMention = document.getElementById('pref-sound-mention').checked; const updatePayload = { username: newName, presence: newStatus, settings: { soundMsg, soundMention } }; if (pendingAvatar) updatePayload.photoURL = pendingAvatar; if (pendingBanner) updatePayload.bannerURL = pendingBanner; try { await updateDoc(doc(db, "users", currentUser.uid), updatePayload); pendingAvatar = null; pendingBanner = null; toggleProfileEdit(); } catch(e) { alert("Error saving profile."); } };
+        
+        // --- Staff Action Logic ---
+        window.openStaffActionMenu = () => {
+            const menu = document.getElementById('staff-action-menu');
+            const adminActions = document.getElementById('admin-actions-only');
+            const myRankIdx = getRankIndex(userData.rank);
+            // Moderator is index around 9. Any index < 9 is higher.
+            const modIdx = getRankIndex("Moderator");
+            
+            // Populate Ranks for dropdown (Lower than current user only)
+            const rankSelect = document.getElementById('staff-rank-select');
+            rankSelect.innerHTML = RANKS.filter((r, idx) => idx > myRankIdx).map(r => `<option value="${r.name}">${r.name}</option>`).join('');
+
+            menu.classList.remove('hidden');
+            
+            if (myRankIdx < modIdx) {
+                // Higher than mod (Admin+)
+                adminActions.classList.remove('hidden');
+            } else {
+                adminActions.classList.add('hidden');
+            }
         };
+        
+        window.closeStaffActionMenu = () => document.getElementById('staff-action-menu').classList.add('hidden');
+        
+        window.showStaffInput = (action) => {
+            currentStaffAction = action;
+            document.getElementById('staff-action-menu').classList.add('hidden');
+            document.getElementById('staff-input-modal').classList.remove('hidden');
+            document.getElementById('staff-input-title').innerText = action.toUpperCase() + " USER";
+            document.getElementById('staff-action-duration').value = 1;
+            document.getElementById('staff-action-reason').value = "";
+            
+            const durGroup = document.getElementById('staff-duration-group');
+            if (action === 'ban') durGroup.classList.add('hidden');
+            else durGroup.classList.remove('hidden');
+        };
+        
+        window.closeStaffInput = () => document.getElementById('staff-input-modal').classList.add('hidden');
+        
+        document.getElementById('staff-action-confirm-btn').addEventListener('click', async () => {
+            if (!viewingUserId || !currentStaffAction) return;
+            const durationDays = parseInt(document.getElementById('staff-action-duration').value) || 0;
+            const reason = document.getElementById('staff-action-reason').value || "No reason provided";
+            const targetRef = doc(db, "users", viewingUserId);
+            
+            // Construct payload
+            const updates = {};
+            let sysMsg = "";
+            const now = new Date();
+            const until = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+            
+            if (currentStaffAction === 'mute') {
+                updates.mutedUntil = durationDays > 0 ? until : null; // 0 for perm? Or just set logic. Let's assume >0.
+                if(durationDays === 0) updates.mutedUntil = new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000); // effectively perm
+                updates.muteReason = reason;
+                sysMsg = `User has been muted.`;
+            } else if (currentStaffAction === 'kick') {
+                updates.kickedUntil = durationDays > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000);
+                updates.kickReason = reason;
+                sysMsg = `User has been kicked/suspended.`;
+            } else if (currentStaffAction === 'ban') {
+                updates.banned = true;
+                updates.banReason = reason;
+                sysMsg = `User has been banned.`;
+            }
+            
+            try {
+                await updateDoc(targetRef, updates);
+                await addDoc(collection(db, "messages"), {
+                    text: sysMsg,
+                    isSystem: true,
+                    timestamp: serverTimestamp()
+                });
+                closeStaffInput();
+                closeProfile();
+                alert("Action executed.");
+            } catch(e) { alert("Error: " + e.message); }
+        });
+        
+        window.executeRankChange = async () => {
+            if (!viewingUserId) return;
+            const newRank = document.getElementById('staff-rank-select').value;
+            if(!confirm(`Change user rank to ${newRank}?`)) return;
+            
+            try {
+                await updateDoc(doc(db, "users", viewingUserId), { rank: newRank });
+                closeStaffActionMenu();
+                // Refresh profile view
+                openProfile(viewingUserId);
+            } catch(e) { alert("Error: " + e.message); }
+        };
+
         window.toggleUserMenu = (e) => { e.stopPropagation(); const dropdown = document.getElementById('user-menu-dropdown'); const pmDropdown = document.getElementById('pm-dropdown'); pmDropdown.classList.add('hidden'); if (dropdown.classList.contains('hidden')) dropdown.classList.remove('hidden'); else dropdown.classList.add('hidden'); const closeFn = (ev) => { const container = e.currentTarget.closest('.relative'); if(!container.contains(ev.target)) { dropdown.classList.add('hidden'); document.removeEventListener('click', closeFn); } }; document.addEventListener('click', closeFn); };
         window.openWallet = () => { if (!userData) return; document.getElementById('wallet-coins').innerText = (userData.coins || 0).toLocaleString(); document.getElementById('wallet-gems').innerText = (userData.gems || 0).toLocaleString(); document.getElementById('wallet-modal').classList.remove('hidden'); };
         window.closeWallet = () => document.getElementById('wallet-modal').classList.add('hidden');
         window.logoutUser = () => signOut(auth).catch(e => alert(e.message));
 
-        // --- Admin Panel ---
+        // --- Admin Panel (Legacy kept, but new system is primary for mods) ---
         window.openAdminPanel = () => { document.getElementById('admin-modal').classList.remove('hidden'); renderAdminTable(); };
         window.closeAdminPanel = () => document.getElementById('admin-modal').classList.add('hidden');
         window.switchAdminTab = (tab) => {
@@ -1629,7 +1836,8 @@
                         </td>
                         <td class="p-4 text-sm">${statusText}</td>
                         <td class="p-4">
-                            <select onchange="adminChangeRank('${u.uid}', this.value)" class="bg-gray-900 border border-gray-700 text-xs rounded p-1 text-gray-300 focus:border-ruby-500 focus:outline-none">${rankOptions}</select>
+                            <!-- Legacy Rank Change (Admin Only) -->
+                             <span class="text-xs text-gray-500">Use Profile</span>
                         </td>
                         <td class="p-4 text-center">
                             <div class="text-xs text-gray-400 flex flex-col items-center">
@@ -1638,50 +1846,13 @@
                             </div>
                         </td>
                         <td class="p-4 text-right">
-                             <div class="flex items-center justify-end gap-2">
-                                 <button onclick="adminToggleMute('${u.uid}', ${u.muted})" class="p-2 rounded bg-gray-800 hover:bg-yellow-900/50 ${u.muted ? 'text-yellow-500' : 'text-gray-400'} border border-transparent hover:border-yellow-500 transition-colors" title="${u.muted ? 'Unmute' : 'Mute'}"><i class="fas fa-microphone-slash"></i></button>
-                                 <button onclick="adminKick('${u.uid}')" class="p-2 rounded bg-gray-800 hover:bg-purple-900/50 text-purple-400 border border-transparent hover:border-purple-500 transition-colors" title="Kick / Force Logout"><i class="fas fa-sign-out-alt"></i></button>
-                                 <button onclick="adminEditEco('${u.uid}')" class="p-2 rounded bg-gray-800 hover:bg-green-900/50 text-green-400 border border-transparent hover:border-green-500 transition-colors" title="Edit Economy"><i class="fas fa-coins"></i></button>
-                                 <button onclick="adminWarn('${u.uid}', '${u.username}')" class="p-2 rounded bg-gray-800 hover:bg-blue-900/50 text-blue-400 border border-transparent hover:border-blue-500 transition-colors" title="Warn User"><i class="fas fa-exclamation-triangle"></i></button>
-                                 <button onclick="adminToggleBan('${u.uid}', ${u.banned})" class="p-2 rounded bg-gray-800 hover:bg-red-900/50 text-red-500 border border-transparent hover:border-red-500 transition-colors" title="${u.banned ? 'Unban' : 'Ban'}"><i class="fas ${u.banned ? 'fa-user-check' : 'fa-ban'}"></i></button>
-                             </div>
+                             <button onclick="openProfile('${u.uid}')" class="p-2 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"><i class="fas fa-bolt"></i> Actions</button>
                         </td>
                     </tr>
                 `;
             }).join('');
         }
         
-        window.adminChangeRank = async (targetUid, newRank) => {
-            if(!userData) return;
-            const myRankIdx = getRankIndex(userData.rank);
-            const targetRankIdx = getRankIndex(newRank);
-            
-            // Allow self-promotion to any rank, but restrict others
-            if (targetUid === currentUser.uid) {
-                // Self: No restriction (as per user request "u can rank urself higher")
-            } else {
-                // Others: Cannot rank higher or equal (index must be strictly greater than mine)
-                if (targetRankIdx <= myRankIdx) {
-                    alert("You cannot rank someone higher or equal to your own rank.");
-                    renderAdminTable(); 
-                    return;
-                }
-            }
-            
-            if(!confirm(`Promote/Demote to ${newRank}?`)) {
-                renderAdminTable();
-                return;
-            }
-            try { 
-                await updateDoc(doc(db, "users", targetUid), { rank: newRank }); 
-            } catch(e) { console.error(e); }
-        };
-
-        window.adminToggleBan = async (targetUid, currentBanStatus) => { const action = currentBanStatus ? "Unban" : "Ban"; if (!confirm(`${action} this user?`)) return; try { await updateDoc(doc(db, "users", targetUid), { banned: !currentBanStatus }); } catch(e) { alert("Error: " + e.message); } };
-        window.adminToggleMute = async (targetUid, currentMute) => { const action = currentMute ? "Unmute" : "Mute"; if (!confirm(`${action} this user?`)) return; try { await updateDoc(doc(db, "users", targetUid), { muted: !currentMute }); } catch(e) { alert("Error: " + e.message); } };
-        window.adminKick = async (targetUid) => { if (!confirm("Kick this user (force logout)?")) return; try { await updateDoc(doc(db, "users", targetUid), { forceLogoutAt: serverTimestamp() }); } catch(e) { alert("Error: " + e.message); } };
-        window.adminEditEco = async (targetUid) => { const c = prompt("Enter Coins amount:"); if(c === null) return; const g = prompt("Enter Gems amount:"); if(g === null) return; try { await updateDoc(doc(db, "users", targetUid), { coins: parseInt(c), gems: parseInt(g) }); } catch(e) { alert("Error"); } };
-        window.adminWarn = async (targetUid, name) => { const reason = prompt("Warning reason for " + name + ":"); if(!reason) return; try { const chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`; await addDoc(collection(db, "direct_messages", chatId, "messages"), { text: "⚠️ OFFICIAL WARNING: " + reason, uid: currentUser.uid, username: "SYSTEM ADMIN", photoURL: DEFAULT_PFP, rank: "Admin", timestamp: serverTimestamp() }); alert("Warning sent."); } catch(e) { alert("Error"); } };
         window.adminClearChat = async () => { if(!confirm("Are you sure? This deletes the last 50 messages permanently.")) return; const q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(50)); const snap = await getDocs(q); snap.forEach(async (d) => { await deleteDoc(d.ref); }); alert("Chat cleared."); };
         window.sendBroadcast = async () => { const text = document.getElementById('broadcast-input').value; if (!text.trim()) return; try { await addDoc(collection(db, "messages"), { text: text, isSystem: true, timestamp: serverTimestamp() }); document.getElementById('broadcast-input').value = ''; alert("Broadcast sent!"); } catch(e) { alert("Error: " + e.message); } };
         
