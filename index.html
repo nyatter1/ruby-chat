@@ -22,6 +22,9 @@
                             500: '#e0115f',
                             600: '#c20e50'
                         }
+                    },
+                    animation: {
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                     }
                 }
             }
@@ -48,20 +51,17 @@
             background: #4b5563; 
         }
         
-        /* Rank Badge Style */
+        /* Rank Badge Style - No Box */
         .rank-badge {
             display: inline-flex;
             align-items: center;
-            padding: 2px 4px; /* Reduced padding for icon only */
-            border-radius: 4px;
+            padding: 0 4px;
             font-size: 0.75rem;
             font-weight: bold;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.1);
             vertical-align: middle;
         }
         .rank-img {
-            height: 20px;
+            height: 22px;
             width: auto;
             display: block;
         }
@@ -76,6 +76,48 @@
             background-color: #374151;
             background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%239ca3af" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>');
             background-size: cover;
+        }
+
+        /* Status Colors */
+        .status-online { background-color: #22c55e; box-shadow: 0 0 5px #22c55e; }
+        .status-away { background-color: #eab308; box-shadow: 0 0 5px #eab308; }
+        .status-dnd { background-color: #ef4444; box-shadow: 0 0 5px #ef4444; }
+        .status-offline { background-color: #6b7280; }
+
+        /* Reply Styles */
+        .reply-context {
+            border-left: 3px solid #e0115f;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 8px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 4px;
+            font-size: 0.75rem;
+            color: #d1d5db;
+            cursor: pointer;
+        }
+        .reply-context:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Typing Animation */
+        .typing-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+        }
+        .typing-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background-color: #9ca3af;
+            animation: typing 1.4s infinite ease-in-out both;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
         }
     </style>
 </head>
@@ -136,7 +178,7 @@
                     </button>
                     <div class="relative group cursor-pointer" onclick="openProfile(currentUser.uid)">
                         <img id="header-avatar" src="" class="w-9 h-9 rounded-full border border-gray-600 object-cover bg-gray-800 default-pfp">
-                        <div class="w-2.5 h-2.5 bg-green-500 rounded-full absolute bottom-0 right-0 border border-gray-900"></div>
+                        <div id="header-status-dot" class="w-2.5 h-2.5 bg-green-500 rounded-full absolute bottom-0 right-0 border border-gray-900"></div>
                     </div>
                 </div>
             </header>
@@ -146,9 +188,23 @@
                 <!-- Messages injected here -->
                 <div class="text-center text-gray-500 mt-10">Loading chat...</div>
             </div>
+            
+            <!-- Typing Indicator -->
+            <div id="typing-indicator" class="px-6 py-1 h-6 flex items-center gap-2 hidden absolute bottom-[84px] left-0 w-full bg-gradient-to-t from-gray-950 to-transparent pointer-events-none z-10">
+                 <!-- Injected via JS -->
+            </div>
 
             <!-- Input Area -->
-            <div class="bg-gray-900 border-t border-gray-800 p-4 shrink-0">
+            <div class="bg-gray-900 border-t border-gray-800 p-4 shrink-0 relative">
+                <!-- Reply Banner -->
+                <div id="reply-banner" class="hidden absolute bottom-full left-0 w-full bg-gray-800 border-t border-gray-700 p-2 px-6 flex justify-between items-center shadow-lg z-20">
+                    <div class="text-sm text-gray-300 overflow-hidden truncate flex items-center gap-2">
+                        <span class="text-ruby-500 font-bold"><i class="fas fa-reply"></i> Replying to:</span>
+                        <span id="reply-target-text" class="italic text-gray-400 truncate max-w-[200px] md:max-w-md">...</span>
+                    </div>
+                    <button onclick="cancelReply()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+                </div>
+                
                 <form id="message-form" class="flex items-center gap-2 max-w-5xl mx-auto">
                     <input type="text" id="message-input" autocomplete="off" placeholder="Type a message..." class="flex-1 bg-gray-950 border border-gray-700 text-gray-100 rounded-full px-5 py-3 focus:outline-none focus:border-ruby-500 transition-all">
                     <button type="submit" class="bg-ruby-500 hover:bg-ruby-600 text-white w-12 h-12 rounded-full flex items-center justify-center transition-transform hover:scale-105 shadow-lg shadow-ruby-500/20">
@@ -226,6 +282,18 @@
                         </div>
                     </div>
 
+                    <!-- Rank Progress -->
+                    <div id="rank-progress-container" class="w-full mb-6 bg-gray-800 rounded-lg p-3 border border-gray-700">
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-gray-400">Progress to <span id="next-rank-name" class="text-ruby-500 font-bold">Next Rank</span></span>
+                            <span id="rank-progress-text" class="text-white">0 / 0</span>
+                        </div>
+                        <div class="w-full bg-gray-700 rounded-full h-2.5">
+                            <div id="rank-progress-bar" class="bg-ruby-500 h-2.5 rounded-full" style="width: 0%"></div>
+                        </div>
+                        <div id="msgs-needed-text" class="text-xs text-center mt-1 text-gray-500 italic">0 more messages needed</div>
+                    </div>
+
                     <button id="edit-profile-btn" onclick="toggleProfileEdit()" class="hidden w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 rounded border border-gray-600 transition-colors">
                         Edit Profile
                     </button>
@@ -242,6 +310,30 @@
                         <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Username</label>
                         <input type="text" id="edit-username-input" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none">
                     </div>
+                    
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Status</label>
+                        <select id="edit-status-input" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none">
+                            <option value="online">Online</option>
+                            <option value="away">Away</option>
+                            <option value="dnd">Do Not Disturb</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold block mb-2">Notifications</label>
+                        <div class="space-y-2">
+                             <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="pref-sound-msg" class="form-checkbox text-ruby-500 bg-gray-950 border-gray-700 rounded">
+                                <span class="text-sm text-gray-300">Play sound on new messages</span>
+                            </label>
+                             <label class="flex items-center space-x-2 cursor-pointer">
+                                <input type="checkbox" id="pref-sound-mention" class="form-checkbox text-ruby-500 bg-gray-950 border-gray-700 rounded">
+                                <span class="text-sm text-gray-300">Play sound on mentions (@)</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="flex gap-2 mt-4">
                         <button onclick="saveProfileChanges()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded">Save</button>
                         <button onclick="toggleProfileEdit()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded">Cancel</button>
@@ -287,7 +379,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc, where, serverTimestamp, arrayUnion, arrayRemove } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc, where, serverTimestamp, arrayUnion, arrayRemove, deleteDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
         // --- Configuration ---
         const firebaseConfig = {
@@ -306,8 +398,36 @@
         const db = getFirestore(app);
         
         // --- Constants ---
-        // Default PFP is handled via CSS class "default-pfp" if URL is empty, or we set this data URI
         const DEFAULT_PFP = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="%239ca3af" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>';
+        
+        // --- Sound System (Synthesizer) ---
+        // Using AudioContext to generate sounds without external files
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTone(freq, type, duration) {
+            if(audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        function playSound(type) {
+            if (type === 'message') {
+                // "Pop" sound
+                playTone(600, 'sine', 0.1);
+            } else if (type === 'mention') {
+                // "Ding" sound (two tones)
+                playTone(800, 'sine', 0.1);
+                setTimeout(() => playTone(1200, 'sine', 0.3), 100);
+            }
+        }
 
         // --- Rank System ---
         const RANKS = [
@@ -359,9 +479,11 @@
         let allUsersCache = [];
         
         // Chat State
-        let currentChatId = 'global'; // 'global' or 'uid1_uid2'
+        let currentChatId = 'global'; 
         let currentChatPartner = null;
         let unsubscribeChat = null;
+        let replyToData = null; // { id, username, text }
+        let typingTimeout = null;
 
         // --- Helper: Get Rank ---
         function getRankData(rankName) {
@@ -370,12 +492,16 @@
 
         function calculateRank(currentData) {
             let qualifiedRank = RANKS[RANKS.length - 1]; // Default VIP
+            
+            // If checking invites
             for (const r of RANKS) {
                 if (r.invites > 0 && currentData.invites >= r.invites) {
                     qualifiedRank = r;
                     break; 
                 }
             }
+            
+            // If checking msgs (only for non-staff target ranks)
             if (!qualifiedRank.isStaff) {
                 for (const r of RANKS) {
                     if (r.msgs > 0 && currentData.messages >= r.msgs) {
@@ -387,6 +513,17 @@
                 }
             }
             return qualifiedRank.name;
+        }
+        
+        function getNextRankInfo(currentMsgCount) {
+             // Filter only message based ranks and reverse to find the next milestone
+             const msgRanks = RANKS.filter(r => r.msgs > 0 && !r.isStaff).sort((a,b) => a.msgs - b.msgs);
+             const nextRank = msgRanks.find(r => r.msgs > currentMsgCount);
+             
+             if (nextRank) {
+                 return { name: nextRank.name, needed: nextRank.msgs, remaining: nextRank.msgs - currentMsgCount };
+             }
+             return null; // Max rank or staff
         }
 
         // --- Auth Logic ---
@@ -431,7 +568,7 @@
                     await setDoc(userRef, {
                         username: user.displayName || user.email.split('@')[0],
                         email: user.email,
-                        photoURL: DEFAULT_PFP, // Gray Human
+                        photoURL: DEFAULT_PFP, 
                         bannerURL: "https://picsum.photos/600/200",
                         rank: initialRank,
                         messages: 0,
@@ -439,10 +576,14 @@
                         likes: 0,
                         likedBy: [],
                         status: "online",
+                        presence: "online", // new explicit status field
+                        settings: {
+                            soundMsg: true,
+                            soundMention: true
+                        },
                         lastSeen: serverTimestamp()
                     });
                 } else {
-                    // Force developer rank if needed
                     if(user.email === "dev@gmail.com" && userSnap.data().rank !== "Developer") {
                         await updateDoc(userRef, { rank: "Developer" });
                     }
@@ -452,6 +593,7 @@
                 onSnapshot(userRef, (doc) => {
                     userData = doc.data();
                     updateHeaderProfile();
+                    updateHeaderStatusColor();
                     
                     const r = getRankData(userData.rank);
                     if (r && r.isStaff) {
@@ -463,6 +605,7 @@
                 
                 // Initialize Chat (Global)
                 loadChat('global');
+                initTypingListener();
                 
                 // Start Presence
                 updatePresence();
@@ -480,10 +623,66 @@
             if(!currentUser) return;
             const userRef = doc(db, "users", currentUser.uid);
             await updateDoc(userRef, {
-                status: "online",
+                status: "online", // Legacy field
                 lastSeen: serverTimestamp()
             });
         }
+        
+        // --- Typing Logic ---
+        function initTypingListener() {
+            // Cleanup old typing docs
+            // Listener for typing
+             const q = query(collection(db, "typing"), orderBy("timestamp", "desc"), limit(5));
+             onSnapshot(q, (snapshot) => {
+                 const typingContainer = document.getElementById('typing-indicator');
+                 const now = Date.now();
+                 const typers = [];
+                 
+                 snapshot.forEach(doc => {
+                     const data = doc.data();
+                     if (data.uid !== currentUser.uid && data.chatId === currentChatId) {
+                         // Check if recent (< 5 seconds)
+                         if (data.timestamp && (now - data.timestamp.toMillis() < 4000)) {
+                             typers.push(data.username);
+                         }
+                     }
+                 });
+                 
+                 if (typers.length > 0) {
+                     const text = typers.length > 2 ? "Several people are typing" : `${typers.join(", ")} ${typers.length === 1 ? "is" : "are"} typing`;
+                     typingContainer.innerHTML = `
+                        <div class="text-xs text-gray-400 flex items-center gap-2">
+                             <div class="typing-dots">
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                                <div class="typing-dot"></div>
+                             </div>
+                             <span class="font-bold text-ruby-500">${text}...</span>
+                        </div>
+                     `;
+                     typingContainer.classList.remove('hidden');
+                 } else {
+                     typingContainer.classList.add('hidden');
+                 }
+             });
+        }
+
+        const msgInput = document.getElementById('message-input');
+        msgInput.addEventListener('input', () => {
+             if (typingTimeout) clearTimeout(typingTimeout);
+             
+             // Update typing status
+             setDoc(doc(db, "typing", currentUser.uid), {
+                 uid: currentUser.uid,
+                 username: userData.username,
+                 chatId: currentChatId,
+                 timestamp: serverTimestamp()
+             });
+             
+             typingTimeout = setTimeout(() => {
+                 // Optionally could delete doc here, but timestamp check handles it
+             }, 3000);
+        });
 
         // --- Form Handlers ---
         document.getElementById('login-form').addEventListener('submit', (e) => {
@@ -543,7 +742,31 @@
                      return;
                 }
                 const msgs = [];
-                snapshot.forEach(doc => msgs.push({id: doc.id, ...doc.data()}));
+                snapshot.forEach(doc => {
+                    msgs.push({id: doc.id, ...doc.data()});
+                });
+                
+                // Sound logic on new message (if it's added and recent)
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        const m = change.doc.data();
+                        const isMe = currentUser && m.uid === currentUser.uid;
+                        // Only play sound if it's new (approx check) and not me
+                        if (!isMe && m.timestamp && (Date.now() - m.timestamp.toMillis() < 5000)) {
+                             // Check settings
+                             const settings = userData?.settings || { soundMsg: true, soundMention: true };
+                             const text = m.text.toLowerCase();
+                             const myName = userData?.username?.toLowerCase();
+                             
+                             if (settings.soundMention && myName && text.includes(`@${myName}`)) {
+                                 playSound('mention');
+                             } else if (settings.soundMsg) {
+                                 playSound('message');
+                             }
+                        }
+                    }
+                });
+
                 msgs.reverse();
                 chatFeed.innerHTML = msgs.map(msg => renderMessage(msg)).join('');
                 chatFeed.scrollTop = chatFeed.scrollHeight;
@@ -551,6 +774,19 @@
         }
         
         window.returnToPublicChat = () => loadChat('global');
+
+        // Reply Logic
+        window.replyToMessage = (id, username, text) => {
+            replyToData = { id, username, text };
+            document.getElementById('reply-banner').classList.remove('hidden');
+            document.getElementById('reply-target-text').innerText = `${username}: ${text}`;
+            document.getElementById('message-input').focus();
+        };
+        
+        window.cancelReply = () => {
+            replyToData = null;
+            document.getElementById('reply-banner').classList.add('hidden');
+        };
 
         function renderMessage(msg) {
             const isMe = currentUser && msg.uid === currentUser.uid;
@@ -564,8 +800,20 @@
             const date = msg.timestamp ? new Date(msg.timestamp.toDate()) : new Date();
             const timeStr = date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
             
-            // Use generic PFP if msg photo is missing or broken (handled by onerror in img tag normally, but here just use helper)
             const pfp = msg.photoURL || DEFAULT_PFP;
+            
+            // Reply Render
+            let replyHtml = '';
+            if (msg.replyTo) {
+                replyHtml = `
+                    <div class="reply-context">
+                        <div class="flex items-center gap-1 text-[10px] text-ruby-500 font-bold">
+                            <i class="fas fa-share"></i> Replying to ${msg.replyTo.username}
+                        </div>
+                        <div class="truncate opacity-75">${escapeHtml(msg.replyTo.text)}</div>
+                    </div>
+                `;
+            }
 
             return `
                 <div class="flex gap-3 mb-4 ${isMe ? 'flex-row-reverse' : ''} group">
@@ -575,11 +823,20 @@
                     <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%]">
                         <div class="flex items-center gap-2 mb-1">
                             <span class="text-xs text-gray-400 hover:text-white cursor-pointer" onclick="openProfile('${msg.uid}')">${msg.username}</span>
-                            <div class="rank-badge text-gray-300 border-gray-600">${rankHtml}</div>
+                            <div class="rank-badge">${rankHtml}</div>
                             <span class="text-[10px] text-gray-600">${timeStr}</span>
                         </div>
-                        <div class="msg-bubble px-4 py-2 rounded-2xl text-sm ${isMe ? 'bg-ruby-500 text-white rounded-tr-none' : 'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700'}">
+                        
+                        ${replyHtml}
+                        
+                        <div class="msg-bubble px-4 py-2 rounded-2xl text-sm relative group/bubble ${isMe ? 'bg-ruby-500 text-white rounded-tr-none' : 'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700'}">
                             ${escapeHtml(msg.text)}
+                            
+                            <!-- Reply Button -->
+                            <button onclick="replyToMessage('${msg.id}', '${msg.username}', '${escapeHtml(msg.text).replace(/'/g, "\\'")}')" 
+                                    class="absolute top-1/2 -translate-y-1/2 ${isMe ? '-left-8' : '-right-8'} text-gray-500 hover:text-ruby-500 opacity-0 group-hover/bubble:opacity-100 transition-opacity p-1">
+                                <i class="fas fa-reply"></i>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -593,12 +850,25 @@
             if (!text || !currentUser || !userData) return;
 
             input.value = '';
+            
+            // Clean typing
+            deleteDoc(doc(db, "typing", currentUser.uid));
 
             try {
                 // Rank Calc Logic
                 const newMsgCount = (userData.messages || 0) + 1;
-                const tempUserData = { ...userData, messages: newMsgCount };
-                const newRank = calculateRank(tempUserData);
+                
+                // IMPORTANT: FIX for Developer/Staff rank resetting
+                // Only calculate new rank if the user is NOT staff, OR if we want to allow staff to have message ranks (which we usually dont).
+                // We check if current rank is staff.
+                const currentRankObj = getRankData(userData.rank);
+                let newRank = userData.rank; // Default to keeping current rank
+
+                if (!currentRankObj.isStaff) {
+                    // Only recalc if not staff
+                    const tempUserData = { ...userData, messages: newMsgCount };
+                    newRank = calculateRank(tempUserData);
+                }
                 
                 const msgPayload = {
                     text: text,
@@ -608,10 +878,15 @@
                     rank: newRank, 
                     timestamp: serverTimestamp()
                 };
+                
+                if (replyToData) {
+                    msgPayload.replyTo = replyToData;
+                    cancelReply();
+                }
 
                 if (currentChatId === 'global') {
                      await addDoc(collection(db, "messages"), msgPayload);
-                     // Update stats only on global chat
+                     // Update stats
                      const userRef = doc(db, "users", currentUser.uid);
                      await updateDoc(userRef, {
                         messages: newMsgCount,
@@ -651,20 +926,28 @@
             
             userListEl.innerHTML = users.map(u => {
                 const rankObj = getRankData(u.rank);
-                const rankHtml = rankObj ? `<img src="custom ranks/${rankObj.img}" class="h-4 w-auto" title="${rankObj.name}">` : '';
+                const rankHtml = rankObj ? `<img src="custom ranks/${rankObj.img}" class="h-5 w-auto" title="${rankObj.name}">` : '';
                 const pfp = u.photoURL || DEFAULT_PFP;
+                
+                // Determine Status Color
+                let statusColorClass = 'bg-gray-500'; // Default Offline
+                if (u.isOnline) {
+                    if (u.presence === 'away') statusColorClass = 'bg-yellow-500';
+                    else if (u.presence === 'dnd') statusColorClass = 'bg-red-500';
+                    else statusColorClass = 'bg-green-500';
+                }
                 
                 return `
                 <div class="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors" onclick="openProfile('${u.uid}')">
                     <div class="relative">
                         <img src="${pfp}" class="w-8 h-8 rounded-full object-cover bg-gray-800 default-pfp">
-                        <div class="w-2 h-2 rounded-full absolute bottom-0 right-0 border border-gray-900 ${u.isOnline ? 'bg-green-500' : 'bg-gray-500'}"></div>
+                        <div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 ${statusColorClass}"></div>
                     </div>
                     <div class="overflow-hidden flex-1">
                         <div class="text-sm font-medium truncate flex items-center gap-2 ${u.isStaff ? 'text-ruby-500' : 'text-gray-300'}">
                             ${u.username}
                         </div>
-                        <div class="flex items-center mt-0.5">
+                        <div class="flex items-center mt-0.5 rank-badge p-0">
                              ${rankHtml}
                         </div>
                     </div>
@@ -699,7 +982,6 @@
                 data = userData; 
                 editBtn.classList.remove('hidden');
                 privateMsgBtn.classList.add('hidden');
-                // Cannot like self? Let's allow it or disable. Usually disable.
                 likeBtn.classList.add('pointer-events-none', 'opacity-50');
             } else {
                 const snap = await getDoc(doc(db, "users", uid));
@@ -709,14 +991,14 @@
                 likeBtn.classList.remove('pointer-events-none', 'opacity-50');
             }
             
-            // Populate
+            // Populate View
             document.getElementById('profile-username').innerText = data.username || "Unknown";
             document.getElementById('profile-stats-msgs').innerText = data.messages || 0;
             document.getElementById('profile-stats-invites').innerText = data.invites || 0;
             document.getElementById('profile-avatar-img').src = data.photoURL || DEFAULT_PFP;
             document.getElementById('profile-banner-img').src = data.bannerURL || "https://picsum.photos/600/200";
             
-            // Likes logic
+            // Likes
             likeCount.innerText = data.likes || 0;
             const likedBy = data.likedBy || [];
             if (currentUser && likedBy.includes(currentUser.uid)) {
@@ -727,16 +1009,40 @@
                 likeBtn.classList.remove('text-ruby-500');
             }
             
+            // Rank Badge
             const rankObj = getRankData(data.rank);
             const rankHTML = rankObj 
                 ? `<div class="bg-gray-800 border border-gray-600 px-3 py-1 rounded-full flex items-center gap-2">
                      <img src="custom ranks/${rankObj.img}" class="h-6" onerror="this.style.display='none'">
-                     <!-- Still show name in profile modal for clarity -->
                      <span class="font-bold text-sm text-gray-200">${rankObj.name}</span>
                    </div>`
                 : `<span class="bg-gray-800 px-3 py-1 rounded text-sm">${data.rank}</span>`;
             document.getElementById('profile-rank-badge').innerHTML = rankHTML;
+            
+            // Rank Progress
+            const progressContainer = document.getElementById('rank-progress-container');
+            const progressInfo = getNextRankInfo(data.messages || 0);
+            if (progressInfo) {
+                progressContainer.classList.remove('hidden');
+                document.getElementById('next-rank-name').innerText = progressInfo.name;
+                document.getElementById('rank-progress-text').innerText = `${data.messages} / ${progressInfo.needed}`;
+                const pct = Math.min(100, (data.messages / progressInfo.needed) * 100);
+                document.getElementById('rank-progress-bar').style.width = `${pct}%`;
+                document.getElementById('msgs-needed-text').innerText = `${progressInfo.remaining} more messages needed`;
+            } else {
+                progressContainer.classList.add('hidden');
+            }
+
+            // Populate Edit Inputs
             document.getElementById('edit-username-input').value = data.username;
+            document.getElementById('edit-status-input').value = data.presence || 'online';
+            if (data.settings) {
+                document.getElementById('pref-sound-msg').checked = data.settings.soundMsg !== false;
+                document.getElementById('pref-sound-mention').checked = data.settings.soundMention !== false;
+            } else {
+                document.getElementById('pref-sound-msg').checked = true;
+                document.getElementById('pref-sound-mention').checked = true;
+            }
         };
         
         window.closeProfile = () => document.getElementById('profile-modal').classList.add('hidden');
@@ -839,7 +1145,18 @@
         window.saveProfileChanges = async () => {
             if (!currentUser) return;
             const newName = document.getElementById('edit-username-input').value;
-            const updatePayload = { username: newName };
+            const newStatus = document.getElementById('edit-status-input').value;
+            const soundMsg = document.getElementById('pref-sound-msg').checked;
+            const soundMention = document.getElementById('pref-sound-mention').checked;
+            
+            const updatePayload = { 
+                username: newName,
+                presence: newStatus,
+                settings: {
+                    soundMsg,
+                    soundMention
+                }
+            };
             
             if (pendingAvatar) updatePayload.photoURL = pendingAvatar;
             if (pendingBanner) updatePayload.bannerURL = pendingBanner;
@@ -944,6 +1261,15 @@
         
         window.updateHeaderProfile = () => {
             if(userData) document.getElementById('header-avatar').src = userData.photoURL || DEFAULT_PFP;
+        };
+
+        window.updateHeaderStatusColor = () => {
+            if(!userData) return;
+            const el = document.getElementById('header-status-dot');
+            el.className = "w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900";
+            if (userData.presence === 'away') el.classList.add('bg-yellow-500');
+            else if (userData.presence === 'dnd') el.classList.add('bg-red-500');
+            else el.classList.add('bg-green-500');
         };
         
         function escapeHtml(text) {
