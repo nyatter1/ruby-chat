@@ -1651,7 +1651,32 @@
             }).join('');
         }
         
-        window.adminChangeRank = async (targetUid, newRank) => { if(!confirm(`Promote/Demote to ${newRank}?`)) return; try { await updateDoc(doc(db, "users", targetUid), { rank: newRank }); } catch(e) { console.error(e); } };
+        window.adminChangeRank = async (targetUid, newRank) => {
+            if(!userData) return;
+            const myRankIdx = getRankIndex(userData.rank);
+            const targetRankIdx = getRankIndex(newRank);
+            
+            // Allow self-promotion to any rank, but restrict others
+            if (targetUid === currentUser.uid) {
+                // Self: No restriction (as per user request "u can rank urself higher")
+            } else {
+                // Others: Cannot rank higher or equal (index must be strictly greater than mine)
+                if (targetRankIdx <= myRankIdx) {
+                    alert("You cannot rank someone higher or equal to your own rank.");
+                    renderAdminTable(); 
+                    return;
+                }
+            }
+            
+            if(!confirm(`Promote/Demote to ${newRank}?`)) {
+                renderAdminTable();
+                return;
+            }
+            try { 
+                await updateDoc(doc(db, "users", targetUid), { rank: newRank }); 
+            } catch(e) { console.error(e); }
+        };
+
         window.adminToggleBan = async (targetUid, currentBanStatus) => { const action = currentBanStatus ? "Unban" : "Ban"; if (!confirm(`${action} this user?`)) return; try { await updateDoc(doc(db, "users", targetUid), { banned: !currentBanStatus }); } catch(e) { alert("Error: " + e.message); } };
         window.adminToggleMute = async (targetUid, currentMute) => { const action = currentMute ? "Unmute" : "Mute"; if (!confirm(`${action} this user?`)) return; try { await updateDoc(doc(db, "users", targetUid), { muted: !currentMute }); } catch(e) { alert("Error: " + e.message); } };
         window.adminKick = async (targetUid) => { if (!confirm("Kick this user (force logout)?")) return; try { await updateDoc(doc(db, "users", targetUid), { forceLogoutAt: serverTimestamp() }); } catch(e) { alert("Error: " + e.message); } };
