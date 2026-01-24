@@ -21,6 +21,10 @@
                         ruby: {
                             500: '#e0115f',
                             600: '#c20e50'
+                        },
+                        pm: {
+                            header: '#321fdb', 
+                            bg: '#1e1e2f'
                         }
                     },
                     animation: {
@@ -125,6 +129,75 @@
             border-bottom: 2px solid #e0115f;
             color: #e0115f;
         }
+
+        /* Draggable PM Box */
+        .pm-box {
+            position: absolute;
+            min-width: 300px;
+            min-height: 250px;
+            width: 320px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+            background-color: #1e1e2f; /* pm.bg */
+            border: 1px solid #4b5563;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            overflow: hidden;
+            pointer-events: auto;
+        }
+
+        .pm-header {
+            background-color: #321fdb; /* pm.header */
+            color: white;
+            padding: 0.5rem 0.75rem;
+            cursor: grab;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .pm-header:active {
+            cursor: grabbing;
+        }
+
+        .pm-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.75rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            background-color: #111827;
+        }
+
+        .pm-footer {
+            padding: 0.5rem;
+            background-color: #1f2937;
+            border-top: 1px solid #374151;
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            cursor: nwse-resize;
+            background: linear-gradient(135deg, transparent 50%, #6b7280 50%);
+            z-index: 51;
+        }
+        
+        /* Dropdown Animation */
+        .dropdown-enter {
+            animation: fadeIn 0.1s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -165,7 +238,7 @@
         <!-- Chat Area -->
         <div class="flex-1 flex flex-col h-full relative z-0">
             <!-- Header -->
-            <header class="h-16 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 shrink-0">
+            <header class="h-16 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 shrink-0 relative z-30">
                 <div class="flex items-center gap-3">
                     <button class="md:hidden text-gray-400 hover:text-white" onclick="toggleMobileMenu()">
                         <i class="fas fa-bars text-xl"></i>
@@ -175,16 +248,50 @@
                         <h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1>
                     </div>
                 </div>
-                <div class="flex items-center gap-3">
-                    <button id="back-to-public-btn" onclick="returnToPublicChat()" class="hidden bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded border border-gray-700 transition-colors text-ruby-500 font-bold">
-                        <i class="fas fa-arrow-left mr-1"></i> Public Chat
-                    </button>
-                    <button onclick="copyInviteLink()" class="bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded border border-gray-700 transition-colors">
-                        <i class="fas fa-link mr-1"></i> Invite
-                    </button>
-                    <div class="relative group cursor-pointer" onclick="openProfile(currentUser.uid)">
-                        <img id="header-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%239ca3af' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" class="w-9 h-9 rounded-full border border-gray-600 object-cover bg-gray-800 default-pfp">
-                        <div id="header-status-dot" class="w-2.5 h-2.5 bg-green-500 rounded-full absolute bottom-0 right-0 border border-gray-900"></div>
+                
+                <div class="flex items-center gap-6">
+                    <!-- Header Progression Bar (Hidden by default, shown by JS) -->
+                    <div id="header-progression" class="hidden md:flex flex-col w-48 group cursor-pointer mr-2">
+                        <div class="flex justify-between text-[10px] text-gray-400 mb-1">
+                            <span>Next Rank</span>
+                            <span id="header-xp-text">0 / 0</span>
+                        </div>
+                        <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden relative">
+                            <div id="header-xp-bar" class="h-full bg-gradient-to-r from-ruby-600 to-ruby-500 w-0 transition-all duration-500"></div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button id="back-to-public-btn" onclick="returnToPublicChat()" class="hidden bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded border border-gray-700 transition-colors text-ruby-500 font-bold">
+                            <i class="fas fa-arrow-left mr-1"></i> Public Chat
+                        </button>
+                        
+                        <!-- Envelope / PM Dropdown -->
+                        <div class="relative">
+                            <button id="envelope-btn" onclick="togglePMDropdown(event)" class="w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors relative border border-gray-700">
+                                <i class="fas fa-envelope text-gray-400 hover:text-white text-sm"></i>
+                                <span id="pm-badge" class="absolute top-0 right-0 w-2.5 h-2.5 bg-ruby-500 rounded-full border-2 border-gray-900 hidden"></span>
+                            </button>
+                            
+                            <!-- Dropdown for Active PMs -->
+                            <div id="pm-dropdown" class="absolute top-12 right-0 w-64 bg-gray-900 border border-gray-800 rounded-lg shadow-xl hidden flex-col z-50">
+                                <div class="p-3 border-b border-gray-800 text-sm font-bold text-gray-300">
+                                    Direct Messages
+                                </div>
+                                <div id="pm-list" class="max-h-60 overflow-y-auto">
+                                    <!-- Populated by JS -->
+                                    <div class="p-3 text-xs text-center text-gray-500">No recent messages</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="copyInviteLink()" class="bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded border border-gray-700 transition-colors">
+                            <i class="fas fa-link mr-1"></i> Invite
+                        </button>
+                        <div class="relative group cursor-pointer" onclick="openProfile(currentUser.uid)">
+                            <img id="header-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%239ca3af' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" class="w-9 h-9 rounded-full border border-gray-600 object-cover bg-gray-800 default-pfp">
+                            <div id="header-status-dot" class="w-2.5 h-2.5 bg-green-500 rounded-full absolute bottom-0 right-0 border border-gray-900"></div>
+                        </div>
                     </div>
                 </div>
             </header>
@@ -240,6 +347,9 @@
         </div>
     </div>
 
+    <!-- PM Layer (Floating Windows) -->
+    <div id="pm-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-40"></div>
+
     <!-- Profile Modal -->
     <div id="profile-modal" class="fixed inset-0 z-40 bg-black/80 hidden flex items-center justify-center p-4">
         <div class="bg-gray-900 rounded-xl w-full max-w-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -288,7 +398,7 @@
                         </div>
                     </div>
 
-                    <!-- Rank Progress -->
+                    <!-- Rank Progress (Profile) -->
                     <div id="rank-progress-container" class="w-full mb-6 bg-gray-800 rounded-lg p-3 border border-gray-700">
                         <div class="flex justify-between text-xs mb-1">
                             <span class="text-gray-400">Progress to <span id="next-rank-name" class="text-ruby-500 font-bold">Next Rank</span></span>
@@ -304,7 +414,7 @@
                         Edit Profile
                     </button>
                     <div id="private-msg-container" class="w-full mt-2 hidden">
-                        <button onclick="initiatePrivateChat()" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 rounded transition-colors shadow-lg shadow-ruby-500/20">
+                        <button onclick="initiatePrivateChat(true)" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 rounded transition-colors shadow-lg shadow-ruby-500/20">
                             <i class="fas fa-envelope mr-2"></i>Send Message
                         </button>
                     </div>
@@ -528,6 +638,10 @@
         let typingTimeout = null;
         let activeAdminTab = 'users';
 
+        // PM Floating State
+        const activeFloatingPMs = new Set();
+        let zIndexCounter = 100;
+
         // --- Helper: Get Rank ---
         function getRankData(rankName) {
             return RANKS.find(r => r.name === rankName) || RANKS[RANKS.length - 1];
@@ -631,6 +745,7 @@
                     
                     updateHeaderProfile();
                     updateHeaderStatusColor();
+                    updateHeaderProgression(); // Add this
                     
                     const r = getRankData(userData.rank);
                     if (r && r.isStaff) {
@@ -652,6 +767,35 @@
                 appContainer.classList.add('hidden');
             }
         });
+
+        // --- NEW: Header Progression UI ---
+        function updateHeaderProgression() {
+            const container = document.getElementById('header-progression');
+            const bar = document.getElementById('header-xp-bar');
+            const text = document.getElementById('header-xp-text');
+            
+            if (!userData) return;
+            
+            const currentRankObj = getRankData(userData.rank);
+            
+            // Hide if Staff or special high rank
+            if (currentRankObj.isStaff) {
+                container.classList.add('hidden');
+                return;
+            }
+            
+            const nextInfo = getNextRankInfo(userData.messages || 0);
+            
+            if (nextInfo) {
+                container.classList.remove('hidden');
+                const pct = Math.min(100, (userData.messages / nextInfo.needed) * 100);
+                bar.style.width = `${pct}%`;
+                text.innerText = `${userData.messages} / ${nextInfo.needed}`;
+            } else {
+                // Max rank reached (no next rank info)
+                container.classList.add('hidden');
+            }
+        }
 
         async function updatePresence() {
             if(!currentUser) return;
@@ -917,6 +1061,235 @@
             }
         });
 
+        // --- NEW: Floating PM System ---
+        
+        window.togglePMDropdown = (e) => {
+            e.stopPropagation();
+            const el = document.getElementById('pm-dropdown');
+            const btn = document.getElementById('envelope-btn');
+            
+            if (el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                el.classList.add('dropdown-enter');
+                renderPMDropdown();
+            } else {
+                el.classList.add('hidden');
+            }
+            
+            // Close on click outside
+            const closeFn = (ev) => {
+                if(!btn.contains(ev.target) && !el.contains(ev.target)) {
+                    el.classList.add('hidden');
+                    document.removeEventListener('click', closeFn);
+                }
+            };
+            document.addEventListener('click', closeFn);
+        };
+
+        function renderPMDropdown() {
+            const list = document.getElementById('pm-list');
+            // Since we don't have a backend "Conversations" collection yet, we will
+            // show currently online users as potential PM targets for this demo.
+            // In a real app, this would query a 'conversations' subcollection.
+            
+            if (allUsersCache.length === 0) {
+                list.innerHTML = '<div class="p-3 text-center text-xs text-gray-500">No users found</div>';
+                return;
+            }
+
+            list.innerHTML = allUsersCache.filter(u => u.uid !== currentUser.uid).map(u => `
+                <div class="flex items-center gap-3 p-3 hover:bg-gray-800 cursor-pointer border-b border-gray-800 last:border-0" onclick="openFloatingChat('${u.uid}', '${u.username}', '${u.photoURL || DEFAULT_PFP}')">
+                    <img src="${u.photoURL || DEFAULT_PFP}" class="w-8 h-8 rounded-full bg-gray-700">
+                    <div class="flex-1 overflow-hidden">
+                        <div class="text-sm font-bold text-gray-200 truncate">${u.username}</div>
+                        <div class="text-xs text-gray-500 truncate">Click to message</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        window.openFloatingChat = (targetUid, username, avatar) => {
+            document.getElementById('pm-dropdown').classList.add('hidden');
+            
+            if (activeFloatingPMs.has(targetUid)) {
+                // Already open, bring to front
+                const existing = document.getElementById(`pm-box-${targetUid}`);
+                if (existing) {
+                    bringToFront(existing);
+                }
+                return;
+            }
+
+            // Create Box
+            const box = document.createElement('div');
+            box.id = `pm-box-${targetUid}`;
+            box.className = 'pm-box';
+            
+            // Position randomly
+            const offset = activeFloatingPMs.size * 30 + 100;
+            box.style.top = `${offset}px`;
+            box.style.left = `${offset}px`;
+            box.style.zIndex = ++zIndexCounter;
+
+            box.innerHTML = `
+                <div class="pm-header">
+                    <div class="flex items-center gap-2">
+                        <img src="${avatar}" class="w-5 h-5 rounded-full">
+                        <span class="font-bold text-sm">${username}</span>
+                    </div>
+                    <button class="hover:text-gray-300 transition-colors close-pm-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="pm-messages scrollbar-thin" id="pm-msgs-${targetUid}">
+                    <div class="text-center text-gray-500 text-xs mt-4">Loading history...</div>
+                </div>
+                <div class="pm-footer">
+                    <form onsubmit="sendFloatingMessage(event, '${targetUid}', '${username}')">
+                        <input type="text" id="pm-input-${targetUid}" placeholder="Message..." class="w-full bg-gray-800 text-white text-sm rounded px-3 py-2 focus:outline-none focus:ring-1 focus:ring-ruby-500">
+                    </form>
+                </div>
+                <div class="resize-handle"></div>
+            `;
+
+            document.getElementById('pm-layer').appendChild(box);
+            activeFloatingPMs.add(targetUid);
+
+            // Drag/Resize Logic
+            initDraggable(box);
+
+            // Fetch Messages
+            const chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+            const q = query(collection(db, "direct_messages", chatId, "messages"), orderBy("timestamp", "desc"), limit(50));
+            
+            const unsubscribe = onSnapshot(q, (snapshot) => {
+                const container = document.getElementById(`pm-msgs-${targetUid}`);
+                if (!container) return; // Box closed
+                
+                if (snapshot.empty) {
+                    container.innerHTML = '<div class="text-center text-gray-500 text-xs mt-4">Start the conversation!</div>';
+                    return;
+                }
+
+                const msgs = [];
+                snapshot.forEach(doc => msgs.push(doc.data()));
+                msgs.reverse();
+
+                container.innerHTML = msgs.map(m => {
+                    const isMe = m.uid === currentUser.uid;
+                    return `
+                        <div class="flex ${isMe ? 'justify-end' : 'justify-start'} mb-2">
+                            <div class="${isMe ? 'bg-ruby-600' : 'bg-gray-700'} text-white text-xs px-3 py-1.5 rounded-lg max-w-[85%] break-words">
+                                ${escapeHtml(m.text)}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+                container.scrollTop = container.scrollHeight;
+            });
+
+            // Close Handler
+            box.querySelector('.close-pm-btn').addEventListener('click', () => {
+                unsubscribe();
+                box.remove();
+                activeFloatingPMs.delete(targetUid);
+            });
+        };
+
+        window.sendFloatingMessage = async (e, targetUid, targetUsername) => {
+            e.preventDefault();
+            const input = document.getElementById(`pm-input-${targetUid}`);
+            const text = input.value.trim();
+            if (!text) return;
+            
+            input.value = '';
+            
+            const chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
+            
+            try {
+                // Use existing message structure
+                await addDoc(collection(db, "direct_messages", chatId, "messages"), {
+                    text: text,
+                    uid: currentUser.uid,
+                    username: userData.username,
+                    photoURL: userData.photoURL || DEFAULT_PFP,
+                    rank: userData.rank,
+                    timestamp: serverTimestamp()
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        };
+
+        function initDraggable(box) {
+            const header = box.querySelector('.pm-header');
+            const resize = box.querySelector('.resize-handle');
+            
+            // Bring to front on mousedown
+            box.addEventListener('mousedown', () => bringToFront(box));
+
+            let isDragging = false;
+            let startX, startY, initialLeft, initialTop;
+
+            header.addEventListener('mousedown', (e) => {
+                if (e.target.closest('button')) return; 
+                isDragging = true;
+                startX = e.clientX;
+                startY = e.clientY;
+                initialLeft = box.offsetLeft;
+                initialTop = box.offsetTop;
+                box.style.cursor = 'grabbing';
+                header.style.cursor = 'grabbing';
+                e.preventDefault();
+            });
+
+            let isResizing = false;
+            let resizeStartX, resizeStartY, initialWidth, initialHeight;
+
+            resize.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                isResizing = true;
+                resizeStartX = e.clientX;
+                resizeStartY = e.clientY;
+                initialWidth = box.offsetWidth;
+                initialHeight = box.offsetHeight;
+                document.body.style.cursor = 'nwse-resize';
+                e.preventDefault();
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const dx = e.clientX - startX;
+                    const dy = e.clientY - startY;
+                    box.style.left = `${initialLeft + dx}px`;
+                    box.style.top = `${initialTop + dy}px`;
+                }
+                if (isResizing) {
+                    const dx = e.clientX - resizeStartX;
+                    const dy = e.clientY - resizeStartY;
+                    const newW = Math.max(250, initialWidth + dx);
+                    const newH = Math.max(200, initialHeight + dy);
+                    box.style.width = `${newW}px`;
+                    box.style.height = `${newH}px`;
+                }
+            });
+
+            window.addEventListener('mouseup', () => {
+                isDragging = false;
+                isResizing = false;
+                if(box) {
+                    box.style.cursor = '';
+                    header.style.cursor = 'grab';
+                }
+                document.body.style.cursor = '';
+            });
+        }
+
+        function bringToFront(el) {
+            zIndexCounter++;
+            el.style.zIndex = zIndexCounter;
+        }
+
         // --- Online Users Sidebar ---
         const userListEl = document.getElementById('user-list');
         const onlineCountEl = document.getElementById('online-count');
@@ -1104,15 +1477,23 @@
             }
         };
         
-        window.initiatePrivateChat = async () => {
+        // Modified to use Floating Box optionally if calling from somewhere else
+        window.initiatePrivateChat = async (floating = false) => {
             if (!currentUser || !viewingUserId) return;
-            const uid1 = currentUser.uid;
-            const uid2 = viewingUserId;
-            const chatId = uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
             const snap = await getDoc(doc(db, "users", viewingUserId));
-            const partner = snap.exists() ? snap.data() : { username: "User" };
+            const partner = snap.exists() ? snap.data() : { username: "User", photoURL: DEFAULT_PFP };
+            
             closeProfile();
-            loadChat(chatId, { ...partner, uid: viewingUserId });
+            
+            if (floating) {
+                openFloatingChat(viewingUserId, partner.username, partner.photoURL || DEFAULT_PFP);
+            } else {
+                // Fallback to old full screen chat if needed (currently not used by button)
+                const uid1 = currentUser.uid;
+                const uid2 = viewingUserId;
+                const chatId = uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+                loadChat(chatId, { ...partner, uid: viewingUserId });
+            }
         };
 
         function handleFileUpload(file) {
