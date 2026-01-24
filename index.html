@@ -1182,6 +1182,17 @@
             document.getElementById('reply-banner').classList.add('hidden');
         };
 
+        window.deleteMessage = async (msgId) => {
+            if(!confirm("Delete this message?")) return;
+            try {
+                if(currentChatId === 'global') {
+                    await deleteDoc(doc(db, "messages", msgId));
+                } else {
+                    await deleteDoc(doc(db, "direct_messages", currentChatId, "messages", msgId));
+                }
+            } catch(e) { console.error(e); alert("Failed to delete"); }
+        };
+
         function renderMessage(msg) {
             // Check Private To
             if (msg.privateTo && msg.privateTo !== currentUser.uid) return '';
@@ -1199,6 +1210,15 @@
             const isMe = currentUser && msg.uid === currentUser.uid;
             const rankObj = getRankData(msg.rank || "VIP");
             
+            // Get Staff Status & Delete Button
+            const myRankInfo = getRankData(userData?.rank);
+            const isStaff = myRankInfo?.isStaff;
+            const deleteBtn = isStaff ? `<button onclick="deleteMessage('${msg.id}')" class="text-gray-500 hover:text-red-500 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Message"><i class="fas fa-trash"></i></button>` : '';
+
+            // Mention Check
+            const isMention = !isMe && userData?.username && msg.text.toLowerCase().includes(`@${userData.username.toLowerCase()}`);
+            const mentionClass = isMention ? 'bg-yellow-900/40 border-yellow-600/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] text-yellow-100' : '';
+
             const rankHtml = rankObj 
                 ? `<img src="custom ranks/${rankObj.img}" class="rank-img" title="${rankObj.name}" onerror="this.style.display='none'">` 
                 : '';
@@ -1220,6 +1240,14 @@
                 `;
             }
 
+            // Bubble Class Logic
+            let bubbleClass = `msg-bubble px-4 py-2 rounded-2xl text-sm relative group/bubble`;
+            if (isMe) {
+                bubbleClass += ` bg-ruby-500 text-white rounded-tr-none`;
+            } else {
+                bubbleClass += ` bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700 ${mentionClass}`;
+            }
+
             return `
                 <div class="flex gap-3 mb-4 ${isMe ? 'flex-row-reverse' : ''} group">
                     <img src="${pfp}" 
@@ -1230,11 +1258,12 @@
                             <span class="text-xs text-gray-400 hover:text-white cursor-pointer" onclick="openProfile('${msg.uid}')">${msg.username}</span>
                             <div class="rank-badge">${rankHtml}</div>
                             <span class="text-[10px] text-gray-600">${timeStr}</span>
+                            ${deleteBtn}
                         </div>
                         
                         ${replyHtml}
                         
-                        <div class="msg-bubble px-4 py-2 rounded-2xl text-sm relative group/bubble ${isMe ? 'bg-ruby-500 text-white rounded-tr-none' : 'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700'}">
+                        <div class="${bubbleClass}">
                             ${escapeHtml(msg.text)}
                             <button onclick="replyToMessage('${msg.id}', '${msg.username}', '${escapeHtml(msg.text).replace(/'/g, "\\'")}')" 
                                     class="absolute top-1/2 -translate-y-1/2 ${isMe ? '-left-8' : '-right-8'} text-gray-500 hover:text-ruby-500 opacity-0 group-hover/bubble:opacity-100 transition-opacity p-1">
@@ -1256,7 +1285,14 @@
                      const diff = until - Date.now();
                      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                     return { muted: true, reason: userData.muteReason, duration: `${days}d ${hours}h` };
+                     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                     
+                     let durationStr = "";
+                     if(days > 0) durationStr += `${days}d `;
+                     if(hours > 0) durationStr += `${hours}h `;
+                     durationStr += `${minutes}m`;
+                     
+                     return { muted: true, reason: userData.muteReason, duration: durationStr };
                  } else {
                      return { muted: false };
                  }
@@ -1272,7 +1308,7 @@
             
             const muteStatus = checkMuteStatus();
             if (muteStatus.muted) {
-                alert(`You have been muted/restricted. Reason: ${muteStatus.reason}. ${muteStatus.duration ? 'Duration: ' + muteStatus.duration : ''}`);
+                alert(`You have been muted/restricted. Reason: ${muteStatus.reason}. Duration: ${muteStatus.duration || 'Unknown'}`);
                 return;
             }
 
@@ -1743,7 +1779,7 @@
             const myRankIdx = getRankIndex(userData.rank);
             const targetRankIdx = getRankIndex(viewingUserRank);
             
-            // Check Hierarchy
+            // Check Hierarchy (Lower index is higher rank. Equal index is same rank.)
             if (targetRankIdx <= myRankIdx) {
                 alert("You cannot perform actions on a user with equal or higher rank.");
                 return;
