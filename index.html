@@ -556,9 +556,16 @@
             <h3 id="staff-input-title" class="text-xl font-bold text-white mb-4">Action</h3>
             
             <div id="staff-duration-group" class="mb-4">
-                <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Duration (Days)</label>
-                <input type="number" id="staff-action-duration" min="0" max="1000" value="1" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none">
-                <p class="text-[10px] text-gray-500 mt-1">Max 1000 days. 0 for permanent (if applicable).</p>
+                <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Duration</label>
+                <div class="flex gap-2">
+                    <input type="number" id="staff-action-duration" min="0" value="1" class="flex-1 bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none">
+                    <select id="staff-action-unit" class="bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none">
+                        <option value="minutes">Minutes</option>
+                        <option value="hours">Hours</option>
+                        <option value="days" selected>Days</option>
+                    </select>
+                </div>
+                <p class="text-[10px] text-gray-500 mt-1">0 for permanent (if applicable).</p>
             </div>
             
             <div class="mb-6">
@@ -774,6 +781,7 @@
         let loginTime = 0;
         let isEditingProfile = false;
         let viewingUserId = null;
+        let viewingUserRank = 'VIP'; // Default
         let allUsersCache = [];
         let punishmentInterval = null;
         
@@ -876,6 +884,27 @@
                     // Expired
                      const userRef = doc(db, "users", currentUser.uid);
                      updateDoc(userRef, { kickedUntil: null, kickReason: null });
+                }
+            }
+            
+            // UNMUTE CHECK
+            if (userData.mutedUntil) {
+                const until = userData.mutedUntil.toMillis();
+                if (now > until) {
+                     // Expired
+                     const userRef = doc(db, "users", currentUser.uid);
+                     if(!window.isUnmuting) {
+                         window.isUnmuting = true;
+                         updateDoc(userRef, { mutedUntil: null, muteReason: null }).then(() => {
+                             addDoc(collection(db, "messages"), {
+                                 text: "You are unmuted.",
+                                 isSystem: true,
+                                 privateTo: currentUser.uid,
+                                 timestamp: serverTimestamp()
+                             });
+                             window.isUnmuting = false;
+                         });
+                     }
                 }
             }
             
@@ -1154,6 +1183,9 @@
         };
 
         function renderMessage(msg) {
+            // Check Private To
+            if (msg.privateTo && msg.privateTo !== currentUser.uid) return '';
+
             if (msg.isSystem) {
                 return `
                 <div class="flex justify-center my-6 animate-pulse-fast">
@@ -1226,7 +1258,6 @@
                      const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                      return { muted: true, reason: userData.muteReason, duration: `${days}d ${hours}h` };
                  } else {
-                     // Auto unmute locally, logic will eventually clear in db or be ignored
                      return { muted: false };
                  }
             }
@@ -1624,7 +1655,8 @@
                     staffActionBtn.classList.add('hidden');
                 }
             }
-            
+            viewingUserRank = data.rank; // Store for hierarchy check
+
             // Populate Data
             document.getElementById('profile-username').innerText = data.username || "Unknown";
             document.getElementById('profile-stats-msgs').innerText = data.messages || 0;
@@ -1709,6 +1741,14 @@
             const menu = document.getElementById('staff-action-menu');
             const adminActions = document.getElementById('admin-actions-only');
             const myRankIdx = getRankIndex(userData.rank);
+            const targetRankIdx = getRankIndex(viewingUserRank);
+            
+            // Check Hierarchy
+            if (targetRankIdx <= myRankIdx) {
+                alert("You cannot perform actions on a user with equal or higher rank.");
+                return;
+            }
+
             // Moderator is index around 9. Any index < 9 is higher.
             const modIdx = getRankIndex("Moderator");
             
@@ -1734,6 +1774,7 @@
             document.getElementById('staff-input-modal').classList.remove('hidden');
             document.getElementById('staff-input-title').innerText = action.toUpperCase() + " USER";
             document.getElementById('staff-action-duration').value = 1;
+            document.getElementById('staff-action-unit').value = 'days';
             document.getElementById('staff-action-reason').value = "";
             
             const durGroup = document.getElementById('staff-duration-group');
@@ -1745,38 +1786,70 @@
         
         document.getElementById('staff-action-confirm-btn').addEventListener('click', async () => {
             if (!viewingUserId || !currentStaffAction) return;
-            const durationDays = parseInt(document.getElementById('staff-action-duration').value) || 0;
+            const durationVal = parseInt(document.getElementById('staff-action-duration').value) || 0;
+            const unit = document.getElementById('staff-action-unit').value;
             const reason = document.getElementById('staff-action-reason').value || "No reason provided";
             const targetRef = doc(db, "users", viewingUserId);
+            
+            // Re-check hierarchy just in case
+            if (getRankIndex(viewingUserRank) <= getRankIndex(userData.rank)) {
+                alert("Action blocked: Target rank too high.");
+                return;
+            }
+
+            // Calculate milliseconds
+            let multiplier = 1;
+            if (unit === 'minutes') multiplier = 60 * 1000;
+            else if (unit === 'hours') multiplier = 60 * 60 * 1000;
+            else if (unit === 'days') multiplier = 24 * 60 * 60 * 1000;
+            
+            const durationMs = durationVal * multiplier;
+            const now = new Date();
+            const until = new Date(now.getTime() + durationMs);
             
             // Construct payload
             const updates = {};
             let sysMsg = "";
-            const now = new Date();
-            const until = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+            let privateMsg = "";
+            let durationStr = durationVal > 0 ? `${durationVal} ${unit}` : "Permanent";
             
+            // Get target username for global message (we might need to fetch or use profile data)
+            const targetName = document.getElementById('profile-username').innerText;
+
             if (currentStaffAction === 'mute') {
-                updates.mutedUntil = durationDays > 0 ? until : null; // 0 for perm? Or just set logic. Let's assume >0.
-                if(durationDays === 0) updates.mutedUntil = new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000); // effectively perm
+                updates.mutedUntil = durationVal > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000); // Perm = long time
                 updates.muteReason = reason;
-                sysMsg = `User has been muted.`;
+                sysMsg = `User ${targetName} has been muted for: ${reason}.`;
+                privateMsg = `You have been muted. Reason: ${reason}. Duration: ${durationStr}.`;
             } else if (currentStaffAction === 'kick') {
-                updates.kickedUntil = durationDays > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000);
+                updates.kickedUntil = durationVal > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000);
                 updates.kickReason = reason;
-                sysMsg = `User has been kicked/suspended.`;
+                sysMsg = `User ${targetName} has been kicked/suspended.`;
             } else if (currentStaffAction === 'ban') {
                 updates.banned = true;
                 updates.banReason = reason;
-                sysMsg = `User has been banned.`;
+                sysMsg = `User ${targetName} has been banned.`;
             }
             
             try {
                 await updateDoc(targetRef, updates);
+                // Global Message
                 await addDoc(collection(db, "messages"), {
                     text: sysMsg,
                     isSystem: true,
                     timestamp: serverTimestamp()
                 });
+                
+                // Private Message (Only for Mute typically, kick/ban see overlay)
+                if (currentStaffAction === 'mute') {
+                    await addDoc(collection(db, "messages"), {
+                        text: privateMsg,
+                        isSystem: true,
+                        privateTo: viewingUserId,
+                        timestamp: serverTimestamp()
+                    });
+                }
+
                 closeStaffInput();
                 closeProfile();
                 alert("Action executed.");
