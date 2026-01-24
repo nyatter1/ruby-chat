@@ -440,6 +440,11 @@
                     
                     <div id="profile-rank-badge" class="mb-4 flex justify-center h-8"></div>
                     
+                    <!-- New: Bio Display -->
+                    <div id="profile-bio-display" class="mb-6 text-sm text-gray-400 italic px-4 break-words">
+                        No bio set.
+                    </div>
+                    
                     <div class="grid grid-cols-2 gap-4 w-full mb-6">
                         <div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center">
                             <div class="text-xs text-gray-400 uppercase tracking-wide">Messages</div>
@@ -478,6 +483,12 @@
                     <div>
                         <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Username</label>
                         <input type="text" id="edit-username-input" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none">
+                    </div>
+                    
+                    <!-- New: Bio Input -->
+                    <div>
+                        <label class="text-xs text-gray-400 uppercase font-bold block mb-1">Bio / About Me</label>
+                        <textarea id="edit-bio-input" rows="3" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none resize-none" placeholder="Tell us about yourself..."></textarea>
                     </div>
                     
                     <div>
@@ -816,8 +827,12 @@
         }
 
         function calculateRank(currentData) {
-            let qualifiedRank = RANKS[RANKS.length - 1]; 
+            const currentRankName = currentData.rank;
+            const currentRankIdx = getRankIndex(currentRankName);
             
+            let qualifiedRank = RANKS[RANKS.length - 1]; // VIP
+            
+            // Check invites
             for (const r of RANKS) {
                 if (r.invites > 0 && currentData.invites >= r.invites) {
                     qualifiedRank = r;
@@ -825,24 +840,45 @@
                 }
             }
             
+            // Check messages if not qualified by invites
             if (!qualifiedRank.isStaff) {
                 for (const r of RANKS) {
                     if (r.msgs > 0 && currentData.messages >= r.msgs) {
-                        const qIndex = RANKS.indexOf(qualifiedRank);
-                        const nIndex = RANKS.indexOf(r);
-                        if (nIndex < qIndex) qualifiedRank = r;
+                        qualifiedRank = r;
                         break; 
                     }
                 }
             }
-            return qualifiedRank.name;
+            
+            const qualifiedRankIdx = getRankIndex(qualifiedRank.name);
+            
+            // PREVENT DEMOTION LOGIC:
+            // Only return qualifiedRank if it's Higher (lower index) than current manual rank.
+            if (qualifiedRankIdx < currentRankIdx) {
+                return qualifiedRank.name;
+            }
+            
+            return currentRankName;
         }
         
-        function getNextRankInfo(currentMsgCount) {
+        function getNextRankInfo(currentMsgCount, currentRankName) {
+             // Filter for message-based ranks and sort ascending (Bot -> Bean)
              const msgRanks = RANKS.filter(r => r.msgs > 0 && !r.isStaff).sort((a,b) => a.msgs - b.msgs);
-             const nextRank = msgRanks.find(r => r.msgs > currentMsgCount);
+             
+             // Find current rank in the progression ladder
+             const idx = msgRanks.findIndex(r => r.name === currentRankName);
+             let nextRank = null;
+
+             if (idx !== -1 && idx < msgRanks.length - 1) {
+                 // If currently in a message rank, next target is the immediate next rank
+                 nextRank = msgRanks[idx + 1];
+             } else if (idx === -1) {
+                 // Fallback for non-ladder ranks (e.g. VIP/Staff): Find based on raw count
+                 nextRank = msgRanks.find(r => r.msgs > currentMsgCount);
+             }
+
              if (nextRank) {
-                 return { name: nextRank.name, needed: nextRank.msgs, remaining: nextRank.msgs - currentMsgCount };
+                 return { name: nextRank.name, needed: nextRank.msgs, remaining: Math.max(0, nextRank.msgs - currentMsgCount) };
              }
              return null; 
         }
@@ -881,7 +917,6 @@
                     timer.innerText = `${days}d ${hours}h ${minutes}m ${seconds}s`;
                     return;
                 } else {
-                    // Expired
                      const userRef = doc(db, "users", currentUser.uid);
                      updateDoc(userRef, { kickedUntil: null, kickReason: null });
                 }
@@ -891,7 +926,6 @@
             if (userData.mutedUntil) {
                 const until = userData.mutedUntil.toMillis();
                 if (now > until) {
-                     // Expired
                      const userRef = doc(db, "users", currentUser.uid);
                      if(!window.isUnmuting) {
                          window.isUnmuting = true;
@@ -942,6 +976,7 @@
                         invites: 0,
                         likes: 0,
                         likedBy: [],
+                        bio: "",
                         status: "online",
                         presence: "online", 
                         banned: false,
@@ -1011,10 +1046,12 @@
                 return;
             }
             
-            const nextInfo = getNextRankInfo(userData.messages || 0);
+            const nextInfo = getNextRankInfo(userData.messages || 0, userData.rank);
             
             if (nextInfo) {
                 container.classList.remove('hidden');
+                // Calculate percentage relative to the gap between previous rank and next rank?
+                // Simple version: Total messages / Needed messages.
                 const pct = Math.min(100, (userData.messages / nextInfo.needed) * 100);
                 bar.style.width = `${pct}%`;
                 text.innerText = `${userData.messages} / ${nextInfo.needed}`;
@@ -1192,9 +1229,24 @@
                 }
             } catch(e) { console.error(e); alert("Failed to delete"); }
         };
+        
+        window.toggleReaction = async (msgId) => {
+            if (!currentUser) return;
+            try {
+                const msgRef = currentChatId === 'global' ? doc(db, "messages", msgId) : doc(db, "direct_messages", currentChatId, "messages", msgId);
+                const msgSnap = await getDoc(msgRef);
+                if (msgSnap.exists()) {
+                    const reactions = msgSnap.data().reactions || [];
+                    if (reactions.includes(currentUser.uid)) {
+                        await updateDoc(msgRef, { reactions: arrayRemove(currentUser.uid) });
+                    } else {
+                        await updateDoc(msgRef, { reactions: arrayUnion(currentUser.uid) });
+                    }
+                }
+            } catch(e) { console.error(e); }
+        };
 
         function renderMessage(msg) {
-            // Check Private To
             if (msg.privateTo && msg.privateTo !== currentUser.uid) return '';
 
             if (msg.isSystem) {
@@ -1210,12 +1262,10 @@
             const isMe = currentUser && msg.uid === currentUser.uid;
             const rankObj = getRankData(msg.rank || "VIP");
             
-            // Get Staff Status & Delete Button
             const myRankInfo = getRankData(userData?.rank);
             const isStaff = myRankInfo?.isStaff;
             const deleteBtn = isStaff ? `<button onclick="deleteMessage('${msg.id}')" class="text-gray-500 hover:text-red-500 ml-2 opacity-0 group-hover:opacity-100 transition-opacity" title="Delete Message"><i class="fas fa-trash"></i></button>` : '';
 
-            // Mention Check
             const isMention = !isMe && userData?.username && msg.text.toLowerCase().includes(`@${userData.username.toLowerCase()}`);
             const mentionClass = isMention ? 'bg-yellow-900/40 border-yellow-600/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] text-yellow-100' : '';
 
@@ -1239,9 +1289,17 @@
                     </div>
                 `;
             }
+            
+            // Reaction Logic
+            const reactions = msg.reactions || [];
+            const reactionCount = reactions.length;
+            const reactionHtml = reactionCount > 0 ? `
+                <div class="absolute -bottom-2 right-2 bg-gray-900 border border-gray-700 rounded-full px-1.5 py-0.5 text-[10px] flex items-center gap-1 shadow-sm">
+                    <i class="fas fa-heart text-ruby-500"></i> <span class="text-white font-bold">${reactionCount}</span>
+                </div>
+            ` : '';
 
-            // Bubble Class Logic
-            let bubbleClass = `msg-bubble px-4 py-2 rounded-2xl text-sm relative group/bubble`;
+            let bubbleClass = `msg-bubble px-4 py-2 rounded-2xl text-sm relative group/bubble cursor-pointer select-none`;
             if (isMe) {
                 bubbleClass += ` bg-ruby-500 text-white rounded-tr-none`;
             } else {
@@ -1263,8 +1321,9 @@
                         
                         ${replyHtml}
                         
-                        <div class="${bubbleClass}">
+                        <div class="${bubbleClass}" ondblclick="toggleReaction('${msg.id}')" title="Double click to heart">
                             ${escapeHtml(msg.text)}
+                            ${reactionHtml}
                             <button onclick="replyToMessage('${msg.id}', '${msg.username}', '${escapeHtml(msg.text).replace(/'/g, "\\'")}')" 
                                     class="absolute top-1/2 -translate-y-1/2 ${isMe ? '-left-8' : '-right-8'} text-gray-500 hover:text-ruby-500 opacity-0 group-hover/bubble:opacity-100 transition-opacity p-1">
                                 <i class="fas fa-reply"></i>
@@ -1275,7 +1334,6 @@
             `;
         }
         
-        // Helper to check mute status
         function checkMuteStatus() {
             if (userData.banned) return { muted: true, reason: userData.banReason || "Banned" };
             if (userData.kickedUntil && userData.kickedUntil.toMillis() > Date.now()) return { muted: true, reason: userData.kickReason || "Kicked" };
@@ -1317,13 +1375,10 @@
 
             try {
                 const newMsgCount = (userData.messages || 0) + 1;
-                const currentRankObj = getRankData(userData.rank);
-                let newRank = userData.rank; 
-
-                if (!currentRankObj.isStaff) {
-                    const tempUserData = { ...userData, messages: newMsgCount };
-                    newRank = calculateRank(tempUserData);
-                }
+                
+                // Use new sticky rank logic
+                const tempUserData = { ...userData, messages: newMsgCount };
+                const newRank = calculateRank(tempUserData);
                 
                 const msgPayload = {
                     text: text,
@@ -1701,6 +1756,8 @@
             document.getElementById('profile-banner-img').src = data.bannerURL || "https://picsum.photos/600/200";
             likeCount.innerText = data.likes || 0;
             
+            document.getElementById('profile-bio-display').innerText = data.bio || "No bio set.";
+            
             // Badges
             let badges = '';
             if (data.banned) badges += '<span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded font-bold">BANNED</span>';
@@ -1727,7 +1784,7 @@
             document.getElementById('profile-rank-badge').innerHTML = rankHTML;
             
             const progressContainer = document.getElementById('rank-progress-container');
-            const progressInfo = getNextRankInfo(data.messages || 0);
+            const progressInfo = getNextRankInfo(data.messages || 0, data.rank);
             if (progressInfo) {
                 progressContainer.classList.remove('hidden');
                 document.getElementById('next-rank-name').innerText = progressInfo.name;
@@ -1740,6 +1797,7 @@
             }
 
             document.getElementById('edit-username-input').value = data.username;
+            document.getElementById('edit-bio-input').value = data.bio || "";
             document.getElementById('edit-status-input').value = data.presence || 'online';
             if (data.settings) {
                 document.getElementById('pref-sound-msg').checked = data.settings.soundMsg !== false;
@@ -1770,7 +1828,7 @@
         let pendingAvatar = null; let pendingBanner = null;
         document.getElementById('avatar-upload').addEventListener('change', async (e) => { if(e.target.files[0]) { const b64 = await handleFileUpload(e.target.files[0]); document.getElementById('profile-avatar-img').src = b64; pendingAvatar = b64; } });
         document.getElementById('banner-upload').addEventListener('change', async (e) => { if(e.target.files[0]) { const b64 = await handleFileUpload(e.target.files[0]); document.getElementById('profile-banner-img').src = b64; pendingBanner = b64; } });
-        window.saveProfileChanges = async () => { if (!currentUser) return; const newName = document.getElementById('edit-username-input').value; const newStatus = document.getElementById('edit-status-input').value; const soundMsg = document.getElementById('pref-sound-msg').checked; const soundMention = document.getElementById('pref-sound-mention').checked; const updatePayload = { username: newName, presence: newStatus, settings: { soundMsg, soundMention } }; if (pendingAvatar) updatePayload.photoURL = pendingAvatar; if (pendingBanner) updatePayload.bannerURL = pendingBanner; try { await updateDoc(doc(db, "users", currentUser.uid), updatePayload); pendingAvatar = null; pendingBanner = null; toggleProfileEdit(); } catch(e) { alert("Error saving profile."); } };
+        window.saveProfileChanges = async () => { if (!currentUser) return; const newName = document.getElementById('edit-username-input').value; const newBio = document.getElementById('edit-bio-input').value; const newStatus = document.getElementById('edit-status-input').value; const soundMsg = document.getElementById('pref-sound-msg').checked; const soundMention = document.getElementById('pref-sound-mention').checked; const updatePayload = { username: newName, bio: newBio, presence: newStatus, settings: { soundMsg, soundMention } }; if (pendingAvatar) updatePayload.photoURL = pendingAvatar; if (pendingBanner) updatePayload.bannerURL = pendingBanner; try { await updateDoc(doc(db, "users", currentUser.uid), updatePayload); pendingAvatar = null; pendingBanner = null; toggleProfileEdit(); } catch(e) { alert("Error saving profile."); } };
         
         // --- Staff Action Logic ---
         window.openStaffActionMenu = () => {
