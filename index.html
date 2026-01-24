@@ -144,7 +144,7 @@
             border-radius: 0.5rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
             z-index: 50;
-            overflow: visible; /* Changed for emoji picker */
+            overflow: visible; 
             pointer-events: auto;
         }
 
@@ -157,6 +157,7 @@
             justify-content: space-between;
             align-items: center;
             user-select: none;
+            border-radius: 0.5rem 0.5rem 0 0;
         }
 
         .pm-header:active {
@@ -178,6 +179,7 @@
             background-color: #1f2937;
             border-top: 1px solid #374151;
             position: relative;
+            border-radius: 0 0 0.5rem 0.5rem;
         }
 
         .resize-handle {
@@ -189,6 +191,7 @@
             cursor: nwse-resize;
             background: linear-gradient(135deg, transparent 50%, #6b7280 50%);
             z-index: 51;
+            border-bottom-right-radius: 0.5rem;
         }
         
         /* Dropdown Animation */
@@ -204,7 +207,8 @@
         .emoji-picker {
             position: absolute;
             bottom: 100%;
-            right: 0;
+            left: 0;
+            margin-bottom: 8px;
             background: #1f2937;
             border: 1px solid #374151;
             border-radius: 0.5rem;
@@ -212,11 +216,11 @@
             display: grid;
             grid-template-columns: repeat(5, 1fr);
             gap: 0.25rem;
-            width: 180px;
-            max-height: 150px;
+            width: 200px;
+            max-height: 200px;
             overflow-y: auto;
             z-index: 60;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
         }
         .emoji-btn {
             padding: 0.25rem;
@@ -224,20 +228,23 @@
             border-radius: 0.25rem;
             text-align: center;
             font-size: 1.25rem;
+            transition: background-color 0.2s;
         }
         .emoji-btn:hover {
             background: #374151;
         }
 
-        /* Unread Dot */
-        .unread-dot {
-            width: 8px;
-            height: 8px;
+        /* Unread Badge */
+        .unread-badge {
             background-color: #ef4444;
-            border-radius: 50%;
-            display: inline-block;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 0 6px;
+            border-radius: 9999px;
             margin-left: 8px;
-            box-shadow: 0 0 4px #ef4444;
+            box-shadow: 0 0 4px rgba(239, 68, 68, 0.5);
+            animation: pulse 2s infinite;
         }
     </style>
 </head>
@@ -526,11 +533,16 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
         
+        // --- Global Definitions ---
+        window.currentUser = null;
+        let currentUser = null;
+        let userData = null;
+        
         // --- Constants ---
         const DEFAULT_PFP = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%239ca3af' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
         const EMOJIS = ['😀','😂','😍','😭','😡','👍','👎','🔥','❤️','🎉','😊','🤣','😒','😔','😘','👏','👀','✨','💀','🤔'];
 
-        // --- Sound System (Synthesizer) ---
+        // --- Sound System ---
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
         function playTone(freq, type, duration) {
@@ -599,14 +611,10 @@
         ];
 
         // --- State ---
-        let currentUser = null;
-        window.currentUser = null; // Expose globally
-        let userData = null;
         let isEditingProfile = false;
         let viewingUserId = null;
         let allUsersCache = [];
         
-        // Chat State
         let currentChatId = 'global'; 
         let currentChatPartner = null;
         let unsubscribeChat = null;
@@ -618,59 +626,49 @@
         const activeFloatingPMs = new Set();
         let zIndexCounter = 100;
 
-        // --- Helper Functions ---
-        function safeParam(str) {
+        // --- Global Functions (Attached to window) ---
+        window.safeParam = (str) => {
             if (!str) return '';
             return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, ' ');
-        }
-        
-        function getRankData(rankName) {
-            return RANKS.find(r => r.name === rankName) || RANKS[RANKS.length - 1];
-        }
+        };
 
-        function calculateRank(currentData) {
-            let qualifiedRank = RANKS[RANKS.length - 1]; 
-            for (const r of RANKS) {
-                if (r.invites > 0 && currentData.invites >= r.invites) {
-                    qualifiedRank = r;
-                    break; 
-                }
-            }
-            if (!qualifiedRank.isStaff) {
-                for (const r of RANKS) {
-                    if (r.msgs > 0 && currentData.messages >= r.msgs) {
-                        const qIndex = RANKS.indexOf(qualifiedRank);
-                        const nIndex = RANKS.indexOf(r);
-                        if (nIndex < qIndex) qualifiedRank = r;
-                        break; 
-                    }
-                }
-            }
-            return qualifiedRank.name;
-        }
-        
-        function getNextRankInfo(currentMsgCount) {
-             const msgRanks = RANKS.filter(r => r.msgs > 0 && !r.isStaff).sort((a,b) => a.msgs - b.msgs);
-             const nextRank = msgRanks.find(r => r.msgs > currentMsgCount);
-             if (nextRank) {
-                 return { name: nextRank.name, needed: nextRank.msgs, remaining: nextRank.msgs - currentMsgCount };
-             }
-             return null; 
-        }
-
-        // --- Auth Logic ---
         window.toggleAuthMode = () => {
             document.getElementById('login-form').classList.toggle('hidden');
             document.getElementById('signup-form').classList.toggle('hidden');
         };
 
-        const authContainer = document.getElementById('auth-container');
-        const appContainer = document.getElementById('app-container');
+        window.updateHeaderProfile = () => {
+            if(userData) document.getElementById('header-avatar').src = userData.photoURL || DEFAULT_PFP;
+        };
 
+        window.updateHeaderStatusColor = () => {
+            if(!userData) return;
+            const el = document.getElementById('header-status-dot');
+            if(el) {
+                el.className = "w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900";
+                if (userData.presence === 'away') el.classList.add('bg-yellow-500');
+                else if (userData.presence === 'dnd') el.classList.add('bg-red-500');
+                else el.classList.add('bg-green-500');
+            }
+        };
+
+        window.triggerAvatarUpload = () => {
+             if (isEditingProfile) document.getElementById('avatar-upload')?.click();
+        };
+        window.triggerBannerUpload = () => {
+             if (isEditingProfile) document.getElementById('banner-upload')?.click();
+        };
+
+        window.closeProfile = () => document.getElementById('profile-modal').classList.add('hidden');
+
+        // --- Auth Logic ---
         onAuthStateChanged(auth, async (user) => {
+            const authContainer = document.getElementById('auth-container');
+            const appContainer = document.getElementById('app-container');
+
             if (user) {
                 currentUser = user;
-                window.currentUser = user; // Global ref update
+                window.currentUser = user;
                 
                 const userRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userRef);
@@ -722,15 +720,15 @@
                         return;
                     }
                     
-                    updateHeaderProfile();
-                    updateHeaderStatusColor();
+                    window.updateHeaderProfile();
+                    window.updateHeaderStatusColor();
                     updateHeaderProgression();
                     
                     const r = getRankData(userData.rank);
-                    if (r && r.isStaff) {
-                        document.getElementById('admin-panel-btn-container').classList.remove('hidden');
-                    } else {
-                        document.getElementById('admin-panel-btn-container').classList.add('hidden');
+                    const btn = document.getElementById('admin-panel-btn-container');
+                    if(btn) {
+                        if (r && r.isStaff) btn.classList.remove('hidden');
+                        else btn.classList.add('hidden');
                     }
                 });
                 
@@ -748,9 +746,45 @@
             }
         });
 
-        // --- NEW: Header Progression UI ---
+        // --- Internal Functions ---
+        function getRankData(rankName) {
+            return RANKS.find(r => r.name === rankName) || RANKS[RANKS.length - 1];
+        }
+
+        function calculateRank(currentData) {
+            let qualifiedRank = RANKS[RANKS.length - 1]; 
+            for (const r of RANKS) {
+                if (r.invites > 0 && currentData.invites >= r.invites) {
+                    qualifiedRank = r;
+                    break; 
+                }
+            }
+            if (!qualifiedRank.isStaff) {
+                for (const r of RANKS) {
+                    if (r.msgs > 0 && currentData.messages >= r.msgs) {
+                        const qIndex = RANKS.indexOf(qualifiedRank);
+                        const nIndex = RANKS.indexOf(r);
+                        if (nIndex < qIndex) qualifiedRank = r;
+                        break; 
+                    }
+                }
+            }
+            return qualifiedRank.name;
+        }
+
+        function getNextRankInfo(currentMsgCount) {
+             const msgRanks = RANKS.filter(r => r.msgs > 0 && !r.isStaff).sort((a,b) => a.msgs - b.msgs);
+             const nextRank = msgRanks.find(r => r.msgs > currentMsgCount);
+             if (nextRank) {
+                 return { name: nextRank.name, needed: nextRank.msgs, remaining: nextRank.msgs - currentMsgCount };
+             }
+             return null; 
+        }
+
         function updateHeaderProgression() {
             const container = document.getElementById('header-progression');
+            if(!container) return;
+            
             const bar = document.getElementById('header-xp-bar');
             const text = document.getElementById('header-xp-text');
             
@@ -768,8 +802,8 @@
             if (nextInfo) {
                 container.classList.remove('hidden');
                 const pct = Math.min(100, (userData.messages / nextInfo.needed) * 100);
-                bar.style.width = `${pct}%`;
-                text.innerText = `${userData.messages} / ${nextInfo.needed}`;
+                if(bar) bar.style.width = `${pct}%`;
+                if(text) text.innerText = `${userData.messages} / ${nextInfo.needed}`;
             } else {
                 container.classList.add('hidden');
             }
@@ -777,18 +811,21 @@
 
         async function updatePresence() {
             if(!currentUser) return;
-            const userRef = doc(db, "users", currentUser.uid);
-            await updateDoc(userRef, {
-                status: "online", 
-                lastSeen: serverTimestamp()
-            });
+            try {
+                const userRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userRef, {
+                    status: "online", 
+                    lastSeen: serverTimestamp()
+                });
+            } catch(e) {}
         }
         
-        // --- Typing Logic ---
         function initTypingListener() {
              const q = query(collection(db, "typing"), orderBy("timestamp", "desc"), limit(5));
              onSnapshot(q, (snapshot) => {
                  const typingContainer = document.getElementById('typing-indicator');
+                 if(!typingContainer) return;
+                 
                  const now = Date.now();
                  const typers = [];
                  
@@ -820,38 +857,111 @@
              });
         }
 
-        const msgInput = document.getElementById('message-input');
-        msgInput.addEventListener('input', () => {
-             if (typingTimeout) clearTimeout(typingTimeout);
-             setDoc(doc(db, "typing", currentUser.uid), {
-                 uid: currentUser.uid,
-                 username: userData.username,
-                 chatId: currentChatId,
-                 timestamp: serverTimestamp()
+        // --- Event Listeners with Safety ---
+        document.addEventListener('DOMContentLoaded', () => {
+             const msgInput = document.getElementById('message-input');
+             if(msgInput) {
+                 msgInput.addEventListener('input', () => {
+                     if(!currentUser) return;
+                     if (typingTimeout) clearTimeout(typingTimeout);
+                     setDoc(doc(db, "typing", currentUser.uid), {
+                         uid: currentUser.uid,
+                         username: userData ? userData.username : "User",
+                         chatId: currentChatId,
+                         timestamp: serverTimestamp()
+                     });
+                     typingTimeout = setTimeout(() => {}, 3000);
+                 });
+             }
+             
+             document.getElementById('login-form')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('login-email').value;
+                const pass = document.getElementById('login-password').value;
+                signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
              });
-             typingTimeout = setTimeout(() => {}, 3000);
-        });
 
-        // --- Form Handlers ---
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('login-email').value;
-            const pass = document.getElementById('login-password').value;
-            signInWithEmailAndPassword(auth, email, pass).catch(err => alert(err.message));
-        });
+             document.getElementById('signup-form')?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('signup-email').value;
+                const pass = document.getElementById('signup-password').value;
+                const user = document.getElementById('signup-username').value;
+                createUserWithEmailAndPassword(auth, email, pass).then(cred => {
+                    updateProfile(cred.user, { displayName: user });
+                }).catch(err => alert(err.message));
+             });
+             
+             document.getElementById('message-form')?.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const input = document.getElementById('message-input');
+                const text = input.value.trim();
+                if (!text || !currentUser || !userData) return;
+    
+                input.value = '';
+                deleteDoc(doc(db, "typing", currentUser.uid));
+    
+                try {
+                    const newMsgCount = (userData.messages || 0) + 1;
+                    const currentRankObj = getRankData(userData.rank);
+                    let newRank = userData.rank; 
+    
+                    if (!currentRankObj.isStaff) {
+                        const tempUserData = { ...userData, messages: newMsgCount };
+                        newRank = calculateRank(tempUserData);
+                    }
+                    
+                    const msgPayload = {
+                        text: text,
+                        uid: currentUser.uid,
+                        username: userData.username,
+                        photoURL: userData.photoURL || DEFAULT_PFP,
+                        rank: newRank, 
+                        timestamp: serverTimestamp()
+                    };
+                    
+                    if (replyToData) {
+                        msgPayload.replyTo = replyToData;
+                        cancelReply();
+                    }
+    
+                    if (currentChatId === 'global') {
+                         await addDoc(collection(db, "messages"), msgPayload);
+                         const userRef = doc(db, "users", currentUser.uid);
+                         await updateDoc(userRef, {
+                            messages: newMsgCount,
+                            rank: newRank 
+                         });
+                    } else {
+                         await addDoc(collection(db, "direct_messages", currentChatId, "messages"), msgPayload);
+                    }
+                    
+                } catch(err) {
+                    console.error("Msg Error", err);
+                }
+            });
 
-        document.getElementById('signup-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const email = document.getElementById('signup-email').value;
-            const pass = document.getElementById('signup-password').value;
-            const user = document.getElementById('signup-username').value;
+            document.getElementById('avatar-upload')?.addEventListener('change', async (e) => {
+                if(e.target.files[0]) {
+                    const b64 = await handleFileUpload(e.target.files[0]);
+                    const el = document.getElementById('profile-avatar-img');
+                    if(el) el.src = b64;
+                    pendingAvatar = b64;
+                }
+            });
             
-            createUserWithEmailAndPassword(auth, email, pass).then(cred => {
-                updateProfile(cred.user, { displayName: user });
-            }).catch(err => alert(err.message));
+            document.getElementById('banner-upload')?.addEventListener('change', async (e) => {
+                if(e.target.files[0]) {
+                    const b64 = await handleFileUpload(e.target.files[0]);
+                    const el = document.getElementById('profile-banner-img');
+                    if(el) el.src = b64;
+                    pendingBanner = b64;
+                }
+            });
+            
+            document.getElementById('admin-search')?.addEventListener('input', renderAdminTable);
         });
 
-        // --- Chat Logic ---
+        // --- Functions ---
         function loadChat(chatId, partner = null) {
             currentChatId = chatId;
             currentChatPartner = partner;
@@ -860,18 +970,18 @@
             const backBtn = document.getElementById('back-to-public-btn');
             
             if (chatId === 'global') {
-                titleContainer.innerHTML = '<h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1>';
-                backBtn.classList.add('hidden');
+                if(titleContainer) titleContainer.innerHTML = '<h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1>';
+                if(backBtn) backBtn.classList.add('hidden');
             } else {
                 const name = partner ? partner.username : "Private Chat";
-                titleContainer.innerHTML = `<h1 class="text-xl font-bold tracking-tight text-white"><i class="fas fa-lock text-xs mr-2 text-ruby-500"></i>${name}</h1>`;
-                backBtn.classList.remove('hidden');
+                if(titleContainer) titleContainer.innerHTML = `<h1 class="text-xl font-bold tracking-tight text-white"><i class="fas fa-lock text-xs mr-2 text-ruby-500"></i>${name}</h1>`;
+                if(backBtn) backBtn.classList.remove('hidden');
             }
             
             if (unsubscribeChat) unsubscribeChat();
             
             const chatFeed = document.getElementById('chat-feed');
-            chatFeed.innerHTML = '<div class="text-center text-gray-500 mt-10">Loading messages...</div>';
+            if(chatFeed) chatFeed.innerHTML = '<div class="text-center text-gray-500 mt-10">Loading messages...</div>';
 
             let q;
             if (chatId === 'global') {
@@ -881,6 +991,8 @@
             }
             
             unsubscribeChat = onSnapshot(q, (snapshot) => {
+                if(!chatFeed) return;
+                
                 if(snapshot.empty) {
                      chatFeed.innerHTML = '<div class="text-center text-gray-600 mt-10">No messages yet. Say hi!</div>';
                      return;
@@ -918,17 +1030,22 @@
 
         window.replyToMessage = (id, username, text) => {
             replyToData = { id, username, text };
-            document.getElementById('reply-banner').classList.remove('hidden');
-            document.getElementById('reply-target-text').innerText = `${username}: ${text}`;
-            document.getElementById('message-input').focus();
+            document.getElementById('reply-banner')?.classList.remove('hidden');
+            const targetEl = document.getElementById('reply-target-text');
+            if(targetEl) targetEl.innerText = `${username}: ${text}`;
+            document.getElementById('message-input')?.focus();
         };
         
         window.cancelReply = () => {
             replyToData = null;
-            document.getElementById('reply-banner').classList.add('hidden');
+            document.getElementById('reply-banner')?.classList.add('hidden');
         };
 
         function renderMessage(msg) {
+            function escapeHtml(text) {
+                const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+            }
             if (msg.isSystem) {
                 return `
                 <div class="flex justify-center my-6 animate-pulse-fast">
@@ -958,22 +1075,21 @@
                 `;
             }
 
-            // Fix Syntax Error by escaping single quotes in arguments
             return `
                 <div class="flex gap-3 mb-4 ${isMe ? 'flex-row-reverse' : ''} group">
                     <img src="${pfp}" 
-                         onclick="openProfile('${safeParam(msg.uid)}')"
+                         onclick="openProfile('${window.safeParam(msg.uid)}')"
                          class="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 border border-gray-700 bg-gray-800 object-cover default-pfp">
                     <div class="flex flex-col ${isMe ? 'items-end' : 'items-start'} max-w-[80%]">
                         <div class="flex items-center gap-2 mb-1">
-                            <span class="text-xs text-gray-400 hover:text-white cursor-pointer" onclick="openProfile('${safeParam(msg.uid)}')">${msg.username}</span>
+                            <span class="text-xs text-gray-400 hover:text-white cursor-pointer" onclick="openProfile('${window.safeParam(msg.uid)}')">${msg.username}</span>
                             <div class="rank-badge">${rankHtml}</div>
                             <span class="text-[10px] text-gray-600">${timeStr}</span>
                         </div>
                         ${replyHtml}
                         <div class="msg-bubble px-4 py-2 rounded-2xl text-sm relative group/bubble ${isMe ? 'bg-ruby-500 text-white rounded-tr-none' : 'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700'}">
                             ${escapeHtml(msg.text)}
-                            <button onclick="replyToMessage('${safeParam(msg.id)}', '${safeParam(msg.username)}', '${safeParam(msg.text)}')" 
+                            <button onclick="replyToMessage('${window.safeParam(msg.id)}', '${window.safeParam(msg.username)}', '${window.safeParam(msg.text)}')" 
                                     class="absolute top-1/2 -translate-y-1/2 ${isMe ? '-left-8' : '-right-8'} text-gray-500 hover:text-ruby-500 opacity-0 group-hover/bubble:opacity-100 transition-opacity p-1">
                                 <i class="fas fa-reply"></i>
                             </button>
@@ -983,57 +1099,7 @@
             `;
         }
 
-        document.getElementById('message-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const input = document.getElementById('message-input');
-            const text = input.value.trim();
-            if (!text || !currentUser || !userData) return;
-
-            input.value = '';
-            deleteDoc(doc(db, "typing", currentUser.uid));
-
-            try {
-                const newMsgCount = (userData.messages || 0) + 1;
-                const currentRankObj = getRankData(userData.rank);
-                let newRank = userData.rank; 
-
-                if (!currentRankObj.isStaff) {
-                    const tempUserData = { ...userData, messages: newMsgCount };
-                    newRank = calculateRank(tempUserData);
-                }
-                
-                const msgPayload = {
-                    text: text,
-                    uid: currentUser.uid,
-                    username: userData.username,
-                    photoURL: userData.photoURL || DEFAULT_PFP,
-                    rank: newRank, 
-                    timestamp: serverTimestamp()
-                };
-                
-                if (replyToData) {
-                    msgPayload.replyTo = replyToData;
-                    cancelReply();
-                }
-
-                if (currentChatId === 'global') {
-                     await addDoc(collection(db, "messages"), msgPayload);
-                     const userRef = doc(db, "users", currentUser.uid);
-                     await updateDoc(userRef, {
-                        messages: newMsgCount,
-                        rank: newRank 
-                     });
-                } else {
-                     await addDoc(collection(db, "direct_messages", currentChatId, "messages"), msgPayload);
-                }
-                
-            } catch(err) {
-                console.error("Msg Error", err);
-            }
-        });
-
         // --- NEW: Floating PM System ---
-        
         window.togglePMDropdown = (e) => {
             e.stopPropagation();
             const el = document.getElementById('pm-dropdown');
@@ -1064,7 +1130,7 @@
             }
 
             list.innerHTML = allUsersCache.filter(u => u.uid !== currentUser.uid).map(u => `
-                <div class="flex items-center gap-3 p-3 hover:bg-gray-800 cursor-pointer border-b border-gray-800 last:border-0" onclick="openFloatingChat('${safeParam(u.uid)}', '${safeParam(u.username)}', '${safeParam(u.photoURL || DEFAULT_PFP)}')">
+                <div class="flex items-center gap-3 p-3 hover:bg-gray-800 cursor-pointer border-b border-gray-800 last:border-0" onclick="openFloatingChat('${window.safeParam(u.uid)}', '${window.safeParam(u.username)}', '${window.safeParam(u.photoURL || DEFAULT_PFP)}')">
                     <img src="${u.photoURL || DEFAULT_PFP}" class="w-8 h-8 rounded-full bg-gray-700">
                     <div class="flex-1 overflow-hidden">
                         <div class="text-sm font-bold text-gray-200 truncate">${u.username}</div>
@@ -1085,7 +1151,6 @@
                 return;
             }
 
-            // Create Box
             const box = document.createElement('div');
             box.id = `pm-box-${targetUid}`;
             box.className = 'pm-box';
@@ -1130,10 +1195,8 @@
             document.getElementById('pm-layer').appendChild(box);
             activeFloatingPMs.add(targetUid);
 
-            // Drag/Resize Logic
             initDraggable(box);
 
-            // Close on click outside emoji
             box.addEventListener('click', (e) => {
                  if (!e.target.closest('.emoji-picker') && !e.target.closest('button[onclick^="toggleEmojiPicker"]')) {
                      const picker = document.getElementById(`emoji-picker-${targetUid}`);
@@ -1141,15 +1204,13 @@
                  }
             });
 
-            // Focus Tracking for Unread
             const input = document.getElementById(`pm-input-${targetUid}`);
             input.addEventListener('focus', () => {
                 const header = box.querySelector('.pm-header');
-                const dot = header.querySelector('.unread-dot');
-                if(dot) dot.remove();
+                const badge = header.querySelector('.unread-badge');
+                if(badge) badge.remove();
             });
 
-            // Fetch Messages
             const chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
             const q = query(collection(db, "direct_messages", chatId, "messages"), orderBy("timestamp", "desc"), limit(50));
             
@@ -1166,20 +1227,25 @@
                 snapshot.forEach(doc => msgs.push(doc.data()));
                 msgs.reverse();
 
-                // Unread Indicator Logic
                 const lastMsg = msgs[msgs.length - 1];
                 if (lastMsg && lastMsg.uid !== currentUser.uid) {
                     if (document.activeElement !== input && !box.contains(document.activeElement)) {
                         const header = box.querySelector('.pm-header .flex');
-                        if (header && !header.querySelector('.unread-dot')) {
-                            const d = document.createElement('span');
-                            d.className = 'unread-dot';
-                            header.appendChild(d);
+                        let badge = header.querySelector('.unread-badge');
+                        if (!badge) {
+                            badge = document.createElement('span');
+                            badge.className = 'unread-badge';
+                            badge.innerText = 'NEW';
+                            header.appendChild(badge);
                         }
                     }
                 }
 
                 container.innerHTML = msgs.map(m => {
+                    function escapeHtml(text) {
+                        const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+                        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+                    }
                     const isMe = m.uid === currentUser.uid;
                     return `
                         <div class="flex ${isMe ? 'justify-end' : 'justify-start'} mb-2">
@@ -1201,14 +1267,16 @@
 
         window.toggleEmojiPicker = (uid) => {
             const picker = document.getElementById(`emoji-picker-${uid}`);
-            picker.classList.toggle('hidden');
+            if(picker) picker.classList.toggle('hidden');
         };
 
         window.insertEmoji = (uid, emoji) => {
             const input = document.getElementById(`pm-input-${uid}`);
-            input.value += emoji;
-            input.focus();
-            document.getElementById(`emoji-picker-${uid}`).classList.add('hidden');
+            if(input) {
+                input.value += emoji;
+                input.focus();
+            }
+            document.getElementById(`emoji-picker-${uid}`)?.classList.add('hidden');
         };
 
         window.sendFloatingMessage = async (e, targetUid, targetUsername) => {
@@ -1323,63 +1391,65 @@
             });
             
             allUsersCache = users; 
-            onlineCountEl.innerText = onlineCnt;
+            if(onlineCountEl) onlineCountEl.innerText = onlineCnt;
             
-            if(!document.getElementById('admin-modal').classList.contains('hidden')) {
-                document.getElementById('admin-stat-users').innerText = users.length;
-                document.getElementById('admin-stat-online').innerText = onlineCnt;
+            if(document.getElementById('admin-modal') && !document.getElementById('admin-modal').classList.contains('hidden')) {
+                const s1 = document.getElementById('admin-stat-users');
+                const s2 = document.getElementById('admin-stat-online');
+                if(s1) s1.innerText = users.length;
+                if(s2) s2.innerText = onlineCnt;
                 renderAdminTable();
             }
 
-            userListEl.innerHTML = users.map(u => {
-                const rankObj = getRankData(u.rank);
-                const rankHtml = rankObj ? `<img src="custom ranks/${rankObj.img}" class="h-5 w-auto" title="${rankObj.name}">` : '';
-                const pfp = u.photoURL || DEFAULT_PFP;
-                
-                let statusColorClass = 'bg-gray-500';
-                if (u.isOnline) {
-                    if (u.presence === 'away') statusColorClass = 'bg-yellow-500';
-                    else if (u.presence === 'dnd') statusColorClass = 'bg-red-500';
-                    else statusColorClass = 'bg-green-500';
-                }
-                
-                return `
-                <div class="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors" onclick="openProfile('${safeParam(u.uid)}')">
-                    <div class="relative">
-                        <img src="${pfp}" class="w-8 h-8 rounded-full object-cover bg-gray-800 default-pfp">
-                        <div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 ${statusColorClass}"></div>
-                    </div>
-                    <div class="overflow-hidden flex-1">
-                        <div class="text-sm font-medium truncate flex items-center gap-2 ${u.isStaff ? 'text-ruby-500' : 'text-gray-300'}">
-                            ${u.username}
+            if(userListEl) {
+                userListEl.innerHTML = users.map(u => {
+                    const rankObj = getRankData(u.rank);
+                    const rankHtml = rankObj ? `<img src="custom ranks/${rankObj.img}" class="h-5 w-auto" title="${rankObj.name}">` : '';
+                    const pfp = u.photoURL || DEFAULT_PFP;
+                    
+                    let statusColorClass = 'bg-gray-500';
+                    if (u.isOnline) {
+                        if (u.presence === 'away') statusColorClass = 'bg-yellow-500';
+                        else if (u.presence === 'dnd') statusColorClass = 'bg-red-500';
+                        else statusColorClass = 'bg-green-500';
+                    }
+                    
+                    return `
+                    <div class="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors" onclick="openProfile('${window.safeParam(u.uid)}')">
+                        <div class="relative">
+                            <img src="${pfp}" class="w-8 h-8 rounded-full object-cover bg-gray-800 default-pfp">
+                            <div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 ${statusColorClass}"></div>
                         </div>
-                        <div class="flex items-center mt-0.5 rank-badge p-0">
-                             ${rankHtml}
+                        <div class="overflow-hidden flex-1">
+                            <div class="text-sm font-medium truncate flex items-center gap-2 ${u.isStaff ? 'text-ruby-500' : 'text-gray-300'}">
+                                ${u.username}
+                            </div>
+                            <div class="flex items-center mt-0.5 rank-badge p-0">
+                                 ${rankHtml}
+                            </div>
                         </div>
                     </div>
-                </div>
-                `;
-            }).join('');
+                    `;
+                }).join('');
+            }
         });
 
         // --- Profile System ---
         window.openProfile = async (uid) => {
             viewingUserId = uid;
             const modal = document.getElementById('profile-modal');
-            const editBtn = document.getElementById('edit-profile-btn');
-            const editOverlays = document.querySelectorAll('.edit-overlay');
-            const privateMsgBtn = document.getElementById('private-msg-container');
-            const likeBtn = document.getElementById('like-btn');
-            const likeCount = document.getElementById('profile-likes-count');
-            
             modal.classList.remove('hidden');
             
             isEditingProfile = false;
             document.getElementById('profile-view-mode').classList.remove('hidden');
             document.getElementById('profile-edit-mode').classList.add('hidden');
-            editOverlays.forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.edit-overlay').forEach(el => el.classList.add('hidden'));
 
             let data = {};
+            const editBtn = document.getElementById('edit-profile-btn');
+            const privateMsgBtn = document.getElementById('private-msg-container');
+            const likeBtn = document.getElementById('like-btn');
+            
             if (currentUser && uid === currentUser.uid) {
                 data = userData; 
                 editBtn.classList.remove('hidden');
@@ -1399,7 +1469,7 @@
             document.getElementById('profile-avatar-img').src = data.photoURL || DEFAULT_PFP;
             document.getElementById('profile-banner-img').src = data.bannerURL || "https://picsum.photos/600/200";
             
-            likeCount.innerText = data.likes || 0;
+            document.getElementById('profile-likes-count').innerText = data.likes || 0;
             const likedBy = data.likedBy || [];
             if (currentUser && likedBy.includes(currentUser.uid)) {
                 likeBtn.classList.add('text-ruby-500');
@@ -1431,7 +1501,7 @@
                 progressContainer.classList.add('hidden');
             }
 
-            document.getElementById('edit-username-input').value = data.username;
+            document.getElementById('edit-username-input').value = data.username || '';
             document.getElementById('edit-status-input').value = data.presence || 'online';
             if (data.settings) {
                 document.getElementById('pref-sound-msg').checked = data.settings.soundMsg !== false;
@@ -1441,8 +1511,6 @@
                 document.getElementById('pref-sound-mention').checked = true;
             }
         };
-        
-        window.closeProfile = () => document.getElementById('profile-modal').classList.add('hidden');
         
         window.toggleProfileEdit = () => {
             isEditingProfile = !isEditingProfile;
@@ -1488,23 +1556,6 @@
                 });
             }
         };
-        
-        window.initiatePrivateChat = async (floating = false) => {
-            if (!currentUser || !viewingUserId) return;
-            const snap = await getDoc(doc(db, "users", viewingUserId));
-            const partner = snap.exists() ? snap.data() : { username: "User", photoURL: DEFAULT_PFP };
-            
-            closeProfile();
-            
-            if (floating) {
-                openFloatingChat(viewingUserId, partner.username, partner.photoURL || DEFAULT_PFP);
-            } else {
-                const uid1 = currentUser.uid;
-                const uid2 = viewingUserId;
-                const chatId = uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
-                loadChat(chatId, { ...partner, uid: viewingUserId });
-            }
-        };
 
         function handleFileUpload(file) {
             return new Promise((resolve, reject) => {
@@ -1515,31 +1566,8 @@
             });
         }
         
-        window.triggerAvatarUpload = () => {
-             if (isEditingProfile) document.getElementById('avatar-upload').click();
-        };
-        window.triggerBannerUpload = () => {
-             if (isEditingProfile) document.getElementById('banner-upload').click();
-        };
-        
         let pendingAvatar = null;
         let pendingBanner = null;
-
-        document.getElementById('avatar-upload').addEventListener('change', async (e) => {
-            if(e.target.files[0]) {
-                const b64 = await handleFileUpload(e.target.files[0]);
-                document.getElementById('profile-avatar-img').src = b64;
-                pendingAvatar = b64;
-            }
-        });
-        
-        document.getElementById('banner-upload').addEventListener('change', async (e) => {
-            if(e.target.files[0]) {
-                const b64 = await handleFileUpload(e.target.files[0]);
-                document.getElementById('profile-banner-img').src = b64;
-                pendingBanner = b64;
-            }
-        });
 
         window.saveProfileChanges = async () => {
             if (!currentUser) return;
@@ -1588,7 +1616,10 @@
             if (activeAdminTab !== 'users') return;
             
             const tbody = document.getElementById('admin-user-table');
-            const search = document.getElementById('admin-search').value.toLowerCase();
+            const searchInput = document.getElementById('admin-search');
+            if(!tbody || !searchInput) return;
+            
+            const search = searchInput.value.toLowerCase();
             
             const filtered = allUsersCache.filter(u => 
                 u.username.toLowerCase().includes(search) || u.email.toLowerCase().includes(search)
@@ -1616,7 +1647,7 @@
                         </td>
                         <td class="p-4 text-sm">${statusText}</td>
                         <td class="p-4">
-                            <select onchange="adminChangeRank('${safeParam(u.uid)}', this.value)" class="bg-gray-900 border border-gray-700 text-xs rounded p-1 text-gray-300 focus:border-ruby-500 focus:outline-none">
+                            <select onchange="adminChangeRank('${window.safeParam(u.uid)}', this.value)" class="bg-gray-900 border border-gray-700 text-xs rounded p-1 text-gray-300 focus:border-ruby-500 focus:outline-none">
                                 ${rankOptions}
                             </select>
                         </td>
@@ -1628,13 +1659,13 @@
                         </td>
                         <td class="p-4 text-right">
                              <div class="flex items-center justify-end gap-2">
-                                 <button onclick="adminToggleBan('${safeParam(u.uid)}', ${u.banned})" class="p-2 rounded bg-gray-800 hover:bg-red-900/50 text-red-500 border border-transparent hover:border-red-500 transition-colors" title="${u.banned ? 'Unban' : 'Ban'}">
+                                 <button onclick="adminToggleBan('${window.safeParam(u.uid)}', ${u.banned})" class="p-2 rounded bg-gray-800 hover:bg-red-900/50 text-red-500 border border-transparent hover:border-red-500 transition-colors" title="${u.banned ? 'Unban' : 'Ban'}">
                                      <i class="fas ${u.banned ? 'fa-user-check' : 'fa-ban'}"></i>
                                  </button>
-                                 <button onclick="adminResetStats('${safeParam(u.uid)}')" class="p-2 rounded bg-gray-800 hover:bg-orange-900/50 text-orange-500 border border-transparent hover:border-orange-500 transition-colors" title="Reset Stats">
+                                 <button onclick="adminResetStats('${window.safeParam(u.uid)}')" class="p-2 rounded bg-gray-800 hover:bg-orange-900/50 text-orange-500 border border-transparent hover:border-orange-500 transition-colors" title="Reset Stats">
                                      <i class="fas fa-undo"></i>
                                  </button>
-                                 <button onclick="openProfile('${safeParam(u.uid)}')" class="p-2 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors" title="View Profile">
+                                 <button onclick="openProfile('${window.safeParam(u.uid)}')" class="p-2 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors" title="View Profile">
                                      <i class="fas fa-eye"></i>
                                  </button>
                              </div>
@@ -1681,8 +1712,6 @@
             } catch(e) { alert("Error sending broadcast: " + e.message); }
         };
         
-        document.getElementById('admin-search').addEventListener('input', renderAdminTable);
-
         // --- Utils ---
         window.toggleMobileMenu = () => {
             const sidebar = document.getElementById('right-sidebar');
@@ -1702,24 +1731,6 @@
             navigator.clipboard.writeText(url);
             alert("Invite link copied to clipboard!");
         };
-        
-        window.updateHeaderProfile = () => {
-            if(userData) document.getElementById('header-avatar').src = userData.photoURL || DEFAULT_PFP;
-        };
-
-        window.updateHeaderStatusColor = () => {
-            if(!userData) return;
-            const el = document.getElementById('header-status-dot');
-            el.className = "w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900";
-            if (userData.presence === 'away') el.classList.add('bg-yellow-500');
-            else if (userData.presence === 'dnd') el.classList.add('bg-red-500');
-            else el.classList.add('bg-green-500');
-        };
-        
-        function escapeHtml(text) {
-            const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-            return text.replace(/[&<>"']/g, function(m) { return map[m]; });
-        }
     </script>
 </body>
 </html>
