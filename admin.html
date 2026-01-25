@@ -103,14 +103,14 @@
                             <div class="font-bold text-white">Disable Image Uploads</div>
                             <div class="text-xs text-gray-400">Turn off media attachments.</div>
                         </div>
-                        <button id="toggle-noImages" onclick="toggleSetting('imageUploadsDisabled')" class="bg-gray-700 w-12 h-6 rounded-full relative transition-colors duration-200"><div class="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform duration-200"></div></button>
+                        <button id="toggle-imageUploadsDisabled" onclick="toggleSetting('imageUploadsDisabled')" class="bg-gray-700 w-12 h-6 rounded-full relative transition-colors duration-200"><div class="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform duration-200"></div></button>
                     </div>
                     <div class="admin-card flex justify-between items-center">
                         <div>
                             <div class="font-bold text-white">Disable Signups</div>
                             <div class="text-xs text-gray-400">Prevent new users from registering.</div>
                         </div>
-                        <button id="toggle-noSignups" onclick="toggleSetting('signupsDisabled')" class="bg-gray-700 w-12 h-6 rounded-full relative transition-colors duration-200"><div class="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform duration-200"></div></button>
+                        <button id="toggle-signupsDisabled" onclick="toggleSetting('signupsDisabled')" class="bg-gray-700 w-12 h-6 rounded-full relative transition-colors duration-200"><div class="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform duration-200"></div></button>
                     </div>
                 </div>
                 
@@ -270,6 +270,7 @@ function loadSettings() {
 
 function updateToggle(id, val) {
     const btn = document.getElementById(`toggle-${id}`);
+    if(!btn) return; // Safety check
     const dot = btn.querySelector('div');
     if(val) {
         btn.classList.remove('bg-gray-700');
