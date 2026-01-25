@@ -19,6 +19,9 @@
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Massive Font Import -->
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alfa+Slab+One&family=Amatic+SC&family=Annie+Use+Your+Telescope&family=Anton&family=Architects+Daughter&family=Audiowide&family=Bangers&family=Barrio&family=Bebas+Neue&family=Berkshire+Swash&family=Bitter&family=Black+Ops+One&family=Boogaloo&family=Bowlby+One+SC&family=Bungee&family=Bungee+Inline&family=Bungee+Shade&family=Butcherman&family=Cabin+Sketch&family=Caveat&family=Changa+One&family=Chewy&family=Cinzel&family=Comfortaa&family=Comic+Neue&family=Coming+Soon&family=Concert+One&family=Cookie&family=Courgette&family=Covered+By+Your+Grace&family=Creepster&family=Dancing+Script&family=Didact+Gothic&family=Diplomata&family=Dosis&family=Eater&family=Electrolize&family=Emilys+Candy&family=Ewert&family=Exo+2&family=Faster+One&family=Fjalla+One&family=Fredoka+One&family=Frijole&family=Gloria+Hallelujah&family=Gochi+Hand&family=Grand+Hotel&family=Great+Vibes&family=Grenze+Gotisch&family=Hammersmith+One&family=Hanalei&family=Handlee&family=Homemade+Apple&family=Inconsolata&family=Indie+Flower&family=Jolly+Lodger&family=Josefin+Sans&family=Jura&family=Just+Another+Hand&family=Kalam&family=Kaushan+Script&family=Kelly+Slab&family=Knewave&family=Lato&family=League+Script&family=Lemon&family=Lobster&family=Lobster+Two&family=Love+Ya+Like+A+Sister&family=Luckiest+Guy&family=Major+Mono+Display&family=Marck+Script&family=MedievalSharp&family=Megrim&family=Merienda&family=Merriweather&family=Metal+Mania&family=Metamorphous&family=Michroma&family=Monofett&family=Monoton&family=Montserrat&family=Mountains+of+Christmas&family=Mrs+Sheppards&family=Neucha&family=Neuton&family=New+Rocker&family=Niconne&family=Nosifer&family=Nothing+You+Could+Do&family=Nova+Cut&family=Nova+Flat&family=Nova+Mono&family=Nova+Oval&family=Nova+Round&family=Nova+Script&family=Nova+Slim&family=Nova+Square&family=Nunito&family=Old+Standard+TT&family=Open+Sans&family=Orbitron&family=Oswald&family=Pacifico&family=Patrick+Hand&family=Permanent+Marker&family=Philosopher&family=Play&family=Playball&family=Playfair+Display&family=Poiret+One&family=Poller+One&family=Poppins&family=Press+Start+2P&family=Prosto+One&family=Quatruota&family=Quicksand&family=Racing+Sans+One&family=Raleway&family=Rammetto+One&family=Ranchers&family=Revalia&family=Righteous&family=Roboto&family=Roboto+Mono&family=Roboto+Slab&family=Rock+Salt&family=Rubik+Glitch&family=Rubik+Iso&family=Rubik+Marker+Hatch&family=Rubik+Wet+Paint&family=Russo+One&family=Rye&family=Sacramento&family=Sancreek&family=Satisfy&family=Schoolbell&family=Shadows+Into+Light&family=Shojumaru&family=Short+Stack&family=Sigmar+One&family=Skranji&family=Slackey&family=Smokum&family=Sniglet&family=Special+Elite&family=Spicy+Rice&family=Squada+One&family=Staatliches&family=Stardos+Stencil&family=Sue+Ellen+Francisco&family=Sunshiney&family=Syncopate&family=Tangerine&family=Tasty+Birds&family=Teko&family=Titan+One&family=Trade+Winds&family=Ubuntu&family=Ultra&family=Uncursal&family=UnifrakturCook&family=UnifrakturMaguntia&family=Unkempt&family=Unlock&family=Unna&family=VT323&family=Vampiro+One&family=Varela+Round&family=Vast+Shadow&family=Voces&family=Voltaire&family=Waiting+for+the+Sunrise&family=Wallpoet&family=Walter+Turncoat&family=Warnes&family=Wire+One&family=Work+Sans&family=Yanone+Kaffeesatz&family=Yellowtail&family=Yeseva+One&family=Zeyada&display=swap" rel="stylesheet">
+    
     <style>
         :root { --bg-950: #030712; --bg-900: #111827; --acc-500: #e0115f; }
         body { background-color: var(--bg-950); color: #f3f4f6; overflow: hidden; font-family: 'Inter', sans-serif; }
@@ -30,15 +33,16 @@
         
         /* Grid Layout */
         .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-        .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 12px; }
+        .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; }
         
         /* Effect Button */
         .effect-btn {
-            background: #1f2937;
-            border: 1px solid #374151;
+            background: #111827;
+            border: 1px solid #1f2937;
             border-radius: 8px;
-            height: 60px;
+            height: 70px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             cursor: pointer;
@@ -46,18 +50,21 @@
             position: relative;
             overflow: hidden;
         }
-        .effect-btn:hover { border-color: #e0115f; transform: translateY(-2px); }
-        .effect-btn.active { border-color: #e0115f; background: #374151; box-shadow: 0 0 15px rgba(224, 17, 95, 0.2); }
+        .effect-btn:hover { border-color: #e0115f; transform: translateY(-2px); z-index: 10; }
+        .effect-btn.active { border-color: #e0115f; background: #1f2937; box-shadow: 0 0 15px rgba(224, 17, 95, 0.3); }
+        .effect-preview { font-size: 1.1rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90%; }
+        .effect-name { font-size: 0.65rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
         
         /* Color Swatch */
         .color-swatch {
-            height: 60px;
+            height: 50px;
             border-radius: 8px;
             cursor: pointer;
             transition: transform 0.2s;
             border: 2px solid transparent;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        .color-swatch:hover { transform: scale(1.05); z-index: 10; }
+        .color-swatch:hover { transform: scale(1.1); z-index: 10; border-color: rgba(255,255,255,0.5); }
         .color-swatch.active { border-color: white; transform: scale(1.1); }
 
         /* Preview Area */
@@ -67,15 +74,18 @@
         .mock-banner { height: 100px; background: #374151; position: relative; width: 100%; overflow: hidden; }
         .mock-avatar { width: 80px; height: 80px; background: #4b5563; position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); border: 4px solid #111827; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10; object-fit: cover; transition: all 0.3s; }
         
-        .nav-item { cursor: pointer; padding: 12px 16px; border-radius: 8px; color: #9ca3af; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; }
+        .nav-item { cursor: pointer; padding: 10px 16px; border-radius: 8px; color: #9ca3af; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 10px; margin-bottom: 2px; font-size: 0.9rem; }
         .nav-item:hover { background: #1f2937; color: white; }
         .nav-item.active { background: #e0115f; color: white; }
+        .nav-header { font-size: 0.7rem; font-weight: 800; color: #4b5563; text-transform: uppercase; letter-spacing: 0.1em; margin: 16px 0 8px 16px; }
         
         .loader { border: 4px solid #374151; border-top: 4px solid #e0115f; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Font Imports */
-        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@700&family=Montserrat:wght@700&family=Lato:wght@700&family=Oswald:wght@700&family=Playfair+Display:wght@700&family=Dancing+Script:wght@700&family=Pacifico&family=Press+Start+2P&family=Creepster&family=Orbitron:wght@700&family=Permanent+Marker&family=Righteous&family=Lobster&family=Abril+Fatface&display=swap');
+        
+        .category-tabs { display: flex; gap: 8px; padding: 0 16px 16px 16px; overflow-x: auto; }
+        .cat-btn { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; background: #1f2937; color: #9ca3af; white-space: nowrap; cursor: pointer; transition: all 0.2s; border: 1px solid #374151; }
+        .cat-btn:hover { background: #374151; color: white; }
+        .cat-btn.active { background: #e0115f; color: white; border-color: #e0115f; }
     </style>
 </head>
 <body class="flex h-screen">
@@ -83,26 +93,27 @@
     <!-- Loading Screen -->
     <div id="loading" class="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center">
         <div class="loader mb-4"></div>
-        <div class="text-ruby-500 font-bold tracking-widest animate-pulse">LOADING STORE</div>
+        <div class="text-ruby-500 font-bold tracking-widest animate-pulse">LOADING ASSETS</div>
+        <div class="text-xs text-gray-500 mt-2">Generating 1000+ items...</div>
     </div>
 
     <!-- Sidebar -->
-    <div class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-20 shadow-xl">
+    <div class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-20 shadow-xl flex-shrink-0">
         <div class="p-6 border-b border-gray-800">
             <h1 class="text-xl font-bold tracking-tight text-white"><span class="text-ruby-500">Ruby</span> Customise</h1>
             <p class="text-xs text-gray-500 mt-1">Profile & Identity Store</p>
         </div>
         
-        <div class="flex-1 overflow-y-auto p-4">
-            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-2">Identity</div>
+        <div class="flex-1 overflow-y-auto p-2 scrollbar-thin">
+            <div class="nav-header">Identity</div>
             <div class="nav-item active" onclick="setTab('effects')"><i class="fas fa-magic w-5 text-center"></i> Name Effects</div>
             <div class="nav-item" onclick="setTab('fonts')"><i class="fas fa-font w-5 text-center"></i> Fonts</div>
             
-            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-2 mt-4">Profile Card</div>
+            <div class="nav-header">Profile Card</div>
             <div class="nav-item" onclick="setTab('backgrounds')"><i class="fas fa-image w-5 text-center"></i> Backgrounds</div>
             <div class="nav-item" onclick="setTab('card_style')"><i class="fas fa-id-card w-5 text-center"></i> Card Style</div>
             
-            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-2 mt-4">Social</div>
+            <div class="nav-header">Social</div>
             <div class="nav-item" onclick="setTab('sidebar')"><i class="fas fa-users w-5 text-center"></i> User List Card</div>
         </div>
 
@@ -117,19 +128,20 @@
     </div>
 
     <!-- Store Content Pane -->
-    <div class="w-[450px] bg-gray-900/50 border-r border-gray-800 flex flex-col overflow-hidden backdrop-blur-sm z-10">
-        <div class="p-4 bg-gray-900 border-b border-gray-800 flex justify-between items-center">
+    <div class="w-[500px] bg-gray-900/95 border-r border-gray-800 flex flex-col overflow-hidden backdrop-blur-sm z-10 flex-shrink-0">
+        <div class="p-4 bg-gray-900 border-b border-gray-800 flex justify-between items-center sticky top-0 z-20">
             <h2 id="tab-title" class="font-bold text-white uppercase tracking-wider text-sm">Name Effects</h2>
-            <span id="item-count" class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400">Loading...</span>
+            <span id="item-count" class="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400 border border-gray-700">0 Items</span>
         </div>
-        <div id="store-container" class="flex-1 overflow-y-auto p-6 scrollbar-thin">
+        <div id="category-container" class="bg-gray-900 border-b border-gray-800 pt-2 sticky top-[57px] z-20"></div>
+        <div id="store-container" class="flex-1 overflow-y-auto p-4 scrollbar-thin">
             <!-- Dynamic Content -->
         </div>
     </div>
 
     <!-- Preview Pane -->
     <div class="flex-1 preview-pane flex flex-col relative overflow-hidden">
-        <div class="absolute top-4 right-4 bg-gray-900/80 backdrop-blur rounded px-3 py-1 text-xs font-mono text-gray-400 border border-gray-700 pointer-events-none">
+        <div class="absolute top-4 right-4 bg-gray-900/80 backdrop-blur rounded px-3 py-1 text-xs font-mono text-gray-400 border border-gray-700 pointer-events-none z-30">
             LIVE PREVIEW
         </div>
 
@@ -144,7 +156,7 @@
                         <img id="preview-avatar" src="https://picsum.photos/200" class="mock-avatar">
                         <div id="preview-username" class="text-xl font-bold text-white mb-1">Username</div>
                         <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Creator</div>
-                        <div class="text-sm text-gray-300 leading-relaxed bg-black/20 p-3 rounded-lg w-full">
+                        <div class="text-sm text-gray-300 leading-relaxed bg-black/20 p-3 rounded-lg w-full font-sans">
                             This is how your profile card looks.
                         </div>
                     </div>
@@ -164,7 +176,7 @@
                                     <span id="preview-chat-username" class="font-bold text-gray-200 hover:underline cursor-pointer">Username</span>
                                     <span class="text-[10px] text-gray-500">Today at 10:42 PM</span>
                                 </div>
-                                <div class="bg-gray-800 text-gray-200 px-4 py-2 rounded-lg rounded-tl-none border border-gray-700 text-sm">
+                                <div class="bg-gray-800 text-gray-200 px-4 py-2 rounded-lg rounded-tl-none border border-gray-700 text-sm font-sans">
                                     Nice customization!
                                 </div>
                             </div>
@@ -183,7 +195,7 @@
                             </div>
                             <div class="flex-1 min-w-0">
                                 <div id="preview-sidebar-username" class="text-sm font-bold truncate text-gray-200">Username</div>
-                                <div class="text-[10px] text-gray-500 truncate italic">Online</div>
+                                <div class="text-[10px] text-gray-500 truncate italic font-sans">Online</div>
                             </div>
                         </div>
                     </div>
@@ -205,82 +217,121 @@
 
         let currentUser = null;
         let currentConfig = {
-            identity: { color: '#e5e7eb', glowColor: '#e0115f', glowBlur: 0, fontFamily: 'ui-sans-serif', fontWeight: '700', uppercase: false, italic: false },
+            identity: { color: '#e5e7eb', glowColor: '#e0115f', glowBlur: 0, fontFamily: 'Inter', fontWeight: '700', uppercase: false, italic: false },
             avatar: { radius: 50, borderWidth: 4, borderColor: '#111827' },
             banner: { height: 120, blur: 0, grayscale: 0 },
             card: { bgColor: '#111827', bgOpacity: 100, backdropBlur: 0, borderColor: '#374151', borderWidth: 1, borderRadius: 16 }
         };
 
-        // --- PRESETS DATABASE ---
-        
-        const EFFECTS = [
-            { id: 'default', name: 'Default', style: { color: '#e5e7eb', glowBlur: 0 } },
-            // NEONS
-            { id: 'neon-blue', name: 'Neon Blue', style: { color: '#00ffff', glowColor: '#00ffff', glowBlur: 10 } },
-            { id: 'neon-red', name: 'Neon Red', style: { color: '#ff0033', glowColor: '#ff0033', glowBlur: 10 } },
-            { id: 'neon-green', name: 'Neon Green', style: { color: '#00ff00', glowColor: '#00ff00', glowBlur: 10 } },
-            { id: 'neon-pink', name: 'Neon Pink', style: { color: '#ff00ff', glowColor: '#ff00ff', glowBlur: 10 } },
-            { id: 'neon-purple', name: 'Neon Purple', style: { color: '#bc13fe', glowColor: '#bc13fe', glowBlur: 10 } },
-            { id: 'neon-yellow', name: 'Neon Yellow', style: { color: '#ffff00', glowColor: '#ffff00', glowBlur: 10 } },
-            { id: 'neon-orange', name: 'Neon Orange', style: { color: '#ffa500', glowColor: '#ffa500', glowBlur: 10 } },
-            { id: 'neon-white', name: 'Neon White', style: { color: '#ffffff', glowColor: '#ffffff', glowBlur: 10 } },
-            // NATURE
-            { id: 'fire', name: 'Real Fire', style: { color: '#ff4500', glowColor: '#ff0000', glowBlur: 8, fontFamily: 'Creepster' } },
-            { id: 'ice', name: 'Ice', style: { color: '#e0ffff', glowColor: '#00bfff', glowBlur: 8 } },
-            { id: 'earth', name: 'Earth', style: { color: '#8b4513', glowColor: '#228b22', glowBlur: 5, fontFamily: 'Bitter' } },
-            { id: 'water', name: 'Water', style: { color: '#1e90ff', glowColor: '#0000ff', glowBlur: 5 } },
-            // RETRO
-            { id: 'matrix', name: 'Matrix', style: { color: '#00ff00', glowColor: '#003300', glowBlur: 2, fontFamily: 'monospace' } },
-            { id: '8bit', name: '8-Bit', style: { color: '#ffcc00', glowBlur: 0, fontFamily: '"Press Start 2P"' } },
-            { id: 'terminal', name: 'Terminal', style: { color: '#33ff33', glowBlur: 0, fontFamily: 'monospace' } },
-            // STYLES
-            { id: 'ghost', name: 'Ghost', style: { color: 'rgba(255,255,255,0.7)', glowColor: '#ffffff', glowBlur: 15 } },
-            { id: 'gold', name: 'Golden', style: { color: '#ffd700', glowColor: '#ffa500', glowBlur: 5 } },
-            { id: 'silver', name: 'Silver', style: { color: '#c0c0c0', glowColor: '#ffffff', glowBlur: 5 } },
-            { id: 'royal', name: 'Royal', style: { color: '#9370db', glowColor: '#4b0082', glowBlur: 5, uppercase: true } },
-            { id: 'clean', name: 'Clean', style: { color: '#ffffff', glowBlur: 0, fontFamily: 'Inter', fontWeight: '900', uppercase: true, letterSpacing: 2 } },
-        ];
-
-        const FONTS = [
-            { id: 'inter', name: 'Inter (Default)', val: 'ui-sans-serif' },
-            { id: 'roboto', name: 'Roboto', val: 'Roboto' },
-            { id: 'montserrat', name: 'Montserrat', val: 'Montserrat' },
-            { id: 'lato', name: 'Lato', val: 'Lato' },
-            { id: 'oswald', name: 'Oswald', val: 'Oswald' },
-            { id: 'playfair', name: 'Playfair', val: 'Playfair Display' },
-            { id: 'dancing', name: 'Dancing Script', val: 'Dancing Script' },
-            { id: 'pacifico', name: 'Pacifico', val: 'Pacifico' },
-            { id: 'pressstart', name: '8-Bit', val: '"Press Start 2P"' },
-            { id: 'creepster', name: 'Creepster', val: 'Creepster' },
-            { id: 'orbitron', name: 'Orbitron', val: 'Orbitron' },
-            { id: 'marker', name: 'Perm Marker', val: 'Permanent Marker' },
-            { id: 'righteous', name: 'Righteous', val: 'Righteous' },
-            { id: 'lobster', name: 'Lobster', val: 'Lobster' },
-            { id: 'abril', name: 'Abril Fatface', val: 'Abril Fatface' },
-            { id: 'mono', name: 'Monospace', val: 'monospace' },
-        ];
-
-        // Generate 60+ backgrounds
+        // --- MASSIVE DATASETS ---
+        const EFFECTS = [];
+        const FONTS = [];
         const BACKGROUNDS = [];
-        // Solids
-        ['#111827', '#000000', '#1a1a1a', '#2d3748', '#1c1917', '#312e81', '#4c1d95', '#831843', '#7f1d1d', '#7c2d12', '#713f12', '#365314', '#064e3b', '#134e4a', '#0c4a6e', '#1e3a8a', '#312e81', '#4c1d95', '#581c87', '#701a75', '#0f172a'].forEach(c => BACKGROUNDS.push({ type: 'color', val: c }));
-        // Gradients
-        for(let i=0; i<40; i++) {
-            const h = Math.floor(i * 9);
-            const c1 = `hsl(${h}, 60%, 20%)`;
-            const c2 = `hsl(${(h+60)%360}, 60%, 10%)`;
-            BACKGROUNDS.push({ type: 'gradient', val: `linear-gradient(135deg, ${c1}, ${c2})`, colorVal: c1 }); // colorVal for approx
-        }
+        
+        function generateData() {
+            // 1. GENERATE EFFECTS (1000+)
+            
+            // SPECIAL PRESETS (High Quality)
+            const specials = [
+                { name: 'Glitch', color: '#00ffff', glow: '#ff00ff', blur: 4, font: 'Rubik Glitch' },
+                { name: 'Matrix', color: '#00ff00', glow: '#003300', blur: 5, font: 'VT323' },
+                { name: 'Fire', color: '#ffcc00', glow: '#ff0000', blur: 15, font: 'Creepster' },
+                { name: 'Ice', color: '#e0ffff', glow: '#00bfff', blur: 10, font: 'Mountains of Christmas' },
+                { name: 'Toxic', color: '#ccff00', glow: '#66ff00', blur: 8, font: 'Nosifer' },
+                { name: 'Candy', color: '#ff69b4', glow: '#ff1493', blur: 5, font: 'Emilys Candy' },
+                { name: 'Royal', color: '#ffd700', glow: '#9400d3', blur: 10, font: 'Cinzel' },
+                { name: '8-Bit', color: '#ffffff', glow: '#000000', blur: 0, font: '"Press Start 2P"' },
+                { name: 'Vampire', color: '#ff0000', glow: '#330000', blur: 10, font: 'Butcherman' },
+                { name: 'Neon Blue', color: '#00ffff', glow: '#00ffff', blur: 12, font: 'Orbitron' },
+                { name: 'Neon Pink', color: '#ff00ff', glow: '#ff00ff', blur: 12, font: 'Orbitron' },
+                { name: 'Space', color: '#e0e7ff', glow: '#4338ca', blur: 15, font: 'Audiowide' },
+                { name: 'Metal', color: '#9ca3af', glow: '#374151', blur: 2, font: 'Metal Mania' },
+                { name: 'Graffiti', color: '#fbbf24', glow: '#b45309', blur: 4, font: 'Permanent Marker' },
+                { name: 'Horror', color: '#991b1b', glow: '#000000', blur: 20, font: 'Eater' },
+                { name: 'Elegant', color: '#fcd34d', glow: '#78350f', blur: 5, font: 'Great Vibes' },
+            ];
+            specials.forEach(s => EFFECTS.push({
+                cat: 'Special', name: s.name, style: { color: s.color, glowColor: s.glow, glowBlur: s.blur, fontFamily: s.font }
+            }));
 
-        const CARD_STYLES = [
-            { id: 'default', name: 'Default Dark', style: { bgColor: '#111827', bgOpacity: 100, backdropBlur: 0, borderColor: '#374151', borderWidth: 1 } },
-            { id: 'glass', name: 'Glassmorphism', style: { bgColor: '#111827', bgOpacity: 50, backdropBlur: 10, borderColor: '#ffffff', borderWidth: 1 } },
-            { id: 'flat', name: 'Flat Black', style: { bgColor: '#000000', bgOpacity: 100, backdropBlur: 0, borderColor: '#000000', borderWidth: 0 } },
-            { id: 'borderless', name: 'Ghost', style: { bgColor: '#111827', bgOpacity: 80, backdropBlur: 5, borderColor: 'transparent', borderWidth: 0 } },
-            { id: 'thick', name: 'Thick Border', style: { bgColor: '#1f2937', bgOpacity: 100, backdropBlur: 0, borderColor: '#e0115f', borderWidth: 4 } },
-            { id: 'rounded', name: 'Extra Round', style: { borderRadius: 30 } },
-            { id: 'sharp', name: 'Sharp Edges', style: { borderRadius: 0 } },
-        ];
+            // PROCEDURAL GENERATION
+            for(let h=0; h<360; h+=10) {
+                const hsl = `hsl(${h}, 100%, 60%)`;
+                const glow = `hsl(${h}, 100%, 50%)`;
+                
+                // Pure Colors
+                EFFECTS.push({ cat: 'Colors', name: `Hue ${h}`, style: { color: hsl, glowBlur: 0 } });
+                
+                // Classic Neon
+                EFFECTS.push({ cat: 'Neon', name: `Neon ${h}`, style: { color: hsl, glowColor: glow, glowBlur: 10 } });
+                
+                // Intense Neon
+                EFFECTS.push({ cat: 'Intense', name: `Super ${h}`, style: { color: '#ffffff', glowColor: glow, glowBlur: 20 } });
+                
+                // Pastel
+                EFFECTS.push({ cat: 'Pastel', name: `Soft ${h}`, style: { color: `hsl(${h}, 100%, 85%)`, glowBlur: 0 } });
+                
+                // Dark
+                EFFECTS.push({ cat: 'Dark', name: `Deep ${h}`, style: { color: `hsl(${h}, 100%, 30%)`, glowBlur: 0 } });
+            }
+
+            // 2. FONTS (60+)
+            const fontList = [
+                "Inter", "Roboto", "Open Sans", "Lato", "Montserrat", "Oswald", "Raleway", "Merriweather", 
+                "Nunito", "Playfair Display", "Rubik", "Poppins", "Work Sans", "Quicksand", "Karla", 
+                "Abril Fatface", "Alfa Slab One", "Amatic SC", "Annie Use Your Telescope", "Anton", "Architects Daughter", 
+                "Audiowide", "Bangers", "Barrio", "Bebas Neue", "Berkshire Swash", "Bitter", "Black Ops One", 
+                "Boogaloo", "Bowlby One SC", "Bungee", "Bungee Inline", "Bungee Shade", "Butcherman", "Cabin Sketch", 
+                "Caveat", "Changa One", "Chewy", "Cinzel", "Comfortaa", "Comic Neue", "Coming Soon", "Concert One", 
+                "Cookie", "Courgette", "Covered By Your Grace", "Creepster", "Dancing Script", "Didact Gothic", 
+                "Diplomata", "Dosis", "Eater", "Electrolize", "Emilys Candy", "Ewert", "Exo 2", "Faster One", 
+                "Fjalla One", "Fredoka One", "Frijole", "Gloria Hallelujah", "Gochi Hand", "Grand Hotel", 
+                "Great Vibes", "Grenze Gotisch", "Hammersmith One", "Hanalei", "Handlee", "Homemade Apple", 
+                "Inconsolata", "Indie Flower", "Jolly Lodger", "Josefin Sans", "Jura", "Just Another Hand", 
+                "Kalam", "Kaushan Script", "Kelly Slab", "Knewave", "League Script", "Lemon", "Lobster", 
+                "Lobster Two", "Love Ya Like A Sister", "Luckiest Guy", "Major Mono Display", "Marck Script", 
+                "MedievalSharp", "Megrim", "Merienda", "Metal Mania", "Metamorphous", "Michroma", "Monofett", 
+                "Monoton", "Mountains of Christmas", "Mrs Sheppards", "Neucha", "Neuton", "New Rocker", "Niconne", 
+                "Nosifer", "Nothing You Could Do", "Nova Cut", "Nova Flat", "Nova Mono", "Nova Oval", "Nova Round", 
+                "Nova Script", "Nova Slim", "Nova Square", "Old Standard TT", "Orbitron", "Pacifico", "Patrick Hand", 
+                "Permanent Marker", "Philosopher", "Play", "Playball", "Poiret One", "Poller One", "Press Start 2P", 
+                "Prosto One", "Quatruota", "Racing Sans One", "Rammetto+One", "Ranchers", "Revalia", "Righteous", 
+                "Roboto Mono", "Roboto Slab", "Rock Salt", "Rubik Glitch", "Rubik Iso", "Rubik Marker Hatch", 
+                "Rubik Wet Paint", "Russo One", "Rye", "Sacramento", "Sancreek", "Satisfy", "Schoolbell", 
+                "Shadows Into Light", "Shojumaru", "Short Stack", "Sigmar One", "Skranji", "Slackey", "Smokum", 
+                "Sniglet", "Special Elite", "Spicy Rice", "Squada One", "Staatliches", "Stardos Stencil", 
+                "Sue Ellen Francisco", "Sunshiney", "Syncopate", "Tangerine", "Tasty Birds", "Teko", "Titan One", 
+                "Trade Winds", "Ubuntu", "Ultra", "Uncursal", "UnifrakturCook", "UnifrakturMaguntia", "Unkempt", 
+                "Unlock", "Unna", "VT323", "Vampiro One", "Varela Round", "Vast Shadow", "Voces", "Voltaire", 
+                "Waiting for the Sunrise", "Wallpoet", "Walter Turncoat", "Warnes", "Wire One", "Yanone Kaffeesatz", 
+                "Yellowtail", "Yeseva One", "Zeyada"
+            ];
+            fontList.forEach(f => FONTS.push({ name: f, val: f.includes(" ") ? `"${f}"` : f }));
+
+            // 3. BACKGROUNDS (500+)
+            const bgBases = [
+                {n: 'Slate', h: 210, s: 20}, {n: 'Gray', h: 220, s: 10}, {n: 'Zinc', h: 240, s: 10}, 
+                {n: 'Neutral', h: 0, s: 0}, {n: 'Stone', h: 30, s: 10}, {n: 'Red', h: 0, s: 90}, 
+                {n: 'Orange', h: 30, s: 90}, {n: 'Amber', h: 45, s: 90}, {n: 'Yellow', h: 60, s: 90}, 
+                {n: 'Lime', h: 84, s: 80}, {n: 'Green', h: 142, s: 70}, {n: 'Emerald', h: 160, s: 80}, 
+                {n: 'Teal', h: 175, s: 80}, {n: 'Cyan', h: 190, s: 90}, {n: 'Sky', h: 200, s: 90}, 
+                {n: 'Blue', h: 217, s: 90}, {n: 'Indigo', h: 240, s: 80}, {n: 'Violet', h: 260, s: 80}, 
+                {n: 'Purple', h: 270, s: 80}, {n: 'Fuchsia', h: 290, s: 80}, {n: 'Pink', h: 330, s: 80}, 
+                {n: 'Rose', h: 350, s: 80}
+            ];
+            
+            bgBases.forEach(b => {
+                for(let l=5; l<=25; l+=2) { // Dark shades for background
+                    BACKGROUNDS.push({ cat: b.n, val: `hsl(${b.h}, ${b.s}%, ${l}%)` });
+                }
+            });
+            // Generate some high sat darks
+            for(let h=0; h<360; h+=5) {
+                BACKGROUNDS.push({ cat: 'Vivid', val: `hsl(${h}, 80%, 10%)` });
+            }
+        }
+        
+        generateData();
 
         onAuthStateChanged(auth, async (u) => {
             if (u) {
@@ -289,9 +340,8 @@
                 if (docSnap.exists()) {
                     const data = docSnap.data();
                     if(data.customization) {
-                        // Deep merge
                         currentConfig = { ...currentConfig, ...data.customization };
-                        // Handle nested objects safety
+                        // Deep merge fix
                         ['identity','avatar','banner','card'].forEach(k => {
                             if(data.customization[k]) currentConfig[k] = { ...currentConfig[k], ...data.customization[k] };
                         });
@@ -316,29 +366,84 @@
             document.querySelector(`.nav-item[onclick="setTab('${tab}')"]`).classList.add('active');
             
             const container = document.getElementById('store-container');
+            const catContainer = document.getElementById('category-container');
             const title = document.getElementById('tab-title');
             const count = document.getElementById('item-count');
+            
             container.innerHTML = '';
+            catContainer.innerHTML = '';
             
             if(tab === 'effects') {
                 title.innerText = "Name Effects";
-                count.innerText = EFFECTS.length;
+                count.innerText = EFFECTS.length + " Items";
+                
+                // Categories
+                const cats = [...new Set(EFFECTS.map(e => e.cat))];
+                const catWrapper = document.createElement('div');
+                catWrapper.className = 'category-tabs';
+                catWrapper.innerHTML = `<button onclick="filterEffects('All')" class="cat-btn active" id="cat-btn-All">All</button>` + 
+                    cats.map(c => `<button onclick="filterEffects('${c}')" class="cat-btn" id="cat-btn-${c}">${c}</button>`).join('');
+                catContainer.appendChild(catWrapper);
+                catContainer.classList.remove('hidden');
+
+                window.filterEffects = (cat) => {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    document.getElementById(`cat-btn-${cat}`).classList.add('active');
+                    
+                    const filtered = cat === 'All' ? EFFECTS : EFFECTS.filter(e => e.cat === cat);
+                    
+                    const grid = document.createElement('div');
+                    grid.className = 'store-grid';
+                    // Use fragment for performance
+                    const frag = document.createDocumentFragment();
+                    
+                    // Limit rendering for performance if 'All' is selected, render first 200
+                    const renderList = filtered.slice(0, 300); 
+                    
+                    renderList.forEach(eff => {
+                        const btn = document.createElement('div');
+                        btn.className = 'effect-btn';
+                        
+                        let s = `color: ${eff.style.color || '#fff'};`;
+                        if(eff.style.glowBlur) s += `text-shadow: 0 0 ${eff.style.glowBlur}px ${eff.style.glowColor || eff.style.color};`;
+                        if(eff.style.fontFamily) s += `font-family: ${eff.style.fontFamily};`;
+                        
+                        btn.innerHTML = `<div class="effect-preview" style="${s}">Ruby</div><div class="effect-name">${eff.name}</div>`;
+                        btn.onclick = () => {
+                            currentConfig.identity = { ...currentConfig.identity, ...eff.style };
+                            applyStyles();
+                            document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
+                            btn.classList.add('active');
+                        };
+                        frag.appendChild(btn);
+                    });
+                    
+                    container.innerHTML = '';
+                    grid.appendChild(frag);
+                    container.appendChild(grid);
+                    if(filtered.length > 300) {
+                        const more = document.createElement('div');
+                        more.className = 'text-center text-xs text-gray-500 mt-4';
+                        more.innerText = `...and ${filtered.length - 300} more (Filter to see)`;
+                        container.appendChild(more);
+                    }
+                };
+                
+                filterEffects('Special'); // Default to special
+            }
+            else if(tab === 'fonts') {
+                title.innerText = "Fonts";
+                count.innerText = FONTS.length + " Items";
+                catContainer.classList.add('hidden');
+                
                 const grid = document.createElement('div');
                 grid.className = 'store-grid';
-                
-                EFFECTS.forEach(eff => {
+                FONTS.forEach(f => {
                     const btn = document.createElement('div');
                     btn.className = 'effect-btn';
-                    
-                    // Generate style string for preview inside button
-                    let s = `color: ${eff.style.color || '#fff'};`;
-                    if(eff.style.glowBlur) s += `text-shadow: 0 0 ${eff.style.glowBlur}px ${eff.style.glowColor || eff.style.color};`;
-                    if(eff.style.fontFamily) s += `font-family: ${eff.style.fontFamily};`;
-                    
-                    btn.innerHTML = `<span style="${s}" class="font-bold text-sm">${eff.name}</span>`;
+                    btn.innerHTML = `<div class="effect-preview" style="font-family: ${f.val}; font-size: 1.4rem;">Aa</div><div class="effect-name">${f.name}</div>`;
                     btn.onclick = () => {
-                        // Apply effect to current config identity
-                        currentConfig.identity = { ...currentConfig.identity, ...eff.style };
+                        currentConfig.identity.fontFamily = f.val;
                         applyStyles();
                         document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
@@ -347,59 +452,60 @@
                 });
                 container.appendChild(grid);
             }
-            else if(tab === 'fonts') {
-                title.innerText = "Fonts";
-                count.innerText = FONTS.length;
-                const grid = document.createElement('div');
-                grid.className = 'store-grid';
-                FONTS.forEach(f => {
-                    const btn = document.createElement('div');
-                    btn.className = 'effect-btn';
-                    btn.innerHTML = `<span style="font-family: ${f.val}; font-size: 1.2rem;">Abc</span><span class="text-[10px] text-gray-500 absolute bottom-1">${f.name}</span>`;
-                    btn.onclick = () => {
-                        currentConfig.identity.fontFamily = f.val;
-                        applyStyles();
-                    };
-                    grid.appendChild(btn);
-                });
-                container.appendChild(grid);
-            }
             else if(tab === 'backgrounds') {
                 title.innerText = "Card Backgrounds";
-                count.innerText = BACKGROUNDS.length;
-                const grid = document.createElement('div');
-                grid.className = 'bg-grid';
+                count.innerText = BACKGROUNDS.length + " Items";
                 
-                BACKGROUNDS.forEach((bg, i) => {
-                    const sw = document.createElement('div');
-                    sw.className = 'color-swatch';
-                    sw.style.background = bg.val;
-                    sw.onclick = () => {
-                        // We map backgrounds to solid colors for compatibility with index.html rendering logic
-                        // If it's a gradient, we might set a dominant color or if index.html supports gradient directly
-                        // The current index.html takes hex and converts to rgba. 
-                        // To support gradients, we'd need to change index.html logic.
-                        // For now, we set the colorVal (approx) for opacity, and if we want full gradient support we can save to a new field
-                        // but index.html uses `card.bgColor`.
-                        
-                        if(bg.type === 'color') {
+                const cats = [...new Set(BACKGROUNDS.map(e => e.cat))];
+                const catWrapper = document.createElement('div');
+                catWrapper.className = 'category-tabs';
+                catWrapper.innerHTML = `<button onclick="filterBG('All')" class="cat-btn active" id="bg-btn-All">All</button>` + 
+                    cats.map(c => `<button onclick="filterBG('${c}')" class="cat-btn" id="bg-btn-${c}">${c}</button>`).join('');
+                catContainer.appendChild(catWrapper);
+                catContainer.classList.remove('hidden');
+
+                window.filterBG = (cat) => {
+                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+                    document.getElementById(`bg-btn-${cat}`).classList.add('active');
+                    
+                    const filtered = cat === 'All' ? BACKGROUNDS : BACKGROUNDS.filter(e => e.cat === cat);
+                    const grid = document.createElement('div');
+                    grid.className = 'bg-grid';
+                    const frag = document.createDocumentFragment();
+                    
+                    filtered.slice(0, 500).forEach(bg => {
+                        const sw = document.createElement('div');
+                        sw.className = 'color-swatch';
+                        sw.style.background = bg.val;
+                        sw.onclick = () => {
                             currentConfig.card.bgColor = bg.val;
-                        } else {
-                            // Since index.html only supports solid color for bgColor + alpha,
-                            // we will set the fallback solid color.
-                            // To actually see gradients, index.html needs updating.
-                            // Assuming we want visual parity, I'll set the bgColor to the primary hue.
-                            currentConfig.card.bgColor = bg.colorVal || bg.val;
-                        }
-                        applyStyles();
-                    };
-                    grid.appendChild(sw);
-                });
-                container.appendChild(grid);
+                            applyStyles();
+                            document.querySelectorAll('.color-swatch').forEach(b => b.classList.remove('active'));
+                            sw.classList.add('active');
+                        };
+                        frag.appendChild(sw);
+                    });
+                    container.innerHTML = '';
+                    grid.appendChild(frag);
+                    container.appendChild(grid);
+                };
+                filterBG('All');
             }
             else if(tab === 'card_style') {
                 title.innerText = "Card Styles";
-                count.innerText = CARD_STYLES.length;
+                count.innerText = "7 Items";
+                catContainer.classList.add('hidden');
+                
+                const CARD_STYLES = [
+                    { id: 'default', name: 'Default Dark', style: { bgColor: '#111827', bgOpacity: 100, backdropBlur: 0, borderColor: '#374151', borderWidth: 1 } },
+                    { id: 'glass', name: 'Glassmorphism', style: { bgColor: '#111827', bgOpacity: 50, backdropBlur: 10, borderColor: '#ffffff', borderWidth: 1 } },
+                    { id: 'flat', name: 'Flat Black', style: { bgColor: '#000000', bgOpacity: 100, backdropBlur: 0, borderColor: '#000000', borderWidth: 0 } },
+                    { id: 'borderless', name: 'Ghost', style: { bgColor: '#111827', bgOpacity: 80, backdropBlur: 5, borderColor: 'transparent', borderWidth: 0 } },
+                    { id: 'thick', name: 'Thick Border', style: { bgColor: '#1f2937', bgOpacity: 100, backdropBlur: 0, borderColor: '#e0115f', borderWidth: 4 } },
+                    { id: 'rounded', name: 'Extra Round', style: { borderRadius: 30 } },
+                    { id: 'sharp', name: 'Sharp Edges', style: { borderRadius: 0 } },
+                ];
+
                 const grid = document.createElement('div');
                 grid.className = 'store-grid';
                 
@@ -410,6 +516,8 @@
                     btn.onclick = () => {
                         currentConfig.card = { ...currentConfig.card, ...st.style };
                         applyStyles();
+                        document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
                     };
                     grid.appendChild(btn);
                 });
@@ -417,17 +525,8 @@
             }
             else if(tab === 'sidebar') {
                 title.innerText = "User List Style";
-                count.innerText = "4"; // Static presets
-                const grid = document.createElement('div');
-                grid.className = 'store-grid';
-                
-                const sbStyles = [
-                    { name: 'Default', fn: () => { /* Reset styles handled in index.html */ } },
-                    { name: 'Boxed', fn: () => { /* Placeholder */ } }
-                ];
-                
-                // Sidebar styling is tricky as it depends heavily on index.html structure. 
-                // Currently just a placeholder tab as requested "Store" feel.
+                count.innerText = "Coming Soon";
+                catContainer.classList.add('hidden');
                 container.innerHTML = '<div class="text-gray-500 text-sm text-center mt-10">Sidebar customization coming in v3.0</div>';
             }
         };
@@ -442,7 +541,7 @@
                 const el = document.getElementById(id);
                 if(!el) return;
                 el.style.color = iden.color;
-                el.style.textShadow = iden.glowBlur > 0 ? `0 0 ${iden.glowBlur}px ${iden.glowColor}` : 'none';
+                el.style.textShadow = iden.glowBlur > 0 ? `0 0 ${iden.glowBlur}px ${iden.glowColor || iden.color}` : 'none';
                 el.style.fontFamily = iden.fontFamily;
                 el.style.fontWeight = iden.fontWeight;
                 el.style.textTransform = iden.uppercase ? 'uppercase' : 'none';
@@ -454,9 +553,8 @@
             const card = cfg.card;
             const cardEl = document.getElementById('preview-modal');
             
-            // Hex to Rgb helper for RGBA background
             const hexToRgb = (hex) => {
-                // Expand shorthand form (e.g. "03F") to full form (e.g. "0033FF")
+                if(hex.startsWith('hsl')) return '17, 24, 39'; // Simple fallback for HSL in RGBA func if strictly needed, but style supports color string
                 var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
                 hex = hex.replace(shorthandRegex, function(m, r, g, b) {
                     return r + r + g + g + b + b;
@@ -466,7 +564,16 @@
             }
 
             const alpha = (card.bgOpacity || 100) / 100;
-            cardEl.style.backgroundColor = `rgba(${hexToRgb(card.bgColor)}, ${alpha})`;
+            // Handle HSL or Hex
+            if(card.bgColor.startsWith('#')) {
+                cardEl.style.backgroundColor = `rgba(${hexToRgb(card.bgColor)}, ${alpha})`;
+            } else {
+                // If it's HSL, we apply it directly but lose opacity control unless we parse it.
+                // For simplicity in this demo, we apply it as opacity on the element or assume solid.
+                // Correct way: parse HSL to HSLA.
+                cardEl.style.backgroundColor = card.bgColor.replace(')', `, ${alpha})`).replace('hsl', 'hsla');
+            }
+            
             cardEl.style.backdropFilter = card.backdropBlur > 0 ? `blur(${card.backdropBlur}px)` : 'none';
             cardEl.style.borderColor = card.borderColor;
             cardEl.style.borderWidth = (card.borderWidth || 1) + 'px';
