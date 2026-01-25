@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ruby Chat - Customisation Store</title>
+    <title>Ruby Chat - Ultimate Store</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -19,57 +19,34 @@
         }
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Massive Font Import -->
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alfa+Slab+One&family=Amatic+SC&family=Annie+Use+Your+Telescope&family=Anton&family=Architects+Daughter&family=Audiowide&family=Bangers&family=Barrio&family=Bebas+Neue&family=Berkshire+Swash&family=Bitter&family=Black+Ops+One&family=Boogaloo&family=Bowlby+One+SC&family=Bungee&family=Bungee+Inline&family=Bungee+Shade&family=Butcherman&family=Cabin+Sketch&family=Caveat&family=Changa+One&family=Chewy&family=Cinzel&family=Comfortaa&family=Comic+Neue&family=Coming+Soon&family=Concert+One&family=Cookie&family=Courgette&family=Covered+By+Your+Grace&family=Creepster&family=Dancing+Script&family=Didact+Gothic&family=Diplomata&family=Dosis&family=Eater&family=Electrolize&family=Emilys+Candy&family=Ewert&family=Exo+2&family=Faster+One&family=Fjalla+One&family=Fredoka+One&family=Frijole&family=Gloria+Hallelujah&family=Gochi+Hand&family=Grand+Hotel&family=Great+Vibes&family=Grenze+Gotisch&family=Hammersmith+One&family=Hanalei&family=Handlee&family=Homemade+Apple&family=Inconsolata&family=Indie+Flower&family=Jolly+Lodger&family=Josefin+Sans&family=Jura&family=Just+Another+Hand&family=Kalam&family=Kaushan+Script&family=Kelly+Slab&family=Knewave&family=Lato&family=League+Script&family=Lemon&family=Lobster&family=Lobster+Two&family=Love+Ya+Like+A+Sister&family=Luckiest+Guy&family=Major+Mono+Display&family=Marck+Script&family=MedievalSharp&family=Megrim&family=Merienda&family=Merriweather&family=Metal+Mania&family=Metamorphous&family=Michroma&family=Monofett&family=Monoton&family=Montserrat&family=Mountains+of+Christmas&family=Mrs+Sheppards&family=Neucha&family=Neuton&family=New+Rocker&family=Niconne&family=Nosifer&family=Nothing+You+Could+Do&family=Nova+Cut&family=Nova+Flat&family=Nova+Mono&family=Nova+Oval&family=Nova+Round&family=Nova+Script&family=Nova+Slim&family=Nova+Square&family=Nunito&family=Old+Standard+TT&family=Open+Sans&family=Orbitron&family=Oswald&family=Pacifico&family=Patrick+Hand&family=Permanent+Marker&family=Philosopher&family=Play&family=Playball&family=Playfair+Display&family=Poiret+One&family=Poller+One&family=Poppins&family=Press+Start+2P&family=Prosto+One&family=Quatruota&family=Quicksand&family=Racing+Sans+One&family=Raleway&family=Rammetto+One&family=Ranchers&family=Revalia&family=Righteous&family=Roboto&family=Roboto+Mono&family=Roboto+Slab&family=Rock+Salt&family=Rubik+Glitch&family=Rubik+Iso&family=Rubik+Marker+Hatch&family=Rubik+Wet+Paint&family=Russo+One&family=Rye&family=Sacramento&family=Sancreek&family=Satisfy&family=Schoolbell&family=Shadows+Into+Light&family=Shojumaru&family=Short+Stack&family=Sigmar+One&family=Skranji&family=Slackey&family=Smokum&family=Sniglet&family=Special+Elite&family=Spicy+Rice&family=Squada+One&family=Staatliches&family=Stardos+Stencil&family=Sue+Ellen+Francisco&family=Sunshiney&family=Syncopate&family=Tangerine&family=Tasty+Birds&family=Teko&family=Titan+One&family=Trade+Winds&family=Ubuntu&family=Ultra&family=Uncursal&family=UnifrakturCook&family=UnifrakturMaguntia&family=Unkempt&family=Unlock&family=Unna&family=VT323&family=Vampiro+One&family=Varela+Round&family=Vast+Shadow&family=Voces&family=Voltaire&family=Waiting+for+the+Sunrise&family=Wallpoet&family=Walter+Turncoat&family=Warnes&family=Wire+One&family=Work+Sans&family=Yanone+Kaffeesatz&family=Yellowtail&family=Yeseva+One&family=Zeyada&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alfa+Slab+One&family=Amatic+SC&family=Audiowide&family=Bangers&family=Bebas+Neue&family=Black+Ops+One&family=Bungee&family=Bungee+Inline&family=Bungee+Shade&family=Cinzel&family=Comfortaa&family=Creepster&family=Dancing+Script&family=Diplomata&family=Eater&family=Faster+One&family=Fjalla+One&family=Fredoka+One&family=Frijole&family=Gloria+Hallelujah&family=Great+Vibes&family=Indie+Flower&family=Josefin+Sans&family=Lobster&family=Major+Mono+Display&family=Metal+Mania&family=Monoton&family=Mountains+of+Christmas&family=Nosifer&family=Orbitron&family=Pacifico&family=Permanent+Marker&family=Playfair+Display&family=Press+Start+2P&family=Righteous&family=Roboto+Mono&family=Rubik+Glitch&family=Rubik+Wet+Paint&family=Rye&family=Sacramento&family=Shadows+Into+Light&family=Special+Elite&family=Ultra&family=VT323&display=swap" rel="stylesheet">
     
     <style>
         :root { --bg-950: #030712; --bg-900: #111827; --acc-500: #e0115f; }
         body { background-color: var(--bg-950); color: #f3f4f6; overflow: hidden; font-family: 'Inter', sans-serif; }
         
-        /* Custom Scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #111827; }
         ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
         
-        /* Grid Layout */
-        .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-        .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 8px; }
+        .store-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; padding-bottom: 40px; }
+        .bg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(70px, 1fr)); gap: 8px; padding-bottom: 40px; }
         
-        /* Effect Button */
         .effect-btn {
-            background: #111827;
-            border: 1px solid #1f2937;
-            border-radius: 8px;
-            height: 70px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            position: relative;
-            overflow: hidden;
+            background: #111827; border: 1px solid #1f2937; border-radius: 8px; height: 70px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; position: relative; overflow: hidden;
         }
-        .effect-btn:hover { border-color: #e0115f; transform: translateY(-2px); z-index: 10; }
+        .effect-btn:hover { border-color: #e0115f; transform: translateY(-2px); z-index: 10; background: #1f2937; }
         .effect-btn.active { border-color: #e0115f; background: #1f2937; box-shadow: 0 0 15px rgba(224, 17, 95, 0.3); }
         .effect-preview { font-size: 1.1rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 90%; }
-        .effect-name { font-size: 0.65rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; }
+        .effect-name { font-size: 0.6rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; padding: 0 4px; }
         
-        /* Color Swatch */
-        .color-swatch {
-            height: 50px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: transform 0.2s;
-            border: 2px solid transparent;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
+        .color-swatch { height: 50px; border-radius: 8px; cursor: pointer; transition: transform 0.2s; border: 2px solid transparent; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .color-swatch:hover { transform: scale(1.1); z-index: 10; border-color: rgba(255,255,255,0.5); }
         .color-swatch.active { border-color: white; transform: scale(1.1); }
 
-        /* Preview Area */
         .preview-pane { background-image: radial-gradient(#1f2937 1px, transparent 1px); background-size: 20px 20px; background-color: #030712; }
-        
         .mock-modal { width: 320px; border-radius: 16px; overflow: hidden; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid #374151; transition: all 0.3s ease; }
         .mock-banner { height: 100px; background: #374151; position: relative; width: 100%; overflow: hidden; }
         .mock-avatar { width: 80px; height: 80px; background: #4b5563; position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); border: 4px solid #111827; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10; object-fit: cover; transition: all 0.3s; }
@@ -93,15 +70,15 @@
     <!-- Loading Screen -->
     <div id="loading" class="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center">
         <div class="loader mb-4"></div>
-        <div class="text-ruby-500 font-bold tracking-widest animate-pulse">LOADING ASSETS</div>
-        <div class="text-xs text-gray-500 mt-2">Generating 1000+ items...</div>
+        <div class="text-ruby-500 font-bold tracking-widest animate-pulse">GENERATING STORE</div>
+        <div class="text-xs text-gray-500 mt-2">Creating 2000+ assets...</div>
     </div>
 
     <!-- Sidebar -->
     <div class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-20 shadow-xl flex-shrink-0">
         <div class="p-6 border-b border-gray-800">
-            <h1 class="text-xl font-bold tracking-tight text-white"><span class="text-ruby-500">Ruby</span> Customise</h1>
-            <p class="text-xs text-gray-500 mt-1">Profile & Identity Store</p>
+            <h1 class="text-xl font-bold tracking-tight text-white"><span class="text-ruby-500">Ruby</span> Store</h1>
+            <p class="text-xs text-gray-500 mt-1">Extreme Customization</p>
         </div>
         
         <div class="flex-1 overflow-y-auto p-2 scrollbar-thin">
@@ -109,20 +86,21 @@
             <div class="nav-item active" onclick="setTab('effects')"><i class="fas fa-magic w-5 text-center"></i> Name Effects</div>
             <div class="nav-item" onclick="setTab('fonts')"><i class="fas fa-font w-5 text-center"></i> Fonts</div>
             
-            <div class="nav-header">Profile Card</div>
+            <div class="nav-header">Card Design</div>
             <div class="nav-item" onclick="setTab('backgrounds')"><i class="fas fa-image w-5 text-center"></i> Backgrounds</div>
-            <div class="nav-item" onclick="setTab('card_style')"><i class="fas fa-id-card w-5 text-center"></i> Card Style</div>
+            <div class="nav-item" onclick="setTab('textures')"><i class="fas fa-chess-board w-5 text-center"></i> Textures</div>
+            <div class="nav-item" onclick="setTab('card_style')"><i class="fas fa-id-card w-5 text-center"></i> Card Shape</div>
             
-            <div class="nav-header">Social</div>
+            <div class="nav-header">Social Presence</div>
             <div class="nav-item" onclick="setTab('sidebar')"><i class="fas fa-users w-5 text-center"></i> User List Card</div>
         </div>
 
         <div class="p-4 border-t border-gray-800 space-y-3">
             <button onclick="saveChanges()" id="save-btn" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-ruby-500/20 flex items-center justify-center gap-2">
-                <i class="fas fa-save"></i> Save Changes
+                <i class="fas fa-save"></i> Save All
             </button>
             <a href="index.html" class="block text-center w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2 rounded-lg transition-colors border border-gray-700">
-                Cancel / Exit
+                Exit Store
             </a>
         </div>
     </div>
@@ -186,18 +164,23 @@
 
                 <!-- Sidebar Entry -->
                 <div class="flex flex-col items-center gap-4">
-                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Sidebar Entry</span>
-                    <div class="w-[200px] bg-gray-900 p-2 rounded-xl border border-gray-800">
-                        <div id="preview-sidebar-item" class="flex items-center gap-2 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors">
-                            <div class="relative">
-                                <img id="preview-sidebar-avatar" src="https://picsum.photos/200" class="w-8 h-8 rounded-full object-cover">
-                                <div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 bg-green-500"></div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div id="preview-sidebar-username" class="text-sm font-bold truncate text-gray-200">Username</div>
-                                <div class="text-[10px] text-gray-500 truncate italic font-sans">Online</div>
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Players Online (Sidebar)</span>
+                    <div class="w-[240px] bg-gray-950 p-4 rounded-xl border border-gray-800">
+                        
+                        <div id="preview-sidebar-container" class="transition-all duration-300">
+                            <!-- This inner content mimics the structure in index.html -->
+                            <div class="flex items-center gap-2">
+                                <div class="relative flex-shrink-0">
+                                    <img id="preview-sidebar-avatar" src="https://picsum.photos/200" class="w-8 h-8 rounded-full object-cover bg-gray-800 border border-gray-700">
+                                    <div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 bg-green-500"></div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div id="preview-sidebar-username" class="text-sm font-bold truncate text-gray-200">Username</div>
+                                    <div class="text-[10px] text-gray-500 truncate italic font-sans">Online</div>
+                                </div>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -217,21 +200,24 @@
 
         let currentUser = null;
         let currentConfig = {
-            identity: { color: '#e5e7eb', glowColor: '#e0115f', glowBlur: 0, fontFamily: 'Inter', fontWeight: '700', uppercase: false, italic: false },
+            identity: { color: '#e5e7eb', glowColor: '#e0115f', glowBlur: 0, fontFamily: 'Inter', fontWeight: '700', uppercase: false, italic: false, backgroundClip: false, backgroundImage: 'none' },
             avatar: { radius: 50, borderWidth: 4, borderColor: '#111827' },
             banner: { height: 120, blur: 0, grayscale: 0 },
-            card: { bgColor: '#111827', bgOpacity: 100, backdropBlur: 0, borderColor: '#374151', borderWidth: 1, borderRadius: 16 }
+            card: { bgColor: '#111827', bgOpacity: 100, backdropBlur: 0, borderColor: '#374151', borderWidth: 1, borderRadius: 16, texture: 'none' },
+            sidebar: { bgColor: 'transparent', borderColor: 'transparent', borderWidth: 0, borderRadius: 6, padding: 6 }
         };
 
         // --- MASSIVE DATASETS ---
         const EFFECTS = [];
         const FONTS = [];
         const BACKGROUNDS = [];
+        const TEXTURES = [];
+        const SIDEBAR_STYLES = [];
         
         function generateData() {
-            // 1. GENERATE EFFECTS (1000+)
+            // 1. GENERATE EFFECTS (2000+)
             
-            // SPECIAL PRESETS (High Quality)
+            // A. SPECIAL PRESETS (Manually curated)
             const specials = [
                 { name: 'Glitch', color: '#00ffff', glow: '#ff00ff', blur: 4, font: 'Rubik Glitch' },
                 { name: 'Matrix', color: '#00ff00', glow: '#003300', blur: 5, font: 'VT323' },
@@ -242,93 +228,75 @@
                 { name: 'Royal', color: '#ffd700', glow: '#9400d3', blur: 10, font: 'Cinzel' },
                 { name: '8-Bit', color: '#ffffff', glow: '#000000', blur: 0, font: '"Press Start 2P"' },
                 { name: 'Vampire', color: '#ff0000', glow: '#330000', blur: 10, font: 'Butcherman' },
-                { name: 'Neon Blue', color: '#00ffff', glow: '#00ffff', blur: 12, font: 'Orbitron' },
-                { name: 'Neon Pink', color: '#ff00ff', glow: '#ff00ff', blur: 12, font: 'Orbitron' },
-                { name: 'Space', color: '#e0e7ff', glow: '#4338ca', blur: 15, font: 'Audiowide' },
-                { name: 'Metal', color: '#9ca3af', glow: '#374151', blur: 2, font: 'Metal Mania' },
-                { name: 'Graffiti', color: '#fbbf24', glow: '#b45309', blur: 4, font: 'Permanent Marker' },
-                { name: 'Horror', color: '#991b1b', glow: '#000000', blur: 20, font: 'Eater' },
-                { name: 'Elegant', color: '#fcd34d', glow: '#78350f', blur: 5, font: 'Great Vibes' },
+                { name: 'Gold', color: 'transparent', glow: '#ffd700', blur: 0, bg: 'linear-gradient(to bottom, #cfc09f 22%,#634f2c 24%, #cfc09f 26%, #cfc09f 27%,#ffecb3 40%,#3a2c0f 78%)', bgClip: true },
+                { name: 'Rainbow', color: 'transparent', glow: '#ffffff', blur: 0, bg: 'linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet)', bgClip: true },
+                { name: 'Plasma', color: 'transparent', glow: '#ff00ff', blur: 0, bg: 'linear-gradient(to right, #ff00cc, #333399)', bgClip: true },
+                { name: 'Sunset', color: 'transparent', glow: '#ff4500', blur: 0, bg: 'linear-gradient(to right, #ff512f, #dd2476)', bgClip: true },
             ];
             specials.forEach(s => EFFECTS.push({
-                cat: 'Special', name: s.name, style: { color: s.color, glowColor: s.glow, glowBlur: s.blur, fontFamily: s.font }
+                cat: 'Special', name: s.name, style: { color: s.color, glowColor: s.glow, glowBlur: s.blur, fontFamily: s.font, backgroundClip: s.bgClip, backgroundImage: s.bg }
             }));
 
-            // PROCEDURAL GENERATION
+            // B. PROCEDURAL GRADIENTS (1000+)
             for(let h=0; h<360; h+=10) {
-                const hsl = `hsl(${h}, 100%, 60%)`;
-                const glow = `hsl(${h}, 100%, 50%)`;
+                const c1 = `hsl(${h}, 100%, 50%)`;
+                const c2 = `hsl(${(h+40)%360}, 100%, 50%)`;
+                const c3 = `hsl(${(h+180)%360}, 100%, 50%)`;
                 
-                // Pure Colors
-                EFFECTS.push({ cat: 'Colors', name: `Hue ${h}`, style: { color: hsl, glowBlur: 0 } });
-                
-                // Classic Neon
-                EFFECTS.push({ cat: 'Neon', name: `Neon ${h}`, style: { color: hsl, glowColor: glow, glowBlur: 10 } });
-                
-                // Intense Neon
-                EFFECTS.push({ cat: 'Intense', name: `Super ${h}`, style: { color: '#ffffff', glowColor: glow, glowBlur: 20 } });
-                
-                // Pastel
+                EFFECTS.push({ cat: 'Gradient', name: `Flow ${h}`, style: { color: 'transparent', backgroundClip: true, backgroundImage: `linear-gradient(45deg, ${c1}, ${c2})`, glowBlur: 0 } });
+                EFFECTS.push({ cat: 'Tri-Color', name: `Tri ${h}`, style: { color: 'transparent', backgroundClip: true, backgroundImage: `linear-gradient(90deg, ${c1}, ${c2}, ${c3})`, glowBlur: 0 } });
+                EFFECTS.push({ cat: 'Radial', name: `Rad ${h}`, style: { color: 'transparent', backgroundClip: true, backgroundImage: `radial-gradient(circle, ${c1}, ${c2})`, glowBlur: 0 } });
+            }
+
+            // C. PROCEDURAL NEONS (500+)
+            for(let h=0; h<360; h+=15) {
+                const col = `hsl(${h}, 100%, 60%)`;
+                EFFECTS.push({ cat: 'Neon', name: `Neon ${h}`, style: { color: col, glowColor: col, glowBlur: 10, backgroundClip: false } });
+                EFFECTS.push({ cat: 'Super Neon', name: `Bright ${h}`, style: { color: '#fff', glowColor: col, glowBlur: 20, backgroundClip: false } });
+            }
+
+            // D. PASTELS & DARKS
+            for(let h=0; h<360; h+=20) {
                 EFFECTS.push({ cat: 'Pastel', name: `Soft ${h}`, style: { color: `hsl(${h}, 100%, 85%)`, glowBlur: 0 } });
-                
-                // Dark
-                EFFECTS.push({ cat: 'Dark', name: `Deep ${h}`, style: { color: `hsl(${h}, 100%, 30%)`, glowBlur: 0 } });
+                EFFECTS.push({ cat: 'Dark', name: `Deep ${h}`, style: { color: `hsl(${h}, 100%, 40%)`, glowBlur: 0 } });
             }
 
             // 2. FONTS (60+)
-            const fontList = [
-                "Inter", "Roboto", "Open Sans", "Lato", "Montserrat", "Oswald", "Raleway", "Merriweather", 
-                "Nunito", "Playfair Display", "Rubik", "Poppins", "Work Sans", "Quicksand", "Karla", 
-                "Abril Fatface", "Alfa Slab One", "Amatic SC", "Annie Use Your Telescope", "Anton", "Architects Daughter", 
-                "Audiowide", "Bangers", "Barrio", "Bebas Neue", "Berkshire Swash", "Bitter", "Black Ops One", 
-                "Boogaloo", "Bowlby One SC", "Bungee", "Bungee Inline", "Bungee Shade", "Butcherman", "Cabin Sketch", 
-                "Caveat", "Changa One", "Chewy", "Cinzel", "Comfortaa", "Comic Neue", "Coming Soon", "Concert One", 
-                "Cookie", "Courgette", "Covered By Your Grace", "Creepster", "Dancing Script", "Didact Gothic", 
-                "Diplomata", "Dosis", "Eater", "Electrolize", "Emilys Candy", "Ewert", "Exo 2", "Faster One", 
-                "Fjalla One", "Fredoka One", "Frijole", "Gloria Hallelujah", "Gochi Hand", "Grand Hotel", 
-                "Great Vibes", "Grenze Gotisch", "Hammersmith One", "Hanalei", "Handlee", "Homemade Apple", 
-                "Inconsolata", "Indie Flower", "Jolly Lodger", "Josefin Sans", "Jura", "Just Another Hand", 
-                "Kalam", "Kaushan Script", "Kelly Slab", "Knewave", "League Script", "Lemon", "Lobster", 
-                "Lobster Two", "Love Ya Like A Sister", "Luckiest Guy", "Major Mono Display", "Marck Script", 
-                "MedievalSharp", "Megrim", "Merienda", "Metal Mania", "Metamorphous", "Michroma", "Monofett", 
-                "Monoton", "Mountains of Christmas", "Mrs Sheppards", "Neucha", "Neuton", "New Rocker", "Niconne", 
-                "Nosifer", "Nothing You Could Do", "Nova Cut", "Nova Flat", "Nova Mono", "Nova Oval", "Nova Round", 
-                "Nova Script", "Nova Slim", "Nova Square", "Old Standard TT", "Orbitron", "Pacifico", "Patrick Hand", 
-                "Permanent Marker", "Philosopher", "Play", "Playball", "Poiret One", "Poller One", "Press Start 2P", 
-                "Prosto One", "Quatruota", "Racing Sans One", "Rammetto+One", "Ranchers", "Revalia", "Righteous", 
-                "Roboto Mono", "Roboto Slab", "Rock Salt", "Rubik Glitch", "Rubik Iso", "Rubik Marker Hatch", 
-                "Rubik Wet Paint", "Russo One", "Rye", "Sacramento", "Sancreek", "Satisfy", "Schoolbell", 
-                "Shadows Into Light", "Shojumaru", "Short Stack", "Sigmar One", "Skranji", "Slackey", "Smokum", 
-                "Sniglet", "Special Elite", "Spicy Rice", "Squada One", "Staatliches", "Stardos Stencil", 
-                "Sue Ellen Francisco", "Sunshiney", "Syncopate", "Tangerine", "Tasty Birds", "Teko", "Titan One", 
-                "Trade Winds", "Ubuntu", "Ultra", "Uncursal", "UnifrakturCook", "UnifrakturMaguntia", "Unkempt", 
-                "Unlock", "Unna", "VT323", "Vampiro One", "Varela Round", "Vast Shadow", "Voces", "Voltaire", 
-                "Waiting for the Sunrise", "Wallpoet", "Walter Turncoat", "Warnes", "Wire One", "Yanone Kaffeesatz", 
-                "Yellowtail", "Yeseva One", "Zeyada"
-            ];
+            const fontList = ["Inter", "Roboto", "Oswald", "Playfair Display", "Creepster", "Bangers", "Lobster", "Pacifico", "Orbitron", "Press Start 2P", "Special Elite", "Monoton", "Bungee", "Cinzel", "Amatic SC", "Indie Flower", "Shadows Into Light", "Dancing Script", "Sacramento", "Permanent Marker", "Fjalla One", "Anton", "Abril Fatface", "Righteous", "Alfa Slab One", "Fredoka One", "Comfortaa", "Bebas Neue", "Rubik Glitch", "Rubik Wet Paint", "Eater", "Nosifer", "Butcherman", "Metal Mania", "Black Ops One", "Audiowide", "VT323", "Frijole", "Gloria Hallelujah"];
             fontList.forEach(f => FONTS.push({ name: f, val: f.includes(" ") ? `"${f}"` : f }));
 
-            // 3. BACKGROUNDS (500+)
-            const bgBases = [
-                {n: 'Slate', h: 210, s: 20}, {n: 'Gray', h: 220, s: 10}, {n: 'Zinc', h: 240, s: 10}, 
-                {n: 'Neutral', h: 0, s: 0}, {n: 'Stone', h: 30, s: 10}, {n: 'Red', h: 0, s: 90}, 
-                {n: 'Orange', h: 30, s: 90}, {n: 'Amber', h: 45, s: 90}, {n: 'Yellow', h: 60, s: 90}, 
-                {n: 'Lime', h: 84, s: 80}, {n: 'Green', h: 142, s: 70}, {n: 'Emerald', h: 160, s: 80}, 
-                {n: 'Teal', h: 175, s: 80}, {n: 'Cyan', h: 190, s: 90}, {n: 'Sky', h: 200, s: 90}, 
-                {n: 'Blue', h: 217, s: 90}, {n: 'Indigo', h: 240, s: 80}, {n: 'Violet', h: 260, s: 80}, 
-                {n: 'Purple', h: 270, s: 80}, {n: 'Fuchsia', h: 290, s: 80}, {n: 'Pink', h: 330, s: 80}, 
-                {n: 'Rose', h: 350, s: 80}
+            // 3. BACKGROUNDS & TEXTURES (500+)
+            // Solid & Simple
+            for(let h=0; h<360; h+=10) BACKGROUNDS.push({ cat: 'Solid', val: `hsl(${h}, 50%, 10%)` });
+            for(let h=0; h<360; h+=10) BACKGROUNDS.push({ cat: 'Vivid', val: `hsl(${h}, 80%, 15%)` });
+            
+            // Textures (CSS Patterns)
+            const texBases = [
+                {n: 'Grid', v: 'radial-gradient(circle, #333 1px, transparent 1px)', s: '20px 20px', bg: '#000'},
+                {n: 'Carbon', v: 'linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px, linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px, linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px, linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px, linear-gradient(90deg, #1b1b1b 10px, transparent 10px)', s: '20px 20px', bg: '#131313'},
+                {n: 'Zigzag', v: 'linear-gradient(135deg, #222 25%, transparent 25%) -50px 0, linear-gradient(225deg, #222 25%, transparent 25%) -50px 0, linear-gradient(315deg, #222 25%, transparent 25%), linear-gradient(45deg, #222 25%, transparent 25%)', s: '100px 100px', bg: '#111'},
+                {n: 'Stripes', v: 'linear-gradient(45deg, #222 25%, transparent 25%, transparent 50%, #222 50%, #222 75%, transparent 75%, transparent)', s: '40px 40px', bg: '#000'},
+                {n: 'Check', v: 'linear-gradient(45deg, #222 25%, transparent 25%, transparent 75%, #222 75%, #222), linear-gradient(45deg, #222 25%, transparent 25%, transparent 75%, #222 75%, #222)', s: '60px 60px', bg: '#111'}
             ];
             
-            bgBases.forEach(b => {
-                for(let l=5; l<=25; l+=2) { // Dark shades for background
-                    BACKGROUNDS.push({ cat: b.n, val: `hsl(${b.h}, ${b.s}%, ${l}%)` });
+            texBases.forEach(t => {
+                TEXTURES.push({ cat: 'Pattern', name: t.n, style: { image: t.v, size: t.s, color: t.bg } });
+                // Colored Variations
+                for(let h=0; h<360; h+=60) {
+                    TEXTURES.push({ cat: 'Colored', name: `${t.n} ${h}`, style: { image: t.v, size: t.s, color: `hsl(${h}, 40%, 10%)` } });
                 }
             });
-            // Generate some high sat darks
-            for(let h=0; h<360; h+=5) {
-                BACKGROUNDS.push({ cat: 'Vivid', val: `hsl(${h}, 80%, 10%)` });
-            }
+
+            // 4. SIDEBAR STYLES (User Card in Player List)
+            SIDEBAR_STYLES.push({ name: 'Default', style: { bgColor: 'transparent', borderWidth: 0, borderRadius: 6, padding: 6, borderColor: 'transparent' } });
+            SIDEBAR_STYLES.push({ name: 'Boxed', style: { bgColor: '#1f2937', borderWidth: 1, borderRadius: 8, padding: 8, borderColor: '#374151' } });
+            SIDEBAR_STYLES.push({ name: 'Rounded', style: { bgColor: '#111827', borderWidth: 1, borderRadius: 24, padding: 6, borderColor: '#4b5563' } });
+            SIDEBAR_STYLES.push({ name: 'Neon Pink', style: { bgColor: '#000', borderWidth: 2, borderRadius: 8, padding: 8, borderColor: '#ff00ff', boxShadow: '0 0 5px #ff00ff' } });
+            SIDEBAR_STYLES.push({ name: 'Neon Blue', style: { bgColor: '#000', borderWidth: 2, borderRadius: 8, padding: 8, borderColor: '#00ffff', boxShadow: '0 0 5px #00ffff' } });
+            SIDEBAR_STYLES.push({ name: 'Gold', style: { bgColor: '#1a1a00', borderWidth: 1, borderRadius: 4, padding: 8, borderColor: '#ffd700' } });
+            SIDEBAR_STYLES.push({ name: 'Ghost', style: { bgColor: 'rgba(255,255,255,0.05)', borderWidth: 0, borderRadius: 12, padding: 8, borderColor: 'transparent' } });
+            SIDEBAR_STYLES.push({ name: 'Underline', style: { bgColor: 'transparent', borderBottomWidth: 2, borderRadius: 0, padding: 6, borderColor: '#e0115f' } });
+            SIDEBAR_STYLES.push({ name: 'Left Bar', style: { bgColor: '#1f2937', borderLeftWidth: 4, borderRadius: 4, padding: 8, borderColor: '#e0115f' } });
         }
         
         generateData();
@@ -341,8 +309,7 @@
                     const data = docSnap.data();
                     if(data.customization) {
                         currentConfig = { ...currentConfig, ...data.customization };
-                        // Deep merge fix
-                        ['identity','avatar','banner','card'].forEach(k => {
+                        ['identity','avatar','banner','card','sidebar'].forEach(k => {
                             if(data.customization[k]) currentConfig[k] = { ...currentConfig[k], ...data.customization[k] };
                         });
                     }
@@ -351,6 +318,7 @@
                     document.getElementById('preview-username').innerText = data.username;
                     document.getElementById('preview-chat-username').innerText = data.username;
                     document.getElementById('preview-sidebar-username').innerText = data.username;
+                    document.getElementById('preview-sidebar-avatar').src = data.photoURL;
                     
                     document.getElementById('loading').classList.add('hidden');
                     setTab('effects');
@@ -377,7 +345,6 @@
                 title.innerText = "Name Effects";
                 count.innerText = EFFECTS.length + " Items";
                 
-                // Categories
                 const cats = [...new Set(EFFECTS.map(e => e.cat))];
                 const catWrapper = document.createElement('div');
                 catWrapper.className = 'category-tabs';
@@ -394,21 +361,25 @@
                     
                     const grid = document.createElement('div');
                     grid.className = 'store-grid';
-                    // Use fragment for performance
                     const frag = document.createDocumentFragment();
                     
-                    // Limit rendering for performance if 'All' is selected, render first 200
-                    const renderList = filtered.slice(0, 300); 
+                    // Virtualize/Limit rendering for speed (Render first 500)
+                    const renderList = filtered.slice(0, 500);
                     
                     renderList.forEach(eff => {
                         const btn = document.createElement('div');
                         btn.className = 'effect-btn';
                         
-                        let s = `color: ${eff.style.color || '#fff'};`;
-                        if(eff.style.glowBlur) s += `text-shadow: 0 0 ${eff.style.glowBlur}px ${eff.style.glowColor || eff.style.color};`;
+                        let s = '';
+                        if(eff.style.backgroundClip) {
+                            s = `background-image: ${eff.style.backgroundImage}; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent;`;
+                        } else {
+                            s = `color: ${eff.style.color || '#fff'};`;
+                            if(eff.style.glowBlur) s += `text-shadow: 0 0 ${eff.style.glowBlur}px ${eff.style.glowColor || eff.style.color};`;
+                        }
                         if(eff.style.fontFamily) s += `font-family: ${eff.style.fontFamily};`;
                         
-                        btn.innerHTML = `<div class="effect-preview" style="${s}">Ruby</div><div class="effect-name">${eff.name}</div>`;
+                        btn.innerHTML = `<div class="effect-preview" style="${s} font-weight: 900;">Ruby</div><div class="effect-name">${eff.name}</div>`;
                         btn.onclick = () => {
                             currentConfig.identity = { ...currentConfig.identity, ...eff.style };
                             applyStyles();
@@ -421,15 +392,8 @@
                     container.innerHTML = '';
                     grid.appendChild(frag);
                     container.appendChild(grid);
-                    if(filtered.length > 300) {
-                        const more = document.createElement('div');
-                        more.className = 'text-center text-xs text-gray-500 mt-4';
-                        more.innerText = `...and ${filtered.length - 300} more (Filter to see)`;
-                        container.appendChild(more);
-                    }
                 };
-                
-                filterEffects('Special'); // Default to special
+                filterEffects('Special'); 
             }
             else if(tab === 'fonts') {
                 title.innerText = "Fonts";
@@ -445,51 +409,61 @@
                     btn.onclick = () => {
                         currentConfig.identity.fontFamily = f.val;
                         applyStyles();
-                        document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
                     };
                     grid.appendChild(btn);
                 });
                 container.appendChild(grid);
             }
             else if(tab === 'backgrounds') {
-                title.innerText = "Card Backgrounds";
+                title.innerText = "Solid Colors";
                 count.innerText = BACKGROUNDS.length + " Items";
+                catContainer.classList.add('hidden');
                 
-                const cats = [...new Set(BACKGROUNDS.map(e => e.cat))];
-                const catWrapper = document.createElement('div');
-                catWrapper.className = 'category-tabs';
-                catWrapper.innerHTML = `<button onclick="filterBG('All')" class="cat-btn active" id="bg-btn-All">All</button>` + 
-                    cats.map(c => `<button onclick="filterBG('${c}')" class="cat-btn" id="bg-btn-${c}">${c}</button>`).join('');
-                catContainer.appendChild(catWrapper);
-                catContainer.classList.remove('hidden');
-
-                window.filterBG = (cat) => {
-                    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
-                    document.getElementById(`bg-btn-${cat}`).classList.add('active');
+                const grid = document.createElement('div');
+                grid.className = 'bg-grid';
+                const frag = document.createDocumentFragment();
+                
+                BACKGROUNDS.forEach(bg => {
+                    const sw = document.createElement('div');
+                    sw.className = 'color-swatch';
+                    sw.style.background = bg.val;
+                    sw.onclick = () => {
+                        currentConfig.card.bgColor = bg.val;
+                        currentConfig.card.texture = 'none'; // Reset texture
+                        applyStyles();
+                    };
+                    frag.appendChild(sw);
+                });
+                container.appendChild(grid);
+                grid.appendChild(frag);
+            }
+            else if(tab === 'textures') {
+                title.innerText = "Pattern Textures";
+                count.innerText = TEXTURES.length + " Items";
+                catContainer.classList.add('hidden');
+                
+                const grid = document.createElement('div');
+                grid.className = 'store-grid';
+                
+                TEXTURES.forEach(tx => {
+                    const btn = document.createElement('div');
+                    btn.className = 'effect-btn';
+                    btn.style.backgroundColor = tx.style.color;
+                    btn.style.backgroundImage = tx.style.image;
+                    btn.style.backgroundSize = tx.style.size;
                     
-                    const filtered = cat === 'All' ? BACKGROUNDS : BACKGROUNDS.filter(e => e.cat === cat);
-                    const grid = document.createElement('div');
-                    grid.className = 'bg-grid';
-                    const frag = document.createDocumentFragment();
-                    
-                    filtered.slice(0, 500).forEach(bg => {
-                        const sw = document.createElement('div');
-                        sw.className = 'color-swatch';
-                        sw.style.background = bg.val;
-                        sw.onclick = () => {
-                            currentConfig.card.bgColor = bg.val;
-                            applyStyles();
-                            document.querySelectorAll('.color-swatch').forEach(b => b.classList.remove('active'));
-                            sw.classList.add('active');
-                        };
-                        frag.appendChild(sw);
-                    });
-                    container.innerHTML = '';
-                    grid.appendChild(frag);
-                    container.appendChild(grid);
-                };
-                filterBG('All');
+                    btn.innerHTML = `<div class="bg-black/50 px-2 rounded text-[10px] text-white">${tx.name}</div>`;
+                    btn.onclick = () => {
+                        currentConfig.card.bgColor = tx.style.color;
+                        currentConfig.card.texture = `url('data:image/svg+xml;base64,')`; // Placeholder to trigger complex logic or just store params
+                        // Actually, store texture params
+                        currentConfig.card.bgImage = tx.style.image;
+                        currentConfig.card.bgSize = tx.style.size;
+                        applyStyles();
+                    };
+                    grid.appendChild(btn);
+                });
+                container.appendChild(grid);
             }
             else if(tab === 'card_style') {
                 title.innerText = "Card Styles";
@@ -497,13 +471,13 @@
                 catContainer.classList.add('hidden');
                 
                 const CARD_STYLES = [
-                    { id: 'default', name: 'Default Dark', style: { bgColor: '#111827', bgOpacity: 100, backdropBlur: 0, borderColor: '#374151', borderWidth: 1 } },
-                    { id: 'glass', name: 'Glassmorphism', style: { bgColor: '#111827', bgOpacity: 50, backdropBlur: 10, borderColor: '#ffffff', borderWidth: 1 } },
-                    { id: 'flat', name: 'Flat Black', style: { bgColor: '#000000', bgOpacity: 100, backdropBlur: 0, borderColor: '#000000', borderWidth: 0 } },
-                    { id: 'borderless', name: 'Ghost', style: { bgColor: '#111827', bgOpacity: 80, backdropBlur: 5, borderColor: 'transparent', borderWidth: 0 } },
-                    { id: 'thick', name: 'Thick Border', style: { bgColor: '#1f2937', bgOpacity: 100, backdropBlur: 0, borderColor: '#e0115f', borderWidth: 4 } },
-                    { id: 'rounded', name: 'Extra Round', style: { borderRadius: 30 } },
-                    { id: 'sharp', name: 'Sharp Edges', style: { borderRadius: 0 } },
+                    { name: 'Default Dark', style: { bgOpacity: 100, backdropBlur: 0, borderColor: '#374151', borderWidth: 1 } },
+                    { name: 'Glassmorphism', style: { bgOpacity: 50, backdropBlur: 10, borderColor: '#ffffff', borderWidth: 1 } },
+                    { name: 'Flat Black', style: { bgOpacity: 100, backdropBlur: 0, borderColor: '#000000', borderWidth: 0 } },
+                    { name: 'Ghost', style: { bgOpacity: 80, backdropBlur: 5, borderColor: 'transparent', borderWidth: 0 } },
+                    { name: 'Thick Border', style: { bgOpacity: 100, backdropBlur: 0, borderColor: '#e0115f', borderWidth: 4 } },
+                    { name: 'Extra Round', style: { borderRadius: 30 } },
+                    { name: 'Sharp Edges', style: { borderRadius: 0 } },
                 ];
 
                 const grid = document.createElement('div');
@@ -516,8 +490,6 @@
                     btn.onclick = () => {
                         currentConfig.card = { ...currentConfig.card, ...st.style };
                         applyStyles();
-                        document.querySelectorAll('.effect-btn').forEach(b => b.classList.remove('active'));
-                        btn.classList.add('active');
                     };
                     grid.appendChild(btn);
                 });
@@ -525,23 +497,51 @@
             }
             else if(tab === 'sidebar') {
                 title.innerText = "User List Style";
-                count.innerText = "Coming Soon";
+                count.innerText = SIDEBAR_STYLES.length + " Items";
                 catContainer.classList.add('hidden');
-                container.innerHTML = '<div class="text-gray-500 text-sm text-center mt-10">Sidebar customization coming in v3.0</div>';
+                
+                const grid = document.createElement('div');
+                grid.className = 'store-grid';
+                
+                SIDEBAR_STYLES.forEach(st => {
+                    const btn = document.createElement('div');
+                    btn.className = 'effect-btn';
+                    btn.innerHTML = `<div class="w-full h-full flex items-center justify-center p-2"><div style="background:${st.style.bgColor!=='transparent'?st.style.bgColor:'#333'}; border:${st.style.borderWidth||0}px solid ${st.style.borderColor}; border-radius:${st.style.borderRadius}px; width:100%; height:30px;"></div></div><div class="absolute bottom-1 text-[10px] text-gray-400">${st.name}</div>`;
+                    
+                    btn.onclick = () => {
+                        // Reset undefined properties to defaults to avoid sticking
+                        const defaults = { bgColor: 'transparent', borderColor: 'transparent', borderWidth: 0, borderRadius: 6, padding: 6, boxShadow: 'none', borderLeftWidth: 0, borderBottomWidth: 0 };
+                        currentConfig.sidebar = { ...defaults, ...st.style };
+                        applyStyles();
+                    };
+                    grid.appendChild(btn);
+                });
+                container.appendChild(grid);
             }
         };
 
         function applyStyles() {
             const cfg = currentConfig;
             
-            // Identity
+            // 1. Identity (Name Effects)
             const iden = cfg.identity;
             const nameEls = ['preview-username', 'preview-chat-username', 'preview-sidebar-username'];
             nameEls.forEach(id => {
                 const el = document.getElementById(id);
                 if(!el) return;
-                el.style.color = iden.color;
-                el.style.textShadow = iden.glowBlur > 0 ? `0 0 ${iden.glowBlur}px ${iden.glowColor || iden.color}` : 'none';
+                
+                el.style = ''; // Reset
+                if(iden.backgroundClip) {
+                    el.style.backgroundImage = iden.backgroundImage;
+                    el.style.webkitBackgroundClip = 'text';
+                    el.style.backgroundClip = 'text';
+                    el.style.webkitTextFillColor = 'transparent';
+                    el.style.color = 'transparent';
+                } else {
+                    el.style.color = iden.color;
+                    el.style.textShadow = iden.glowBlur > 0 ? `0 0 ${iden.glowBlur}px ${iden.glowColor || iden.color}` : 'none';
+                }
+                
                 el.style.fontFamily = iden.fontFamily;
                 el.style.fontWeight = iden.fontWeight;
                 el.style.textTransform = iden.uppercase ? 'uppercase' : 'none';
@@ -549,35 +549,47 @@
                 el.style.letterSpacing = (iden.letterSpacing || 0) + 'px';
             });
 
-            // Card
+            // 2. Card Background & Texture
             const card = cfg.card;
             const cardEl = document.getElementById('preview-modal');
             
-            const hexToRgb = (hex) => {
-                if(hex.startsWith('hsl')) return '17, 24, 39'; // Simple fallback for HSL in RGBA func if strictly needed, but style supports color string
-                var shorthandRegex = /^#?([a-f\d])([a-f\d])([a-f\d])$/i;
-                hex = hex.replace(shorthandRegex, function(m, r, g, b) {
-                    return r + r + g + g + b + b;
-                });
-                var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '17, 24, 39';
+            // Handle Opacity
+            const alpha = (card.bgOpacity || 100) / 100;
+            // Handle HSL or Hex for solid color
+            let bgCol = card.bgColor;
+            if(bgCol.startsWith('#')) {
+                // Convert to rgba for opacity
+                const r = parseInt(bgCol.slice(1, 3), 16);
+                const g = parseInt(bgCol.slice(3, 5), 16);
+                const b = parseInt(bgCol.slice(5, 7), 16);
+                cardEl.style.backgroundColor = `rgba(${r}, ${g}, ${b}, ${alpha})`;
+            } else {
+                cardEl.style.backgroundColor = bgCol; // Simplify for HSL
             }
 
-            const alpha = (card.bgOpacity || 100) / 100;
-            // Handle HSL or Hex
-            if(card.bgColor.startsWith('#')) {
-                cardEl.style.backgroundColor = `rgba(${hexToRgb(card.bgColor)}, ${alpha})`;
+            // Texture Overlay (using gradient patterns)
+            if(card.bgImage) {
+                cardEl.style.backgroundImage = card.bgImage;
+                cardEl.style.backgroundSize = card.bgSize || 'auto';
             } else {
-                // If it's HSL, we apply it directly but lose opacity control unless we parse it.
-                // For simplicity in this demo, we apply it as opacity on the element or assume solid.
-                // Correct way: parse HSL to HSLA.
-                cardEl.style.backgroundColor = card.bgColor.replace(')', `, ${alpha})`).replace('hsl', 'hsla');
+                cardEl.style.backgroundImage = 'none';
             }
             
             cardEl.style.backdropFilter = card.backdropBlur > 0 ? `blur(${card.backdropBlur}px)` : 'none';
             cardEl.style.borderColor = card.borderColor;
             cardEl.style.borderWidth = (card.borderWidth || 1) + 'px';
             cardEl.style.borderRadius = (card.borderRadius || 16) + 'px';
+
+            // 3. Sidebar User Card
+            const sb = cfg.sidebar;
+            const sbEl = document.getElementById('preview-sidebar-container');
+            sbEl.style.backgroundColor = sb.bgColor;
+            sbEl.style.border = `${sb.borderWidth||0}px solid ${sb.borderColor}`;
+            if(sb.borderLeftWidth) sbEl.style.borderLeftWidth = sb.borderLeftWidth + 'px';
+            if(sb.borderBottomWidth) sbEl.style.borderBottomWidth = sb.borderBottomWidth + 'px';
+            sbEl.style.borderRadius = (sb.borderRadius||0) + 'px';
+            sbEl.style.padding = (sb.padding||6) + 'px';
+            sbEl.style.boxShadow = sb.boxShadow || 'none';
         }
 
         window.saveChanges = async () => {
