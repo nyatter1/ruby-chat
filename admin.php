@@ -160,7 +160,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, updateDoc, query, orderBy, onSnapshot, addDoc, serverTimestamp, getDocs, limit, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+        import { getFirestore, collection, doc, getDoc, updateDoc, query, orderBy, onSnapshot, addDoc, serverTimestamp, getDocs, limit, deleteDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",
@@ -176,6 +176,9 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // Attempt persistence
+        try { enableIndexedDbPersistence(db).catch(err => { if(err.code == 'failed-precondition') {} else if(err.code == 'unimplemented') {} }); } catch(e){}
 
         let currentUser = null;
         let allUsers = [];
@@ -189,7 +192,6 @@
                 if (snap.exists()) {
                     const data = snap.data();
                     const rank = data.rank || "VIP";
-                    // Simple client-side protection. Firestore rules should enforce real security.
                     if (["Developer", "Founder", "CEO", "Head Owner", "Owner", "Manager", "Super Admin", "Admin"].includes(rank)) {
                         currentUser = user;
                         document.getElementById('auth-check').classList.add('hidden');
@@ -203,7 +205,6 @@
         });
 
         function initDashboard() {
-            // Real-time user listener
             onSnapshot(collection(db, "users"), (snapshot) => {
                 allUsers = [];
                 let online = 0, banned = 0;
@@ -222,7 +223,6 @@
                 renderUsersTable();
             });
 
-            // Populate Rank Select
             const rankSel = document.getElementById('edit-rank');
             rankSel.innerHTML = RANKS.map(r => `<option value="${r}">${r}</option>`).join('');
         }
