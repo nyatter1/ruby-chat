@@ -376,6 +376,25 @@
                             <i class="fas fa-arrow-left mr-1"></i> Public Chat
                         </button>
                         
+                        <!-- Notification Bell -->
+                        <div class="relative">
+                            <button id="notif-btn" onclick="toggleNotifications(event)" class="w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors relative border border-gray-700">
+                                <i class="fas fa-bell text-gray-400 hover:text-white text-sm"></i>
+                                <span id="notif-badge" class="absolute top-0 right-0 w-2.5 h-2.5 bg-ruby-500 rounded-full border-2 border-gray-900 hidden"></span>
+                            </button>
+                            
+                            <!-- Dropdown for Notifications -->
+                            <div id="notif-dropdown" class="absolute top-12 right-0 w-72 bg-gray-900 border border-gray-800 rounded-lg shadow-xl hidden flex-col z-50">
+                                <div class="p-3 border-b border-gray-800 text-sm font-bold text-gray-300 flex justify-between items-center">
+                                    <span>Notifications</span>
+                                    <button onclick="markNotificationsRead()" class="text-[10px] text-ruby-500 hover:text-ruby-400 transition-colors">Mark all read</button>
+                                </div>
+                                <div id="notif-list" class="max-h-60 overflow-y-auto">
+                                    <div class="p-3 text-xs text-center text-gray-500">No new notifications</div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Envelope / PM Dropdown -->
                         <div class="relative">
                             <button id="envelope-btn" onclick="togglePMDropdown(event)" class="w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors relative border border-gray-700">
@@ -407,8 +426,8 @@
                             
                             <!-- New User Menu -->
                             <div id="user-menu-dropdown" class="absolute top-12 right-0 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-xl hidden flex-col z-50 py-2 dropdown-enter">
-                                <!-- UPDATED: openProfile with 'true' for edit mode -->
-                                <button onclick="openProfile(currentUser.uid, true); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors">
+                                <!-- Fixed: calling window.openMyProfile instead of inline currentUser usage -->
+                                <button onclick="openMyProfile(); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors">
                                     <i class="fas fa-user w-5 text-gray-400"></i> My Profile
                                 </button>
                                 <button onclick="openWallet(); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors">
@@ -973,6 +992,7 @@
         let allUsersCache = [];
         let punishmentInterval = null;
         let notificationUnsub = null;
+        let cachedNotifications = [];
         
         // Chat State
         let currentChatId = 'global'; 
@@ -1100,9 +1120,40 @@
 
         function listenToNotifications() {
             if (notificationUnsub) notificationUnsub();
-            const q = query(collection(db, "users", currentUser.uid, "notifications"), orderBy("timestamp", "desc"), limit(5));
+            const q = query(collection(db, "users", currentUser.uid, "notifications"), orderBy("timestamp", "desc"), limit(20));
             
             notificationUnsub = onSnapshot(q, (snapshot) => {
+                const list = document.getElementById('notif-list');
+                const badge = document.getElementById('notif-badge');
+                
+                cachedNotifications = [];
+                let unreadCount = 0;
+
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    cachedNotifications.push({ id: doc.id, ...data });
+                    if (!data.read) unreadCount++;
+                });
+
+                // Update UI
+                if (cachedNotifications.length === 0) {
+                    list.innerHTML = '<div class="p-3 text-xs text-center text-gray-500">No new notifications</div>';
+                } else {
+                    list.innerHTML = cachedNotifications.map(n => `
+                        <div class="p-3 border-b border-gray-800 last:border-0 hover:bg-gray-800 transition-colors ${n.read ? 'opacity-60' : 'bg-gray-800/50'}">
+                            <div class="text-xs text-gray-300">${n.text}</div>
+                            <div class="text-[10px] text-gray-500 mt-1">${n.timestamp ? new Date(n.timestamp.toMillis()).toLocaleString() : 'Just now'}</div>
+                        </div>
+                    `).join('');
+                }
+
+                if (unreadCount > 0) {
+                    badge.classList.remove('hidden');
+                } else {
+                    badge.classList.add('hidden');
+                }
+
+                // Show toasts for new incoming notifications (check against initial load)
                 snapshot.docChanges().forEach((change) => {
                     if (change.type === "added") {
                         const data = change.doc.data();
@@ -1114,6 +1165,38 @@
                 });
             });
         }
+
+        window.toggleNotifications = (e) => {
+            e.stopPropagation();
+            const dropdown = document.getElementById('notif-dropdown');
+            const pmDropdown = document.getElementById('pm-dropdown');
+            const userMenu = document.getElementById('user-menu-dropdown');
+            
+            pmDropdown.classList.add('hidden');
+            userMenu.classList.add('hidden');
+            
+            dropdown.classList.toggle('hidden');
+            
+            const btn = e.currentTarget;
+            const closeFn = (ev) => {
+                if(btn && !btn.contains(ev.target) && !dropdown.contains(ev.target)) {
+                    dropdown.classList.add('hidden');
+                    document.removeEventListener('click', closeFn);
+                }
+            };
+            document.addEventListener('click', closeFn);
+        };
+
+        window.markNotificationsRead = async () => {
+            const batch = [];
+            // Simple approach: Iterate cached and update unread ones
+            // Note: In a real app with many docs, use a batched write carefully
+            cachedNotifications.forEach(n => {
+                if (!n.read) {
+                    updateDoc(doc(db, "users", currentUser.uid, "notifications", n.id), { read: true });
+                }
+            });
+        };
         
         function checkPunishments() {
             if (!userData) return;
@@ -1912,6 +1995,12 @@
         }
 
         // --- Profile System (Existing) ---
+        window.openMyProfile = () => {
+            if (currentUser) {
+                openProfile(currentUser.uid, true);
+            }
+        };
+
         window.openProfile = async (uid, editStart = false) => {
             viewingUserId = uid;
             const modal = document.getElementById('profile-modal');
@@ -2296,7 +2385,7 @@
         window.switchAdminTab = (tab) => { activeAdminTab = tab; document.getElementById('tab-btn-users').classList.toggle('admin-tab-active', tab === 'users'); document.getElementById('tab-btn-broadcast').classList.toggle('admin-tab-active', tab === 'broadcast'); document.getElementById('admin-tab-users').classList.toggle('hidden', tab !== 'users'); document.getElementById('admin-tab-broadcast').classList.toggle('hidden', tab !== 'broadcast'); };
         function renderAdminTable() { if (activeAdminTab !== 'users') return; const tbody = document.getElementById('admin-user-table'); const search = document.getElementById('admin-search').value.toLowerCase(); const filtered = allUsersCache.filter(u => u.username.toLowerCase().includes(search) || u.email.toLowerCase().includes(search)); tbody.innerHTML = filtered.map(u => { const rankOptions = RANKS.map(r => `<option value="${r.name}" ${u.rank === r.name ? 'selected' : ''}>${r.name}</option>`).join(''); let statusText = u.isOnline ? `<span class="text-green-500 font-bold">Online</span>` : `<span class="text-gray-500">Offline</span>`; if (u.banned) statusText = `<span class="text-red-500 font-bold bg-red-500/10 px-2 rounded">BANNED</span>`; return `<tr class="hover:bg-gray-800 transition-colors"><td class="p-4"><div class="flex items-center gap-3"><img src="${u.photoURL || DEFAULT_PFP}" class="w-8 h-8 rounded-full bg-gray-700 default-pfp"><div><div class="font-bold text-gray-200">${u.username}</div><div class="text-xs text-gray-500">${u.email}</div></div></div></td><td class="p-4 text-sm">${statusText}</td><td class="p-4"><span class="text-xs text-gray-500">Use Profile</span></td><td class="p-4 text-center"><div class="text-xs text-gray-400 flex flex-col items-center"><div><span class="text-ruby-500 font-bold">${u.messages || 0}</span> msgs</div><div><span class="text-blue-400 font-bold">${u.invites || 0}</span> inv</div></div></td><td class="p-4 text-right"><button onclick="openProfile('${u.uid}')" class="p-2 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"><i class="fas fa-bolt"></i> Actions</button></td></tr>`; }).join(''); }
         document.getElementById('admin-search').addEventListener('input', renderAdminTable);
-        window.adminClearChat = async () => { if(!confirm("Are you sure?")) return; const q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(50)); const snap = await getDocs(q); snap.forEach(async (d) => { await deleteDoc(d.ref); }); alert("Chat cleared."); };
+        window.adminClearChat = async () => { if(!confirm("Are you sure?\")) return; const q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(50)); const snap = await getDocs(q); snap.forEach(async (d) => { await deleteDoc(d.ref); }); alert("Chat cleared."); };
         window.sendBroadcast = async () => { const text = document.getElementById('broadcast-input').value; if (!text.trim()) return; try { await addDoc(collection(db, "messages"), { text: text, isSystem: true, timestamp: serverTimestamp() }); document.getElementById('broadcast-input').value = ''; alert("Broadcast sent!"); } catch(e) { alert("Error: " + e.message); } };
         function escapeHtml(text) { const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }; return text.replace(/[&<>"']/g, function(m) { return map[m]; }); }
         
