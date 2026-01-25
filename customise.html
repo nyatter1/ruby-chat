@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ruby Chat - Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        gray: { 850: '#1f2937', 900: '#111827', 950: '#030712' },
+                        ruby: { 500: '#e0115f', 600: '#c20e50' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --bg-950: #030712; --bg-900: #111827; --acc-500: #e0115f; }
+        body { background-color: var(--bg-950); color: #f3f4f6; overflow: hidden; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+        
+        /* UI Elements */
+        .control-group { margin-bottom: 20px; border-bottom: 1px solid #1f2937; padding-bottom: 20px; }
+        .control-group:last-child { border-bottom: none; }
+        .control-label { display: block; font-size: 0.75rem; font-weight: 700; color: #9ca3af; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        input[type="range"] { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; height: 16px; width: 16px; border-radius: 50%; background: #e0115f; margin-top: -6px; cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        input[type="range"]::-webkit-slider-runnable-track { width: 100%; height: 4px; cursor: pointer; background: #374151; border-radius: 2px; }
+        
+        input[type="color"] { -webkit-appearance: none; border: none; width: 40px; height: 40px; padding: 0; background: none; cursor: pointer; border-radius: 8px; overflow: hidden; }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: 1px solid #374151; border-radius: 8px; }
+        
+        .preview-pane { background-image: radial-gradient(#1f2937 1px, transparent 1px); background-size: 20px 20px; background-color: #030712; }
+        
+        /* Mock UI Elements for Preview */
+        .mock-modal { width: 350px; border-radius: 16px; overflow: hidden; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.5); border: 1px solid #374151; transition: all 0.2s; }
+        .mock-banner { height: 120px; background: #374151; position: relative; width: 100%; overflow: hidden; }
+        .mock-avatar { width: 80px; height: 80px; background: #4b5563; position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); border: 4px solid #111827; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 10; object-fit: cover; }
+        
+        .nav-item { cursor: pointer; padding: 12px 16px; border-radius: 8px; color: #9ca3af; font-weight: 600; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
+        .nav-item:hover { background: #1f2937; color: white; }
+        .nav-item.active { background: #e0115f; color: white; }
+        
+        .toggle-switch { position: relative; width: 44px; height: 24px; background: #374151; border-radius: 12px; cursor: pointer; transition: 0.3s; }
+        .toggle-switch.on { background: #e0115f; }
+        .toggle-knob { position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: 0.3s; }
+        .toggle-switch.on .toggle-knob { transform: translateX(20px); }
+
+        .loader { border: 4px solid #374151; border-top: 4px solid #e0115f; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="flex h-screen">
+
+    <!-- Loading Screen -->
+    <div id="loading" class="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center">
+        <div class="loader mb-4"></div>
+        <div class="text-ruby-500 font-bold tracking-widest animate-pulse">LOADING STUDIO</div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col z-20 shadow-xl">
+        <div class="p-6 border-b border-gray-800">
+            <h1 class="text-xl font-bold tracking-tight text-white"><span class="text-ruby-500">Ruby</span> Studio</h1>
+            <p class="text-xs text-gray-500 mt-1">Profile Customization</p>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto p-4 space-y-1">
+            <div class="nav-item active" onclick="setTab('identity')"><i class="fas fa-fingerprint w-5 text-center"></i> Identity</div>
+            <div class="nav-item" onclick="setTab('avatar')"><i class="fas fa-user-circle w-5 text-center"></i> Avatar</div>
+            <div class="nav-item" onclick="setTab('banner')"><i class="fas fa-image w-5 text-center"></i> Banner</div>
+            <div class="nav-item" onclick="setTab('card')"><i class="fas fa-id-card w-5 text-center"></i> Profile Card</div>
+            <div class="nav-item" onclick="setTab('chat')"><i class="fas fa-comment-dots w-5 text-center"></i> Chat Appearance</div>
+        </div>
+
+        <div class="p-4 border-t border-gray-800 space-y-3">
+            <button onclick="saveChanges()" id="save-btn" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-ruby-500/20 flex items-center justify-center gap-2">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+            <a href="index.html" class="block text-center w-full bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold py-2 rounded-lg transition-colors border border-gray-700">
+                Cancel / Exit
+            </a>
+        </div>
+    </div>
+
+    <!-- Controls Pane -->
+    <div class="w-80 bg-gray-900/50 border-r border-gray-800 flex flex-col overflow-hidden backdrop-blur-sm z-10">
+        <div class="p-4 bg-gray-900 border-b border-gray-800">
+            <h2 id="tab-title" class="font-bold text-white uppercase tracking-wider text-sm">Identity</h2>
+        </div>
+        <div id="controls-container" class="flex-1 overflow-y-auto p-6 scrollbar-thin">
+            <!-- Controls injected via JS -->
+        </div>
+    </div>
+
+    <!-- Preview Pane -->
+    <div class="flex-1 preview-pane flex flex-col relative overflow-hidden">
+        <div class="absolute top-4 right-4 bg-gray-900/80 backdrop-blur rounded px-3 py-1 text-xs font-mono text-gray-400 border border-gray-700 pointer-events-none">
+            LIVE PREVIEW
+        </div>
+
+        <div class="flex-1 flex items-center justify-center p-10 overflow-auto">
+            <div class="flex gap-10 items-start flex-wrap justify-center">
+                
+                <!-- 1. Profile Card Mockup -->
+                <div class="flex flex-col items-center gap-4">
+                    <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Profile Modal</span>
+                    <div id="preview-modal" class="mock-modal bg-gray-900">
+                        <div id="preview-banner" class="mock-banner"></div>
+                        <div class="px-6 pb-6 pt-12 relative flex flex-col items-center text-center">
+                            <img id="preview-avatar" src="https://picsum.photos/200" class="mock-avatar">
+                            <div id="preview-username" class="text-xl font-bold text-white mb-1">Username</div>
+                            <div class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4">Creator</div>
+                            <div class="flex gap-2 mb-4">
+                                <div class="w-8 h-8 rounded bg-gray-800 border border-gray-700"></div>
+                                <div class="w-8 h-8 rounded bg-gray-800 border border-gray-700"></div>
+                                <div class="w-8 h-8 rounded bg-gray-800 border border-gray-700"></div>
+                            </div>
+                            <div class="text-sm text-gray-300 leading-relaxed bg-black/20 p-3 rounded-lg w-full">
+                                This is how your bio will look. Customizing your profile makes you stand out!
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Chat Message & User List Mockup -->
+                <div class="flex flex-col gap-8">
+                    <div class="flex flex-col items-center gap-4">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Chat Message</span>
+                        <div class="w-[350px] bg-gray-950 p-4 rounded-xl border border-gray-800">
+                            <div class="flex gap-3">
+                                <img id="preview-chat-avatar" src="https://picsum.photos/200" class="w-10 h-10 rounded-full bg-gray-800 object-cover">
+                                <div>
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <span id="preview-chat-username" class="font-bold text-gray-200 hover:underline cursor-pointer">Username</span>
+                                        <span class="text-[10px] text-gray-500">10:42 PM</span>
+                                    </div>
+                                    <div class="bg-gray-800 text-gray-200 px-4 py-2 rounded-lg rounded-tl-none border border-gray-700 text-sm">
+                                        Hello world! Look at my awesome new profile style.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col items-center gap-4">
+                        <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Sidebar User List</span>
+                        <div class="w-[250px] bg-gray-900 p-2 rounded-xl border border-gray-800">
+                            <div class="flex items-center gap-2 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors bg-gray-800/50">
+                                <div class="relative">
+                                    <img id="preview-sidebar-avatar" src="https://picsum.photos/200" class="w-8 h-8 rounded-full object-cover">
+                                    <div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 bg-green-500"></div>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <div id="preview-sidebar-username" class="text-sm font-bold truncate text-gray-200">Username</div>
+                                    <div class="text-[10px] text-gray-500 truncate italic">Customizing...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        const config = {apiKey:"AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",authDomain:"cartoony-chat.firebaseapp.com",databaseURL:"https://cartoony-chat-default-rtdb.europe-west1.firebasedatabase.app",projectId:"cartoony-chat",storageBucket:"cartoony-chat.firebasestorage.app",messagingSenderId:"827018960215",appId:"1:827018960215:web:0e0c2436c9c4e1dceb7212",measurementId:"G-HF16NJSQ16"};
+        const app = initializeApp(config);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let currentUser = null;
+        let currentConfig = {};
+        
+        // Default Configuration (The Schema)
+        const defaults = {
+            identity: {
+                color: '#e5e7eb',
+                glowColor: '#e0115f',
+                glowBlur: 0,
+                fontFamily: 'ui-sans-serif',
+                fontWeight: '700',
+                letterSpacing: 0,
+                uppercase: false,
+                italic: false,
+                decoration: 'none'
+            },
+            avatar: {
+                radius: 50,
+                borderWidth: 4,
+                borderColor: '#111827',
+                borderStyle: 'solid',
+                grayscale: 0,
+                sepia: 0,
+                rotate: 0,
+                shadowColor: '#000000',
+                shadowBlur: 10
+            },
+            banner: {
+                height: 120,
+                blur: 0,
+                grayscale: 0,
+                overlayColor: '#000000',
+                overlayOpacity: 0
+            },
+            card: {
+                bgColor: '#111827',
+                bgOpacity: 1, // 0-1
+                backdropBlur: 0,
+                borderColor: '#374151',
+                borderWidth: 1,
+                borderRadius: 16
+            },
+            chat: {
+                // Future expansion
+            }
+        };
+
+        // Schema for building UI
+        const schema = {
+            identity: [
+                { type: 'color', key: 'color', label: 'Text Color' },
+                { type: 'color', key: 'glowColor', label: 'Glow Color' },
+                { type: 'range', key: 'glowBlur', label: 'Glow Strength', min: 0, max: 20, unit: 'px' },
+                { type: 'select', key: 'fontFamily', label: 'Font', options: [['ui-sans-serif', 'Sans'], ['ui-serif', 'Serif'], ['ui-monospace', 'Mono'], ['Courier New', 'Courier'], ['Impact', 'Impact'], ['Comic Sans MS', 'Comic']] },
+                { type: 'range', key: 'fontWeight', label: 'Weight', min: 100, max: 900, step: 100 },
+                { type: 'range', key: 'letterSpacing', label: 'Spacing', min: -2, max: 5, step: 0.5, unit: 'px' },
+                { type: 'toggle', key: 'uppercase', label: 'Uppercase' },
+                { type: 'toggle', key: 'italic', label: 'Italic' }
+            ],
+            avatar: [
+                { type: 'range', key: 'radius', label: 'Roundness', min: 0, max: 50, unit: '%' },
+                { type: 'range', key: 'borderWidth', label: 'Border Width', min: 0, max: 10, unit: 'px' },
+                { type: 'color', key: 'borderColor', label: 'Border Color' },
+                { type: 'select', key: 'borderStyle', label: 'Border Style', options: [['solid','Solid'], ['dashed','Dashed'], ['dotted','Dotted'], ['double','Double']] },
+                { type: 'range', key: 'rotate', label: 'Rotation', min: -180, max: 180, unit: 'deg' },
+                { type: 'range', key: 'grayscale', label: 'Grayscale', min: 0, max: 100, unit: '%' },
+                { type: 'range', key: 'sepia', label: 'Sepia', min: 0, max: 100, unit: '%' },
+                { type: 'color', key: 'shadowColor', label: 'Shadow Color' },
+                { type: 'range', key: 'shadowBlur', label: 'Shadow Blur', min: 0, max: 50, unit: 'px' }
+            ],
+            banner: [
+                { type: 'range', key: 'height', label: 'Height', min: 50, max: 200, unit: 'px' },
+                { type: 'range', key: 'blur', label: 'Blur', min: 0, max: 20, unit: 'px' },
+                { type: 'range', key: 'grayscale', label: 'Grayscale', min: 0, max: 100, unit: '%' },
+                { type: 'color', key: 'overlayColor', label: 'Overlay Color' },
+                { type: 'range', key: 'overlayOpacity', label: 'Overlay Opacity', min: 0, max: 100, unit: '%' }
+            ],
+            card: [
+                { type: 'color', key: 'bgColor', label: 'Background Color' },
+                { type: 'range', key: 'bgOpacity', label: 'Opacity', min: 0, max: 100, unit: '%' },
+                { type: 'range', key: 'backdropBlur', label: 'Glass Blur', min: 0, max: 40, unit: 'px' },
+                { type: 'color', key: 'borderColor', label: 'Border Color' },
+                { type: 'range', key: 'borderWidth', label: 'Border Width', min: 0, max: 5, unit: 'px' },
+                { type: 'range', key: 'borderRadius', label: 'Corner Radius', min: 0, max: 40, unit: 'px' }
+            ],
+            chat: [
+                { type: 'info', label: 'Coming Soon', text: 'Chat bubble customization will be available in the next update.' }
+            ]
+        };
+
+        // Initialize
+        onAuthStateChanged(auth, async (u) => {
+            if (u) {
+                currentUser = u;
+                const docSnap = await getDoc(doc(db, "users", u.uid));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    // Merge saved config with defaults deeply
+                    currentConfig = mergeDeep(defaults, data.customization || {});
+                    
+                    // Set mock data
+                    document.getElementById('preview-username').innerText = data.username || "User";
+                    document.getElementById('preview-chat-username').innerText = data.username || "User";
+                    document.getElementById('preview-sidebar-username').innerText = data.username || "User";
+                    if(data.photoURL) {
+                        const els = ['preview-avatar', 'preview-chat-avatar', 'preview-sidebar-avatar'];
+                        els.forEach(id => document.getElementById(id).src = data.photoURL);
+                    }
+                    if(data.bannerURL) {
+                        document.getElementById('preview-banner').style.backgroundImage = `url('${data.bannerURL}')`;
+                        document.getElementById('preview-banner').style.backgroundSize = 'cover';
+                        document.getElementById('preview-banner').style.backgroundPosition = 'center';
+                    }
+                    
+                    document.getElementById('loading').classList.add('hidden');
+                    setTab('identity'); // Render initial
+                    applyStyles(); // Initial apply
+                }
+            } else {
+                window.location.href = 'index.html';
+            }
+        });
+
+        function mergeDeep(target, source) {
+            const output = Object.assign({}, target);
+            if (isObject(target) && isObject(source)) {
+                Object.keys(source).forEach(key => {
+                    if (isObject(source[key])) {
+                        if (!(key in target)) Object.assign(output, { [key]: source[key] });
+                        else output[key] = mergeDeep(target[key], source[key]);
+                    } else {
+                        Object.assign(output, { [key]: source[key] });
+                    }
+                });
+            }
+            return output;
+        }
+
+        function isObject(item) {
+            return (item && typeof item === 'object' && !Array.isArray(item));
+        }
+
+        window.setTab = (tab) => {
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.querySelector(`.nav-item[onclick="setTab('${tab}')"]`).classList.add('active');
+            
+            const container = document.getElementById('controls-container');
+            container.innerHTML = '';
+            document.getElementById('tab-title').innerText = tab;
+            
+            const fields = schema[tab];
+            if(!fields) return;
+
+            fields.forEach(f => {
+                const group = document.createElement('div');
+                group.className = 'control-group';
+                
+                if(f.type === 'info') {
+                    group.innerHTML = `<div class="text-sm text-gray-500 italic">${f.text}</div>`;
+                } else {
+                    const label = document.createElement('label');
+                    label.className = 'control-label';
+                    label.innerText = f.label;
+                    group.appendChild(label);
+                    
+                    const val = currentConfig[tab][f.key];
+
+                    if(f.type === 'range') {
+                        const w = document.createElement('div');
+                        w.className = 'flex items-center gap-3';
+                        const input = document.createElement('input');
+                        input.type = 'range';
+                        input.min = f.min;
+                        input.max = f.max;
+                        input.step = f.step || 1;
+                        input.value = val;
+                        
+                        const valDisplay = document.createElement('span');
+                        valDisplay.className = 'text-xs text-white font-mono w-10 text-right';
+                        valDisplay.innerText = val + (f.unit || '');
+                        
+                        input.oninput = (e) => {
+                            currentConfig[tab][f.key] = parseFloat(e.target.value);
+                            valDisplay.innerText = e.target.value + (f.unit || '');
+                            applyStyles();
+                        };
+                        
+                        w.appendChild(input);
+                        w.appendChild(valDisplay);
+                        group.appendChild(w);
+                    } else if (f.type === 'color') {
+                        const w = document.createElement('div');
+                        w.className = 'flex items-center gap-3';
+                        const input = document.createElement('input');
+                        input.type = 'color';
+                        input.value = val;
+                        
+                        const textInput = document.createElement('input');
+                        textInput.type = 'text';
+                        textInput.value = val;
+                        textInput.className = 'bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-white flex-1 font-mono uppercase';
+                        
+                        input.oninput = (e) => {
+                            currentConfig[tab][f.key] = e.target.value;
+                            textInput.value = e.target.value;
+                            applyStyles();
+                        };
+                        textInput.onchange = (e) => {
+                             currentConfig[tab][f.key] = e.target.value;
+                             input.value = e.target.value;
+                             applyStyles();
+                        };
+                        
+                        w.appendChild(input);
+                        w.appendChild(textInput);
+                        group.appendChild(w);
+                    } else if (f.type === 'select') {
+                        const sel = document.createElement('select');
+                        sel.className = 'w-full bg-gray-800 border border-gray-700 rounded px-3 py-2 text-sm text-white focus:border-ruby-500 outline-none';
+                        f.options.forEach(o => {
+                            const opt = document.createElement('option');
+                            opt.value = o[0];
+                            opt.innerText = o[1];
+                            if(val === o[0]) opt.selected = true;
+                            sel.appendChild(opt);
+                        });
+                        sel.onchange = (e) => {
+                            currentConfig[tab][f.key] = e.target.value;
+                            applyStyles();
+                        };
+                        group.appendChild(sel);
+                    } else if (f.type === 'toggle') {
+                        const w = document.createElement('div');
+                        w.className = `toggle-switch ${val ? 'on' : ''}`;
+                        w.innerHTML = '<div class="toggle-knob"></div>';
+                        w.onclick = () => {
+                            currentConfig[tab][f.key] = !currentConfig[tab][f.key];
+                            w.classList.toggle('on');
+                            applyStyles();
+                        };
+                        group.appendChild(w);
+                    }
+                }
+                container.appendChild(group);
+            });
+        };
+
+        function applyStyles() {
+            const cfg = currentConfig;
+            
+            // 1. Identity (Username)
+            const iden = cfg.identity;
+            const nameEls = ['preview-username', 'preview-chat-username', 'preview-sidebar-username'];
+            nameEls.forEach(id => {
+                const el = document.getElementById(id);
+                if(!el) return;
+                el.style.color = iden.color;
+                el.style.textShadow = iden.glowBlur > 0 ? `0 0 ${iden.glowBlur}px ${iden.glowColor}` : 'none';
+                el.style.fontFamily = iden.fontFamily;
+                el.style.fontWeight = iden.fontWeight;
+                el.style.letterSpacing = iden.letterSpacing + 'px';
+                el.style.textTransform = iden.uppercase ? 'uppercase' : 'none';
+                el.style.fontStyle = iden.italic ? 'italic' : 'normal';
+            });
+
+            // 2. Avatar
+            const av = cfg.avatar;
+            const avEls = ['preview-avatar', 'preview-chat-avatar', 'preview-sidebar-avatar'];
+            avEls.forEach(id => {
+                const el = document.getElementById(id);
+                if(!el) return;
+                // Sidebar and Chat avatars are usually smaller, so border width might need scaling, but sticking to config is more predictable.
+                // However, for the main profile modal avatar (preview-avatar), we apply full styles.
+                
+                // Radius
+                el.style.borderRadius = av.radius + '%';
+                
+                // Border
+                // Only the main avatar usually has the thick customizable border in the modal
+                if(id === 'preview-avatar') {
+                    el.style.border = `${av.borderWidth}px ${av.borderStyle} ${av.borderColor}`;
+                    el.style.boxShadow = `0 0 ${av.shadowBlur}px ${av.shadowColor}`;
+                    el.style.transform = `translateX(-50%) rotate(${av.rotate}deg)`; // TranslateX needed for centering in modal
+                } else {
+                    // For chat/sidebar, maybe just radius and filter
+                    el.style.filter = `grayscale(${av.grayscale}%) sepia(${av.sepia}%)`;
+                }
+
+                if(id === 'preview-avatar') {
+                    el.style.filter = `grayscale(${av.grayscale}%) sepia(${av.sepia}%)`;
+                }
+            });
+
+            // 3. Banner
+            const ban = cfg.banner;
+            const banEl = document.getElementById('preview-banner');
+            banEl.style.height = ban.height + 'px';
+            banEl.style.filter = `blur(${ban.blur}px) grayscale(${ban.grayscale}%)`;
+            
+            // We use a pseudo element logic in real app, here simple overlay div simulation
+            // Just apply box-shadow inset to simulate overlay or create a child div
+            // Let's assume the real implementation handles overlay.
+            // For preview, we can use box-shadow inset
+            const alpha = ban.overlayOpacity / 100;
+            // Convert hex to rgba helper
+            const hexToRgb = (hex) => {
+                const r = parseInt(hex.slice(1, 3), 16);
+                const g = parseInt(hex.slice(3, 5), 16);
+                const b = parseInt(hex.slice(5, 7), 16);
+                return `${r}, ${g}, ${b}`;
+            }
+            banEl.style.boxShadow = `inset 0 0 0 1000px rgba(${hexToRgb(ban.overlayColor)}, ${alpha})`;
+
+            // 4. Card
+            const card = cfg.card;
+            const cardEl = document.getElementById('preview-modal');
+            const cardAlpha = card.bgOpacity / 100;
+            cardEl.style.backgroundColor = `rgba(${hexToRgb(card.bgColor)}, ${cardAlpha})`;
+            cardEl.style.backdropFilter = card.backdropBlur > 0 ? `blur(${card.backdropBlur}px)` : 'none';
+            cardEl.style.borderColor = card.borderColor;
+            cardEl.style.borderWidth = card.borderWidth + 'px';
+            cardEl.style.borderRadius = card.borderRadius + 'px';
+        }
+
+        window.saveChanges = async () => {
+            const btn = document.getElementById('save-btn');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="loader w-5 h-5 border-2 border-white/50 border-t-white mr-2"></div> Saving...';
+            btn.disabled = true;
+            
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    customization: currentConfig
+                });
+                setTimeout(() => {
+                    btn.innerHTML = '<i class="fas fa-check"></i> Saved!';
+                    btn.classList.add('bg-green-600', 'hover:bg-green-500');
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.remove('bg-green-600', 'hover:bg-green-500');
+                        btn.disabled = false;
+                    }, 2000);
+                }, 500);
+            } catch (e) {
+                console.error(e);
+                btn.innerHTML = 'Error';
+                btn.disabled = false;
+            }
+        };
+
+    </script>
+</body>
+</html>
