@@ -141,6 +141,7 @@
                             <div id="user-menu-dropdown" class="absolute top-12 right-0 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-xl hidden flex-col z-50 py-2 dropdown-enter">
                                 <button onclick="openProfile(currentUser.uid, true); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-user w-5 text-gray-400"></i> My Profile</button>
                                 <button onclick="openWallet(); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-wallet w-5 text-gray-400"></i> Wallet</button>
+                                <button id="btn-invisible" onclick="toggleInvisible(); toggleUserMenu(event)" class="hidden text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-ghost w-5 text-gray-400"></i> <span id="btn-invisible-text">Go Invisible</span></button>
                                 <div class="h-px bg-gray-800 my-1"></div>
                                 <button onclick="logoutUser()" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-red-500 hover:text-red-400 flex items-center transition-colors"><i class="fas fa-sign-out-alt w-5"></i> Logout</button>
                             </div>
@@ -545,9 +546,45 @@ window.applyTheme=id=>{const t=allThemes.find(x=>x.id===id)||allThemes[0],r=docu
 window.selectTheme=async id=>{window.applyTheme(id);if(curUser)try{await updateDoc(doc(db,"users",curUser.uid),{theme:id})}catch(e){}};
 window.openThemes=()=>{playSound('open');const m=get('themes-modal');if(m)m.classList.remove('hidden');const s=get('theme-search');if(s)s.focus()};
 window.closeThemes=()=>{playSound('close');const m=get('themes-modal');if(m)m.classList.add('hidden')};
-window.toggleUserMenu=e=>{e.stopPropagation();const t=e.target.closest('.relative');const d=get('user-menu-dropdown'),p=get('pm-dropdown');if(p)p.classList.add('hidden');if(d)d.classList.toggle('hidden');const c=v=>{if(t&&!t.contains(v.target)){if(d)d.classList.add('hidden');document.removeEventListener('click',c)}};document.addEventListener('click',c)};
 
-onAuthStateChanged(auth,async u=>{if(u){curUser=u;window.currentUser=u;loginTime=Date.now();const r=doc(db,"users",u.uid),s=await getDoc(r);let iR="VIP";if(u.email==="dev@gmail.com")iR="Developer";if(!s.exists())await setDoc(r,{username:u.displayName||u.email.split('@')[0],email:u.email,photoURL:D_PFP,bannerURL:"https://picsum.photos/600/200",rank:iR,messages:0,invites:0,likes:0,likedBy:[],bio:"",status:"online",presence:"online",banned:!1,muted:!1,settings:{soundMsg:!0,soundMention:!0},lastSeen:serverTimestamp(),coins:1000,gems:50});else{const d=s.data();(u.email==="dev@gmail.com"&&d.rank!=="Developer")&&await updateDoc(r,{rank:"Developer"})}get('auth-container').classList.add('hidden');get('app-container').classList.remove('hidden');userProfileUnsub&&userProfileUnsub();userProfileUnsub=onSnapshot(r,d=>{userData=d.data();if(!userData)return;checkPunish();punishInt&&clearInterval(punishInt);punishInt=setInterval(checkPunish,1e3);window.updHdr();window.updStat();window.updProg();window.applyTheme(userData.theme||'default')},e=>console.log("User err",e));loadChat('global');initType();listenNotifs();updPres();presInt=setInterval(updPres,6e4);listenUsers();window.initThemes();listenGlobalSettings()}else{curUser=null;userData=null;window.currentUser=null;get('auth-container').classList.remove('hidden');get('app-container').classList.add('hidden');punishInt&&clearInterval(punishInt);presInt&&clearInterval(presInt);notifUnsub&&notifUnsub();userUnsub&&userUnsub();chatUnsub&&chatUnsub();typingUnsub&&typingUnsub();userProfileUnsub&&userProfileUnsub();globalSettingsUnsub&&globalSettingsUnsub()}});
+window.toggleUserMenu=e=>{
+    e.stopPropagation();
+    const t=e.target.closest('.relative');
+    const d=get('user-menu-dropdown'),p=get('pm-dropdown');
+    if(p)p.classList.add('hidden');
+    if(d){
+        d.classList.toggle('hidden');
+        const btn = get('btn-invisible');
+        if(userData && userData.rank === 'Developer'){
+            btn.classList.remove('hidden');
+            const txt = get('btn-invisible-text');
+            const icon = btn.querySelector('i');
+            if(userData.isInvisible){
+                txt.innerText = "Go Visible";
+                icon.className = "fas fa-eye w-5 text-ruby-500";
+            } else {
+                txt.innerText = "Go Invisible";
+                icon.className = "fas fa-ghost w-5 text-gray-400";
+            }
+        } else {
+            btn.classList.add('hidden');
+        }
+    }
+    const c=v=>{if(t&&!t.contains(v.target)){if(d)d.classList.add('hidden');document.removeEventListener('click',c)}};
+    document.addEventListener('click',c)
+};
+
+window.toggleInvisible=async()=>{
+    if(!userData)return;
+    if(userData.rank!=='Developer') return;
+    const n = !userData.isInvisible;
+    try{
+        await updateDoc(doc(db,"users",curUser.uid),{isInvisible:n});
+        showToast(n?"You are now invisible.":"You are visible.","Status Update");
+    }catch(e){showAlert(e.message,"Error")}
+};
+
+onAuthStateChanged(auth,async u=>{if(u){curUser=u;window.currentUser=u;loginTime=Date.now();const r=doc(db,"users",u.uid),s=await getDoc(r);let iR="VIP";if(u.email==="dev@gmail.com")iR="Developer";if(!s.exists())await setDoc(r,{username:u.displayName||u.email.split('@')[0],email:u.email,photoURL:D_PFP,bannerURL:"https://picsum.photos/600/200",rank:iR,messages:0,invites:0,likes:0,likedBy:[],bio:"",status:"online",presence:"online",banned:!1,muted:!1,settings:{soundMsg:!0,soundMention:!0},lastSeen:serverTimestamp(),coins:1000,gems:50,isInvisible:false});else{const d=s.data();(u.email==="dev@gmail.com"&&d.rank!=="Developer")&&await updateDoc(r,{rank:"Developer"})}get('auth-container').classList.add('hidden');get('app-container').classList.remove('hidden');userProfileUnsub&&userProfileUnsub();userProfileUnsub=onSnapshot(r,d=>{userData=d.data();if(!userData)return;checkPunish();punishInt&&clearInterval(punishInt);punishInt=setInterval(checkPunish,1e3);window.updHdr();window.updStat();window.updProg();window.applyTheme(userData.theme||'default')},e=>console.log("User err",e));loadChat('global');initType();listenNotifs();updPres();presInt=setInterval(updPres,6e4);listenUsers();window.initThemes();listenGlobalSettings()}else{curUser=null;userData=null;window.currentUser=null;get('auth-container').classList.remove('hidden');get('app-container').classList.add('hidden');punishInt&&clearInterval(punishInt);presInt&&clearInterval(presInt);notifUnsub&&notifUnsub();userUnsub&&userUnsub();chatUnsub&&chatUnsub();typingUnsub&&typingUnsub();userProfileUnsub&&userProfileUnsub();globalSettingsUnsub&&globalSettingsUnsub()}});
 window.updProg=()=>{const c=get('header-progression'),b=get('header-xp-bar'),t=get('header-xp-text');if(!userData)return;const r=getRank(userData.rank);if(r.isStaff){if(c)c.classList.add('hidden');return}const n=nextRankInfo(userData.messages||0,userData.rank);if(n&&c){c.classList.remove('hidden');if(b)b.style.width=`${Math.min(100,(userData.messages/n.needed)*100)}%`;if(t)t.innerText=`${userData.messages} / ${n.needed}`}else if(c)c.classList.add('hidden')};
 window.updHdr=()=>{userData&&(get('header-avatar').src=userData.photoURL||D_PFP)};
 window.updStat=()=>{if(!userData)return;const e=get('header-status-dot');if(e)e.className="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 "+(userData.presence==='away'?'bg-yellow-500':userData.presence==='dnd'?'bg-red-500':'bg-green-500')};
@@ -823,13 +860,17 @@ window.openFloatingChat=(tid,un,av)=>{get('pm-dropdown').classList.add('hidden')
 window.sendFMsg=async(e,tid)=>{e.preventDefault();const i=get(`pm-input-${tid}`),tx=i.value.trim();if(!tx)return;if(chkMute().m)return;i.value='';const cid=curUser.uid<tid?`${curUser.uid}_${tid}`:`${tid}_${curUser.uid}`;try{await addDoc(collection(db,"direct_messages",cid,"messages"),{text:tx,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:userData.rank,timestamp:serverTimestamp()})}catch(x){}};
 function initDrag(b){const h=b.querySelector('.pm-header'),rh=b.querySelector('.resize-handle');b.addEventListener('mousedown',()=>toFront(b));let iD=!1,sx,sy,il,it;h.addEventListener('mousedown',e=>{if(e.target.closest('button'))return;iD=!0;sx=e.clientX;sy=e.clientY;il=b.offsetLeft;it=b.offsetTop;b.style.cursor='grabbing';e.preventDefault()});let iR=!1,rsx,rsy,iw,ih;rh.addEventListener('mousedown',e=>{e.stopPropagation();iR=!0;rsx=e.clientX;rsy=e.clientY;iw=b.offsetWidth;ih=b.offsetHeight;document.body.style.cursor='nwse-resize';e.preventDefault()});window.addEventListener('mousemove',e=>{if(iD){b.style.left=`${il+e.clientX-sx}px`;b.style.top=`${it+e.clientY-sy}px`}if(iR){b.style.width=`${Math.max(300,iw+e.clientX-rsx)}px`;b.style.height=`${Math.max(300,ih+e.clientY-rsy)}px`}});window.addEventListener('mouseup',()=>{iD=!1;iR=!1;if(b){b.style.cursor='';h.style.cursor='grab'}document.body.style.cursor=''})}
 function toFront(e){e.style.zIndex=++zIdx}
-function listenUsers(){userUnsub=onSnapshot(query(collection(db,"users"),orderBy("lastSeen","desc"),limit(200)),s=>{const on=[],off=[],nw=new Date();s.forEach(d=>{const x=d.data(),ls=x.lastSeen?x.lastSeen.toDate():new Date(0),io=(nw-ls)<3e5,u={uid:d.id,...x,isOnline:io};io?on.push(u):off.push(u)});const srt=l=>l.sort((a,b)=>{const ra=getRankIdx(a.rank),rb=getRankIdx(b.rank);return ra!==rb?ra-rb:a.username.localeCompare(b.username)});srt(on);srt(off);allUsers=[...on,...off];get('online-count').innerText=on.length;get('online-count-header').innerText=on.length;get('offline-count-header').innerText=off.length;get('online-user-list').innerHTML=on.map(rndU).join('');get('offline-user-list').innerHTML=off.map(rndU).join('');if(!get('admin-modal').classList.contains('hidden')){get('admin-stat-users').innerText=allUsers.length;get('admin-stat-online').innerText=on.length;rndAdmTbl()}},e=>console.log("User listen err",e))}
+
+function listenUsers(){userUnsub=onSnapshot(query(collection(db,"users"),orderBy("lastSeen","desc"),limit(200)),s=>{const on=[],off=[],nw=new Date();const amIDev=userData&&userData.rank==='Developer';s.forEach(d=>{const x=d.data(),ls=x.lastSeen?x.lastSeen.toDate():new Date(0);let io=(nw-ls)<3e5;if(x.isInvisible){if(curUser.uid!==d.id && !amIDev) io=false;}const u={uid:d.id,...x,isOnline:io};io?on.push(u):off.push(u)});const srt=l=>l.sort((a,b)=>{const ra=getRankIdx(a.rank),rb=getRankIdx(b.rank);return ra!==rb?ra-rb:a.username.localeCompare(b.username)});srt(on);srt(off);allUsers=[...on,...off];get('online-count').innerText=on.length;get('online-count-header').innerText=on.length;get('offline-count-header').innerText=off.length;get('online-user-list').innerHTML=on.map(rndU).join('');get('offline-user-list').innerHTML=off.map(rndU).join('');if(!get('admin-modal').classList.contains('hidden')){get('admin-stat-users').innerText=allUsers.length;get('admin-stat-online').innerText=on.length;rndAdmTbl()}},e=>console.log("User listen err",e))}
+
 function rndU(u){
     const r=getRank(u.rank);
     const h=r?`<img src="custom ranks/${r.img}" class="h-4 w-auto" title="${r.name}">`:'';
     const p=u.photoURL||D_PFP;
     const sc=u.isOnline?(u.presence==='away'?'bg-yellow-500':u.presence==='dnd'?'bg-red-500':'bg-green-500'):'bg-gray-500';
     const mood = u.bio ? esc(u.bio).substring(0, 20) : (u.presence || 'Online');
+    const isStaff = r ? r.isStaff : false;
+    const inv = (u.isInvisible && u.isOnline) ? '<i class="fas fa-ghost text-gray-500 text-[10px] ml-1" title="Invisible Mode"></i>' : '';
     
     return `
     <div class="flex items-center gap-2 p-1.5 hover:bg-gray-800 rounded cursor-pointer transition-colors group" onclick="openProfile('${u.uid}')">
@@ -839,7 +880,10 @@ function rndU(u){
         </div>
         <div class="flex-1 min-w-0 flex flex-col justify-center">
             <div class="flex justify-between items-center w-full">
-                <div class="text-xs font-bold truncate ${u.isStaff?'text-ruby-500':'text-gray-200'}">${u.username}</div>
+                <div class="flex items-center gap-1 min-w-0">
+                    <div class="text-xs font-bold truncate ${isStaff?'text-ruby-500':'text-gray-200'}">${u.username}</div>
+                    ${inv}
+                </div>
                 <div class="flex-shrink-0 ml-1">${h}</div>
             </div>
             <div class="text-[10px] text-gray-500 font-bold italic truncate leading-tight">${mood}</div>
