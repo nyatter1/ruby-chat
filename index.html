@@ -42,46 +42,48 @@
             background: linear-gradient(135deg, var(--bg-900) 0%, var(--bg-850) 100%);
             border: 1px solid var(--acc-500);
             border-radius: 16px;
-            padding: 20px;
+            padding: 24px;
             text-align: center;
-            width: 280px;
-            margin: 10px auto;
+            width: 320px;
+            margin: 16px auto;
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             position: relative;
             overflow: hidden;
-            animation: fadeIn 0.5s ease-out backwards;
+            animation: fadeIn 0.4s ease-out;
         }
         .info-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; height: 5px;
+            top: 0; left: 0; right: 0; height: 4px;
             background: linear-gradient(90deg, var(--acc-500), var(--acc-600));
         }
         .info-avatar {
-            width: 70px;
-            height: 70px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
-            margin: 0 auto 10px;
-            border: 3px solid var(--bg-950);
-            box-shadow: 0 0 15px rgba(224,17,95,0.3);
+            margin: 0 auto 12px;
+            border: 4px solid var(--bg-950);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             object-fit: cover;
             cursor: pointer;
             transition: transform 0.2s;
         }
         .info-avatar:hover { transform: scale(1.05); }
-        .info-username { font-weight: bold; color: white; font-size: 1.1rem; margin-bottom: 2px; }
+        .info-username { font-weight: 800; color: white; font-size: 1.2rem; margin-bottom: 4px; letter-spacing: 0.5px; }
         .info-title {
             color: var(--acc-500);
-            font-family: monospace;
+            font-family: 'Courier New', monospace;
             font-weight: bold;
-            margin-bottom: 12px;
-            font-size: 1rem;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
             letter-spacing: 1px;
+            text-transform: uppercase;
+            opacity: 0.9;
         }
-        .info-content { color: #d1d5db; font-size: 0.9rem; line-height: 1.6; }
+        .info-content { color: #e5e7eb; font-size: 1rem; line-height: 1.6; font-weight: 500; }
         .info-content div { margin-bottom: 4px; }
-        .win-text { color: #4ade80; font-weight: bold; text-shadow: 0 0 10px rgba(74,222,128,0.3); }
-        .loss-text { color: #f87171; font-weight: bold; }
+        .win-text { color: #4ade80; font-weight: 900; text-shadow: 0 0 15px rgba(74,222,128,0.2); font-size: 1.1rem; }
+        .loss-text { color: #f87171; font-weight: 900; font-size: 1.1rem; }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -140,7 +142,7 @@
                 </button>
             </div>
             <div class="p-4 text-xs text-gray-600 text-center sidebar-text">
-                RubyChat v2.3
+                RubyChat v2.3.1
             </div>
         </div>
 
@@ -222,11 +224,110 @@
         <div class="flex gap-4 mb-6"><input type="text" id="theme-search" placeholder="Search themes (e.g., 'Matrix', 'Pink', 'Funny')..." class="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:border-ruby-500 focus:outline-none text-lg"></div>
         <div id="themes-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 overflow-y-auto flex-1 pb-4"></div>
     </div>
+    <div id="image-editor-modal" class="fixed inset-0 z-[60] bg-black/95 hidden flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-lg bg-gray-900 rounded-xl border border-gray-700 shadow-2xl p-6">
+            <h3 class="text-white font-bold mb-6 flex justify-between items-center text-lg"><span>Adjust & Transform</span><button onclick="closeEditor()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button></h3>
+            <div class="flex justify-center mb-6 overflow-hidden relative bg-black rounded-lg border border-gray-800" style="height: 350px;"><canvas id="editor-canvas" width="350" height="350"></canvas><div class="absolute inset-0 pointer-events-none flex items-center justify-center"><div class="w-[300px] h-[300px] rounded-full border-2 border-ruby-500 shadow-[0_0_20px_rgba(224,17,95,0.3)] opacity-70"></div><div class="w-2 h-2 bg-white rounded-full absolute"></div></div></div>
+            <div class="space-y-6">
+                <div class="bg-gray-800 p-4 rounded-xl flex items-center justify-between gap-4">
+                    <button onclick="editorRotate()" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors" title="Rotate"><i class="fas fa-undo"></i></button>
+                    <button onclick="editorFlip('h')" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors" title="Flip H"><i class="fas fa-arrows-alt-h"></i></button>
+                    <div class="flex-1 px-2 flex items-center gap-3"><i class="fas fa-search-minus text-gray-400 text-xs"></i><input type="range" id="editor-zoom" min="0.1" max="3" step="0.1" value="1" oninput="window.editorZoom(this.value)"><i class="fas fa-search-plus text-gray-400 text-xs"></i></div>
+                    <button onclick="editorFlip('v')" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors" title="Flip V"><i class="fas fa-arrows-alt-v"></i></button>
+                </div>
+                <div>
+                    <span class="text-xs text-gray-400 uppercase font-bold block mb-3 tracking-widest">Filters</span>
+                    <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+                        <button onclick="editorFilter('none')" class="filter-btn active bg-gray-700 text-[10px] text-white flex-shrink-0 flex items-center justify-center">Normal</button>
+                        <button onclick="editorFilter('grayscale(1)')" class="filter-btn bg-gray-500 flex-shrink-0" style="filter:grayscale(1);background:linear-gradient(45deg,#333,#999)"></button>
+                        <button onclick="editorFilter('sepia(1)')" class="filter-btn bg-yellow-700 flex-shrink-0" style="filter:sepia(1);background:linear-gradient(45deg,#5e4b35,#c2a683)"></button>
+                        <button onclick="editorFilter('invert(1)')" class="filter-btn bg-white flex-shrink-0" style="filter:invert(1);background:linear-gradient(45deg,#000,#fff)"></button>
+                        <button onclick="editorFilter('contrast(1.5)')" class="filter-btn bg-gray-800 flex-shrink-0" style="filter:contrast(1.5);background:linear-gradient(45deg,#222,#eee)"></button>
+                        <button onclick="editorFilter('brightness(1.2)')" class="filter-btn bg-gray-400 flex-shrink-0" style="filter:brightness(1.2);background:linear-gradient(45deg,#444,#bbb)"></button>
+                    </div>
+                </div>
+                <div class="flex gap-4 pt-2"><button onclick="closeEditor()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition-colors">Cancel</button><button onclick="saveEditor()" class="flex-1 bg-gradient-to-r from-ruby-600 to-ruby-500 hover:from-ruby-500 hover:to-ruby-400 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-ruby-500/20 flex items-center justify-center gap-2"><i class="fas fa-magic"></i> Apply & Save</button></div>
+            </div>
+        </div>
+    </div>
+    <div id="profile-modal" class="fixed inset-0 z-40 bg-black/80 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 rounded-xl w-full max-w-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative">
+            <div class="relative h-32 bg-gray-800 cursor-pointer group" onclick="triggerBannerUpload()">
+                <img id="profile-banner-img" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity bg-gray-800"><div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity edit-overlay hidden"><i class="fas fa-camera text-white text-2xl drop-shadow-lg"></i></div><button onclick="closeProfile()" class="absolute top-2 right-2 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors z-10"><i class="fas fa-times"></i></button>
+                <button id="staff-action-btn" onclick="openStaffActionMenu()" class="hidden absolute top-2 left-2 bg-yellow-500 hover:bg-yellow-400 text-black w-8 h-8 rounded-full flex items-center justify-center transition-colors z-10 shadow-lg shadow-yellow-500/50"><i class="fas fa-bolt"></i></button>
+            </div>
+            <div class="px-6 pb-6 -mt-12 flex flex-col items-center relative overflow-y-auto">
+                <div class="relative mb-3 group cursor-pointer" onclick="triggerAvatarUpload()">
+                    <img id="profile-avatar-img" src="" class="w-24 h-24 rounded-full border-4 border-gray-900 object-cover bg-gray-800 default-pfp"><div class="absolute inset-0 rounded-full flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity edit-overlay hidden"><i class="fas fa-camera text-white drop-shadow-lg"></i></div>
+                </div>
+                <div id="profile-view-mode" class="text-center w-full">
+                    <div class="flex items-center justify-center gap-2 mb-1"><h2 id="profile-username" class="text-2xl font-bold text-white">User</h2><button id="like-btn" onclick="toggleLike()" class="text-gray-500 hover:text-ruby-500 transition-colors"><i class="fas fa-heart text-xl"></i><span id="profile-likes-count" class="text-xs font-bold ml-1">0</span></button></div>
+                    <div id="profile-status-badges" class="flex justify-center gap-2 mb-2"></div><div id="profile-rank-badge" class="mb-4 flex justify-center h-8"></div><div id="profile-bio-display" class="mb-6 text-sm text-gray-400 italic px-4 break-words">No bio set.</div>
+                    <div class="grid grid-cols-2 gap-4 w-full mb-6"><div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center"><div class="text-xs text-gray-400 uppercase tracking-wide">Messages</div><div id="profile-stats-msgs" class="text-xl font-bold text-ruby-500">0</div></div><div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center"><div class="text-xs text-gray-400 uppercase tracking-wide">Invites</div><div id="profile-stats-invites" class="text-xl font-bold text-blue-400">0</div></div></div>
+                    <div id="rank-progress-container" class="w-full mb-6 bg-gray-800 rounded-lg p-3 border border-gray-700"><div class="flex justify-between text-xs mb-1"><span class="text-gray-400">Progress to <span id="next-rank-name" class="text-ruby-500 font-bold">Next Rank</span></span><span id="rank-progress-text" class="text-white">0 / 0</span></div><div class="w-full bg-gray-700 rounded-full h-2.5"><div id="rank-progress-bar" class="bg-ruby-500 h-2.5 rounded-full" style="width:0%"></div></div><div id="msgs-needed-text" class="text-xs text-center mt-1 text-gray-500 italic">0 more messages needed</div></div>
+                    <button id="edit-profile-btn" onclick="toggleProfileEdit()" class="hidden w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 rounded border border-gray-600 transition-colors">Edit Profile</button><div id="private-msg-container" class="w-full mt-2 hidden"><button onclick="initiatePrivateChat(true)" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 rounded transition-colors shadow-lg shadow-ruby-500/20"><i class="fas fa-envelope mr-2"></i>Send Message</button></div>
+                </div>
+                <div id="profile-edit-mode" class="w-full hidden space-y-4">
+                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Username</label><input type="text" id="edit-username-input" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"></div>
+                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Bio / About Me</label><textarea id="edit-bio-input" rows="3" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none resize-none" placeholder="Tell us about yourself..."></textarea></div>
+                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Status</label><select id="edit-status-input" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"><option value="online">Online</option><option value="away">Away</option><option value="dnd">Do Not Disturb</option></select></div>
+                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-2">Notifications</label><div class="space-y-2"><label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="pref-sound-msg" class="form-checkbox text-ruby-500 bg-gray-950 border-gray-700 rounded"><span class="text-sm text-gray-300">Play sound on new messages</span></label><label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="pref-sound-mention" class="form-checkbox text-ruby-500 bg-gray-950 border-gray-700 rounded"><span class="text-sm text-gray-300">Play sound on mentions (@)</span></label></div></div>
+                    <div class="flex gap-2 mt-4"><button onclick="saveProfileChanges()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded">Save</button><button onclick="toggleProfileEdit()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded">Cancel</button></div>
+                </div>
+                <input type="file" id="avatar-upload" accept="image/*" class="hidden"><input type="file" id="banner-upload" accept="image/*" class="hidden">
+            </div>
+        </div>
+    </div>
+    <div id="staff-action-menu" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm">
+            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-yellow-500"><i class="fas fa-bolt mr-2"></i>Staff Actions</h3><button onclick="closeStaffActionMenu()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button></div>
+            <div class="space-y-3">
+                <button id="btn-mute" onclick="showStaffInput('mute')" class="w-full bg-gray-800 hover:bg-yellow-900/40 text-yellow-500 border border-yellow-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-microphone-slash"></i> Mute User</button>
+                <button id="btn-unmute" onclick="executeStaffAction('unmute')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-microphone"></i> Unmute User</button>
+                <div id="admin-actions-only" class="space-y-3 hidden">
+                    <button id="btn-kick" onclick="showStaffInput('kick')" class="w-full bg-gray-800 hover:bg-orange-900/40 text-orange-500 border border-orange-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i> Kick User (Temp Ban)</button>
+                    <button id="btn-unkick" onclick="executeStaffAction('unkick')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-door-open"></i> Unkick User</button>
+                    <button id="btn-ban" onclick="showStaffInput('ban')" class="w-full bg-gray-800 hover:bg-red-900/40 text-red-500 border border-red-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-ban"></i> Ban User (Perm)</button>
+                    <button id="btn-unban" onclick="executeStaffAction('unban')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-check-circle"></i> Unban User</button>
+                    <div class="bg-gray-800 p-3 rounded border border-gray-700"><label class="block text-xs text-gray-400 uppercase font-bold mb-2">Rank User</label><div class="flex gap-2"><select id="staff-rank-select" class="flex-1 bg-gray-900 text-white text-sm rounded p-2 border border-gray-700 focus:outline-none"></select><button onclick="executeRankChange()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 rounded font-bold text-sm">Set</button></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="staff-input-modal" class="fixed inset-0 z-[60] bg-black/90 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm">
+            <h3 id="staff-input-title" class="text-xl font-bold text-white mb-4">Action</h3>
+            <div id="staff-duration-group" class="mb-4"><label class="block text-xs text-gray-400 uppercase font-bold mb-1">Duration</label><div class="flex gap-2"><input type="number" id="staff-action-duration" min="0" value="1" class="flex-1 bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"><select id="staff-action-unit" class="bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"><option value="minutes">Minutes</option><option value="hours">Hours</option><option value="days" selected>Days</option></select></div><p class="text-[10px] text-gray-500 mt-1">0 for permanent (if applicable).</p></div>
+            <div class="mb-6"><label class="block text-xs text-gray-400 uppercase font-bold mb-1">Reason</label><input type="text" id="staff-action-reason" placeholder="Reason for this action..." class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"></div>
+            <div class="flex gap-3"><button id="staff-action-confirm-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded">Confirm</button><button onclick="closeStaffInput()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded">Cancel</button></div>
+        </div>
+    </div>
+    <div id="wallet-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 p-8 rounded-xl w-full max-w-sm text-center relative shadow-2xl dropdown-enter">
+            <button onclick="closeWallet()" class="absolute top-3 right-4 text-gray-400 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button><h2 class="text-2xl font-bold text-white mb-6 tracking-wide flex items-center justify-center gap-2"><i class="fas fa-wallet text-ruby-500"></i> My Wallet</h2>
+            <div class="space-y-5"><div class="bg-gray-800 p-5 rounded-xl border border-yellow-600/30 shadow-lg shadow-yellow-900/10"><div class="text-yellow-400 text-3xl mb-2 drop-shadow-md"><i class="fas fa-coins"></i></div><div class="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">Coins</div><div id="wallet-coins" class="text-3xl font-black text-white tracking-tight">0</div></div><div class="bg-gray-800 p-5 rounded-xl border border-ruby-500/30 shadow-lg shadow-ruby-900/10"><div class="text-ruby-500 text-3xl mb-2 drop-shadow-md"><i class="fas fa-gem"></i></div><div class="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">Gems</div><div id="wallet-gems" class="text-3xl font-black text-white tracking-tight">0</div></div></div>
+        </div>
+    </div>
+    <div id="admin-modal" class="fixed inset-0 z-50 bg-black/95 hidden flex flex-col p-4 md:p-6">
+        <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-ruby-500 flex items-center"><i class="fas fa-shield-alt mr-3"></i>Admin Command Center</h2><button onclick="closeAdminPanel()" class="text-gray-400 hover:text-white text-2xl"><i class="fas fa-times"></i></button></div>
+        <div class="flex gap-4 mb-4 border-b border-gray-800"><button onclick="switchAdminTab('users')" id="tab-btn-users" class="px-4 py-2 text-sm font-bold text-gray-400 hover:text-white admin-tab-active transition-colors">Users</button><button onclick="switchAdminTab('broadcast')" id="tab-btn-broadcast" class="px-4 py-2 text-sm font-bold text-gray-400 hover:text-white transition-colors">System Actions</button></div>
+        <div class="grid grid-cols-3 gap-4 mb-4"><div class="bg-gray-900 border border-gray-800 p-3 rounded flex flex-col items-center"><span class="text-xs text-gray-500 uppercase">Total Users</span><span id="admin-stat-users" class="text-xl font-bold text-white">0</span></div><div class="bg-gray-900 border border-gray-800 p-3 rounded flex flex-col items-center"><span class="text-xs text-gray-500 uppercase">Online</span><span id="admin-stat-online" class="text-xl font-bold text-green-500">0</span></div><div class="bg-gray-900 border border-gray-800 p-3 rounded flex flex-col items-center"><span class="text-xs text-gray-500 uppercase">Msg Activity</span><span class="text-xl font-bold text-blue-500">Live</span></div></div>
+        <div id="admin-tab-users" class="bg-gray-900 border border-gray-800 rounded-xl flex-1 overflow-hidden flex flex-col">
+            <div class="p-4 border-b border-gray-800 bg-gray-850 flex gap-4"><input type="text" id="admin-search" placeholder="Search users by name or email..." class="bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white w-full max-w-sm focus:border-ruby-500 focus:outline-none"></div>
+            <div class="flex-1 overflow-y-auto p-0"><table class="w-full text-left border-collapse"><thead class="bg-gray-800 text-gray-400 text-xs uppercase sticky top-0 z-10"><tr><th class="p-4">User</th><th class="p-4">Status</th><th class="p-4">Rank</th><th class="p-4 text-center">Stats</th><th class="p-4 text-right">Actions</th></tr></thead><tbody id="admin-user-table" class="divide-y divide-gray-800"></tbody></table></div>
+        </div>
+        <div id="admin-tab-broadcast" class="bg-gray-900 border border-gray-800 rounded-xl flex-1 overflow-y-auto p-8 hidden">
+            <div class="max-w-4xl mx-auto w-full">
+                <div class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700"><h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="fas fa-comments text-blue-400"></i> Global Chat Control</h3><p class="text-gray-400 mb-4 text-sm">Emergency controls for the public chat channel.</p><button onclick="adminClearChat()" class="bg-red-900/50 hover:bg-red-800 text-red-400 font-bold py-3 px-6 rounded border border-red-800 transition-colors"><i class="fas fa-trash-alt mr-2"></i> CLEAR LAST 50 MESSAGES</button></div>
+                <div class="mb-10"><i class="fas fa-bullhorn text-4xl text-ruby-500 mb-4 block text-center"></i><h3 class="text-2xl font-bold text-white mb-2 text-center">System Broadcast</h3><p class="text-gray-400 text-center mb-6">Send a global announcement to all online users.</p><textarea id="broadcast-input" rows="4" class="w-full bg-gray-900 border border-gray-700 rounded-lg p-4 text-white focus:border-ruby-500 focus:outline-none mb-4" placeholder="Type your announcement here..."></textarea><div class="text-center"><button onclick="sendBroadcast()" class="bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-ruby-500/20 transition-transform hover:scale-105">SEND BROADCAST</button></div></div>
+            </div>
+        </div>
+    </div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";import{getAnalytics}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js";import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";import{getFirestore,collection,doc,addDoc,getDoc,getDocs,updateDoc,deleteDoc,onSnapshot,query,where,orderBy,limit,serverTimestamp,increment,arrayUnion,arrayRemove,setDoc}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 const config={apiKey:"AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",authDomain:"cartoony-chat.firebaseapp.com",databaseURL:"https://cartoony-chat-default-rtdb.europe-west1.firebasedatabase.app",projectId:"cartoony-chat",storageBucket:"cartoony-chat.firebasestorage.app",messagingSenderId:"827018960215",appId:"1:827018960215:web:0e0c2436c9c4e1dceb7212",measurementId:"G-HF16NJSQ16"};
 const app=initializeApp(config),analytics=getAnalytics(app),auth=getAuth(app),db=getFirestore(app);
-const get=id=>document.getElementById(id),on=(el,ev,fn)=>{if(el)el.addEventListener(ev,fn);else console.warn("Missing el for event",ev)};
+const get=id=>document.getElementById(id),on=(el,ev,fn)=>{if(el)el.addEventListener(ev,fn)};
 const D_PFP="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%239ca3af' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
 const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
 function playTone(f,t,d){if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=t;o.frequency.setValueAtTime(f,audioCtx.currentTime);g.gain.setValueAtTime(.1,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.00001,audioCtx.currentTime+d);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d)}
@@ -248,12 +349,28 @@ function listenNotifs(){notifUnsub&&notifUnsub();const q=query(collection(db,"us
 function checkPunish(){if(!userData)return;const o=get('punishment-overlay'),t=get('punish-title'),m=get('punish-message'),tm=get('punish-timer'),n=Date.now();if(userData.banned){o.classList.remove('hidden');t.innerText="YOU HAVE BEEN BANNED";m.innerText=`Reason: ${userData.banReason||"Violation"}`;tm.classList.add('hidden');return}if(userData.kickedUntil){const u=userData.kickedUntil.toMillis();if(u>n){o.classList.remove('hidden');t.innerText="YOU HAVE BEEN KICKED";m.innerText=`Reason: ${userData.kickReason||"Suspension"}`;tm.classList.remove('hidden');const d=u-n,days=Math.floor(d/864e5),hrs=Math.floor((d%864e5)/36e5),mins=Math.floor((d%36e5)/6e4),secs=Math.floor((d%6e4)/1e3);tm.innerText=`${days}d ${hrs}h ${mins}m ${secs}s`;return}else{updateDoc(doc(db,"users",curUser.uid),{kickedUntil:null,kickReason:null});showToast("You're back in.")}}if(userData.mutedUntil){const u=userData.mutedUntil.toMillis();if(n>u&&!window.isUnmuting){window.isUnmuting=!0;updateDoc(doc(db,"users",curUser.uid),{mutedUntil:null,muteReason:null}).then(()=>{addDoc(collection(db,"messages"),{text:"You are unmuted.",isSystem:!0,privateTo:curUser.uid,timestamp:serverTimestamp()});showToast("Unmuted.");window.isUnmuting=!1})}}o.classList.add('hidden')}
 function listenGlobalSettings(){globalSettingsUnsub&&globalSettingsUnsub();globalSettingsUnsub=onSnapshot(doc(db,"settings","global"),s=>{if(s.exists()){globalSettings=s.data();const mo=get('maintenance-overlay');if(globalSettings.maintenance&&!getRank(userData?.rank)?.isStaff)mo.classList.remove('hidden');else mo.classList.add('hidden');const pm=globalSettings.pinnedMessage;if(pm){get('pinned-message-bar').classList.remove('hidden');get('pinned-message-text').innerText=pm}else get('pinned-message-bar').classList.add('hidden');if(globalSettings.topic)get('header-title-container').title=globalSettings.topic}})}
 window.toggleAuthMode=()=>{get('login-form').classList.toggle('hidden');get('signup-form').classList.toggle('hidden')};
-onAuthStateChanged(auth,async u=>{if(u){curUser=u;window.currentUser=u;loginTime=Date.now();const r=doc(db,"users",u.uid),s=await getDoc(r);let iR="VIP";if(u.email==="dev@gmail.com")iR="Developer";if(!s.exists())await setDoc(r,{username:u.displayName||u.email.split('@')[0],email:u.email,photoURL:D_PFP,bannerURL:"https://picsum.photos/600/200",rank:iR,messages:0,invites:0,likes:0,likedBy:[],bio:"",status:"online",presence:"online",banned:!1,muted:!1,settings:{soundMsg:!0,soundMention:!0},lastSeen:serverTimestamp(),coins:1000,gems:50});else{const d=s.data();(u.email==="dev@gmail.com"&&d.rank!=="Developer")&&await updateDoc(r,{rank:"Developer"})}get('auth-container').classList.add('hidden');get('app-container').classList.remove('hidden');userProfileUnsub&&userProfileUnsub();userProfileUnsub=onSnapshot(r,d=>{userData=d.data();if(!userData)return;checkPunish();punishInt&&clearInterval(punishInt);punishInt=setInterval(checkPunish,1e3);window.updHdr();window.updStat();window.updProg();applyTheme(userData.theme||'default')},e=>console.log("User err",e));loadChat('global');initType();listenNotifs();updPres();presInt=setInterval(updPres,6e4);listenUsers();initThemes();listenGlobalSettings()}else{curUser=null;userData=null;window.currentUser=null;get('auth-container').classList.remove('hidden');get('app-container').classList.add('hidden');punishInt&&clearInterval(punishInt);presInt&&clearInterval(presInt);notifUnsub&&notifUnsub();userUnsub&&userUnsub();chatUnsub&&chatUnsub();typingUnsub&&typingUnsub();userProfileUnsub&&userProfileUnsub();globalSettingsUnsub&&globalSettingsUnsub()}});
-window.updProg=()=>{const c=get('header-progression'),b=get('header-xp-bar'),t=get('header-xp-text');if(!userData)return;const r=getRank(userData.rank);if(r.isStaff){c.classList.add('hidden');return}const n=nextRankInfo(userData.messages||0,userData.rank);if(n){c.classList.remove('hidden');b.style.width=`${Math.min(100,(userData.messages/n.needed)*100)}%`;t.innerText=`${userData.messages} / ${n.needed}`}else c.classList.add('hidden')};
+
+// DEFINE FUNCTIONS HERE FIRST TO AVOID REF ERRORS
+window.initThemes=()=>{
+    const bs=[{id:'default',n:'Ruby Dark',c:['#030712','#111827','#1f2937','#e0115f','#c20e50']},{id:'light',n:'Flashbang',c:['#f9fafb','#f3f4f6','#e5e7eb','#e0115f','#c20e50']},{id:'midnight',n:'Midnight',c:['#020617','#0f172a','#1e293b','#3b82f6','#2563eb']},{id:'forest',n:'Deep Forest',c:['#052e16','#064e3b','#065f46','#10b981','#059669']},{id:'hacker',n:'The Matrix',c:['#000000','#0d1117','#161b22','#22c55e','#16a34a']},{id:'candy',n:'Candy Floss',c:['#fdf2f8','#fce7f3','#fbcfe8','#db2777','#be185d']},{id:'royal',n:'Royal Guard',c:['#1e1b4b','#312e81','#3730a3','#c026d3','#a21caf']},{id:'coffee',n:'Espresso',c:['#271c19','#431407','#5d2e1e','#d97706','#b45309']},{id:'ocean',n:'Ocean Depth',c:['#082f49','#0c4a6e','#075985','#0ea5e9','#0284c7']},{id:'sunset',n:'Sunset',c:['#2e1065','#4c1d95','#5b21b6','#f97316','#ea580c']},{id:'dracula',n:'Vampire',c:['#282a36','#44475a','#6272a4','#ff79c6','#bd93f9']}];
+    allThemes=[...bs];
+    for(let i=0;i<190;i++){const h=Math.floor((i*137.5)%360),l=i%2==0?10:95,s=i%2==0?90:10;allThemes.push({id:`gen_${i}`,n:`Hue ${h}° ${i%2==0?'Dark':'Light'}`,c:[`hsl(${h},${s}%,${i%2==0?5:98}%)`,`hsl(${h},${s}%,${i%2==0?10:95}%)`,`hsl(${h},${s}%,${i%2==0?15:90}%)`,`hsl(${(h+180)%360},80%,50%)`,`hsl(${(h+180)%360},80%,40%)`]})}
+    const b=get('theme-count-badge'); if(b)b.innerText=allThemes.length+"+";
+    window.renderThemes(allThemes);
+};
+window.renderThemes=t=>{const g=get('themes-grid');if(g)g.innerHTML=t.map(x=>`<div onclick="selectTheme('${x.id}')" class="bg-gray-800 p-2 rounded-lg theme-card flex flex-col gap-2" title="${x.n}"><div class="theme-preview"><div class="theme-p-col" style="background:${x.c[0]}"></div><div class="theme-p-col" style="background:${x.c[1]}"></div><div class="theme-p-col" style="background:${x.c[3]}"></div></div><div class="text-[10px] text-center text-gray-400 font-bold truncate">${x.n}</div></div>`).join('')};
+window.applyTheme=id=>{const t=allThemes.find(x=>x.id===id)||allThemes[0],r=document.documentElement.style;r.setProperty('--bg-950',t.c[0]);r.setProperty('--bg-900',t.c[1]);r.setProperty('--bg-850',t.c[2]);r.setProperty('--acc-500',t.c[3]);r.setProperty('--acc-600',t.c[4])};
+window.selectTheme=async id=>{window.applyTheme(id);if(curUser)try{await updateDoc(doc(db,"users",curUser.uid),{theme:id})}catch(e){}};
+window.openThemes=()=>{const m=get('themes-modal');if(m)m.classList.remove('hidden');const s=get('theme-search');if(s)s.focus()};
+window.closeThemes=()=>{const m=get('themes-modal');if(m)m.classList.add('hidden')};
+window.toggleUserMenu=e=>{e.stopPropagation();const t=e.target.closest('.relative');const d=get('user-menu-dropdown'),p=get('pm-dropdown');if(p)p.classList.add('hidden');if(d)d.classList.toggle('hidden');const c=v=>{if(t&&!t.contains(v.target)){if(d)d.classList.add('hidden');document.removeEventListener('click',c)}};document.addEventListener('click',c)};
+
+onAuthStateChanged(auth,async u=>{if(u){curUser=u;window.currentUser=u;loginTime=Date.now();const r=doc(db,"users",u.uid),s=await getDoc(r);let iR="VIP";if(u.email==="dev@gmail.com")iR="Developer";if(!s.exists())await setDoc(r,{username:u.displayName||u.email.split('@')[0],email:u.email,photoURL:D_PFP,bannerURL:"https://picsum.photos/600/200",rank:iR,messages:0,invites:0,likes:0,likedBy:[],bio:"",status:"online",presence:"online",banned:!1,muted:!1,settings:{soundMsg:!0,soundMention:!0},lastSeen:serverTimestamp(),coins:1000,gems:50});else{const d=s.data();(u.email==="dev@gmail.com"&&d.rank!=="Developer")&&await updateDoc(r,{rank:"Developer"})}get('auth-container').classList.add('hidden');get('app-container').classList.remove('hidden');userProfileUnsub&&userProfileUnsub();userProfileUnsub=onSnapshot(r,d=>{userData=d.data();if(!userData)return;checkPunish();punishInt&&clearInterval(punishInt);punishInt=setInterval(checkPunish,1e3);window.updHdr();window.updStat();window.updProg();window.applyTheme(userData.theme||'default')},e=>console.log("User err",e));loadChat('global');initType();listenNotifs();updPres();presInt=setInterval(updPres,6e4);listenUsers();window.initThemes();listenGlobalSettings()}else{curUser=null;userData=null;window.currentUser=null;get('auth-container').classList.remove('hidden');get('app-container').classList.add('hidden');punishInt&&clearInterval(punishInt);presInt&&clearInterval(presInt);notifUnsub&&notifUnsub();userUnsub&&userUnsub();chatUnsub&&chatUnsub();typingUnsub&&typingUnsub();userProfileUnsub&&userProfileUnsub();globalSettingsUnsub&&globalSettingsUnsub()}});
+window.updProg=()=>{const c=get('header-progression'),b=get('header-xp-bar'),t=get('header-xp-text');if(!userData)return;const r=getRank(userData.rank);if(r.isStaff){if(c)c.classList.add('hidden');return}const n=nextRankInfo(userData.messages||0,userData.rank);if(n&&c){c.classList.remove('hidden');if(b)b.style.width=`${Math.min(100,(userData.messages/n.needed)*100)}%`;if(t)t.innerText=`${userData.messages} / ${n.needed}`}else if(c)c.classList.add('hidden')};
 window.updHdr=()=>{userData&&(get('header-avatar').src=userData.photoURL||D_PFP)};
-window.updStat=()=>{if(!userData)return;const e=get('header-status-dot');e.className="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 "+(userData.presence==='away'?'bg-yellow-500':userData.presence==='dnd'?'bg-red-500':'bg-green-500')};
+window.updStat=()=>{if(!userData)return;const e=get('header-status-dot');if(e)e.className="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 "+(userData.presence==='away'?'bg-yellow-500':userData.presence==='dnd'?'bg-red-500':'bg-green-500')};
 async function updPres(){if(curUser&&document.visibilityState==='visible')await updateDoc(doc(db,"users",curUser.uid),{status:"online",lastSeen:serverTimestamp()})}
-function initType(){typingUnsub&&typingUnsub();typingUnsub=onSnapshot(query(collection(db,"typing"),orderBy("timestamp","desc"),limit(5)),s=>{const c=get('typing-indicator'),n=Date.now(),ts=[];s.forEach(d=>{const v=d.data();v.uid!==curUser.uid&&v.chatId===curChat&&(v.timestamp&&(n-v.timestamp.toMillis()<4e3)&&ts.push(v.username))});if(ts.length>0){c.innerHTML=`<div class="text-xs text-gray-400 flex items-center gap-2"><div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div><span class="font-bold text-ruby-500">${ts.length>2?"Several people":ts.join(", ")} typing...</span></div>`;c.classList.remove('hidden')}else c.classList.add('hidden')},e=>{})}
+function initType(){typingUnsub&&typingUnsub();typingUnsub=onSnapshot(query(collection(db,"typing"),orderBy("timestamp","desc"),limit(5)),s=>{const c=get('typing-indicator'),n=Date.now(),ts=[];s.forEach(d=>{const v=d.data();v.uid!==curUser.uid&&v.chatId===curChat&&(v.timestamp&&(n-v.timestamp.toMillis()<4e3)&&ts.push(v.username))});if(ts.length>0&&c){c.innerHTML=`<div class="text-xs text-gray-400 flex items-center gap-2"><div class="typing-dots"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div><span class="font-bold text-ruby-500">${ts.length>2?"Several people":ts.join(", ")} typing...</span></div>`;c.classList.remove('hidden')}else if(c)c.classList.add('hidden')},e=>{})}
 on(get('message-input'),'input',()=>{
     const now=Date.now();
     if(now-lastTypingSent>2000){
@@ -514,15 +631,46 @@ function listenUsers(){userUnsub=onSnapshot(query(collection(db,"users"),orderBy
 function rndU(u){const r=getRank(u.rank),h=r?`<img src="custom ranks/${r.img}" class="h-5 w-auto" title="${r.name}">`:'',p=u.photoURL||D_PFP,sc=u.isOnline?(u.presence==='away'?'bg-yellow-500':u.presence==='dnd'?'bg-red-500':'bg-green-500'):'bg-gray-500';return`<div class="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors group" onclick="openProfile('${u.uid}')"><div class="relative"><img src="${p}" class="w-8 h-8 rounded-full object-cover bg-gray-800 default-pfp group-hover:scale-105 transition-transform"><div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 ${sc}"></div></div><div class="overflow-hidden flex-1"><div class="text-sm font-medium truncate flex items-center gap-2 ${u.isStaff?'text-ruby-500':'text-gray-300'}">${u.username}</div><div class="flex items-center mt-0.5 rank-badge p-0 opacity-80">${h}</div></div></div>`}
 window.openProfile=async(id,ed=!1)=>{viewId=id;const m=get('profile-modal'),eb=get('edit-profile-btn'),eo=document.querySelectorAll('.edit-overlay'),pm=get('private-msg-container'),lb=get('like-btn'),sa=get('staff-action-btn');m.classList.remove('hidden');isEditing=!1;get('profile-view-mode').classList.remove('hidden');get('profile-edit-mode').classList.add('hidden');eo.forEach(e=>e.classList.add('hidden'));let d={};if(curUser&&id===curUser.uid){d=userData;eb.classList.remove('hidden');pm.classList.add('hidden');lb.classList.add('pointer-events-none','opacity-50');sa.classList.add('hidden')}else{const s=await getDoc(doc(db,"users",id));if(s.exists())d=s.data();eb.classList.add('hidden');if(curUser)pm.classList.remove('hidden');lb.classList.remove('pointer-events-none','opacity-50');getRank(userData.rank)?.isStaff?sa.classList.remove('hidden'):sa.classList.add('hidden');sendNotif(id,`${userData.username} visited your profile.`)}viewRank=d.rank;get('profile-username').innerText=d.username||"Unknown";get('profile-stats-msgs').innerText=d.messages||0;get('profile-stats-invites').innerText=d.invites||0;get('profile-avatar-img').src=d.photoURL||D_PFP;get('profile-banner-img').src=d.bannerURL||"https://picsum.photos/600/200";get('profile-likes-count').innerText=d.likes||0;get('profile-bio-display').innerText=d.bio||"No bio.";let bg='';if(d.banned)bg+='<span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded font-bold">BANNED</span>';else if(d.kickedUntil&&d.kickedUntil.toMillis()>Date.now())bg+='<span class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded font-bold">KICKED</span>';if(d.mutedUntil&&d.mutedUntil.toMillis()>Date.now())bg+='<span class="bg-yellow-500 text-black text-xs px-2 py-0.5 rounded font-bold">MUTED</span>';get('profile-status-badges').innerHTML=bg;if(curUser&&(d.likedBy||[]).includes(curUser.uid))lb.classList.add('text-ruby-500');else lb.classList.remove('text-ruby-500');const rk=getRank(d.rank);get('profile-rank-badge').innerHTML=rk?`<div class="bg-gray-800 border border-gray-600 px-3 py-1 rounded-full flex items-center gap-2"><img src="custom ranks/${rk.img}" class="h-6" onerror="this.style.display='none'"><span class="font-bold text-sm text-gray-200">${rk.name}</span></div>`:`<span class="bg-gray-800 px-3 py-1 rounded text-sm">${d.rank}</span>`;const ni=nextRankInfo(d.messages||0,d.rank),pc=get('rank-progress-container');if(ni){pc.classList.remove('hidden');get('next-rank-name').innerText=ni.name;get('rank-progress-text').innerText=`${d.messages} / ${ni.needed}`;get('rank-progress-bar').style.width=`${Math.min(100,(d.messages/ni.needed)*100)}%`;get('msgs-needed-text').innerText=`${ni.rem} more`}else pc.classList.add('hidden');get('edit-username-input').value=d.username;get('edit-bio-input').value=d.bio||"";get('edit-status-input').value=d.presence||'online';if(d.settings){get('pref-sound-msg').checked=d.settings.soundMsg!==!1;get('pref-sound-mention').checked=d.settings.soundMention!==!1}else{get('pref-sound-msg').checked=!0;get('pref-sound-mention').checked=!0}if(ed&&curUser&&id===curUser.uid)toggleProfileEdit()};
 on(get('avatar-upload'),'change',async e=>{if(e.target.files[0]){const b=await hFU(e.target.files[0]);openEditor(b);e.target.value=''}});
-const ec=get('editor-canvas'),ex=ec.getContext('2d');
-window.openEditor=s=>{const i=new Image();i.onload=()=>{curEdImg=i;edCfg={x:0,y:0,s:1,r:0,h:1,v:1,f:'none'};get('image-editor-modal').classList.remove('hidden');get('editor-zoom').value=1;drawEd()};i.src=s};
+const ec=get('editor-canvas');
+let ex=null;
+try {
+    if (ec) ex = ec.getContext('2d');
+} catch (err) {
+    console.warn("Canvas init error:", err);
+}
+window.openEditor=s=>{
+    const i=new Image();
+    i.onload=()=>{
+        curEdImg=i;
+        edCfg={x:0,y:0,s:1,r:0,h:1,v:1,f:'none'};
+        const m = get('image-editor-modal');
+        if(m) {
+            m.classList.remove('hidden');
+            const r = get('editor-zoom');
+            if(r) r.value=1;
+            drawEd();
+        }
+    };
+    i.src=s;
+};
 window.closeEditor=()=>{get('image-editor-modal').classList.add('hidden');curEdImg=null};
-window.drawEd=()=>{if(!curEdImg)return;ex.clearRect(0,0,ec.width,ec.height);ex.save();ex.translate(ec.width/2,ec.height/2);ex.rotate(edCfg.r*Math.PI/180);ex.scale(edCfg.h,edCfg.v);ex.filter=edCfg.f;const sc=Math.max(ec.width/curEdImg.width,ec.height/curEdImg.height)*edCfg.s;ex.drawImage(curEdImg,-curEdImg.width*sc/2+edCfg.x,-curEdImg.height*sc/2+edCfg.y,curEdImg.width*sc,curEdImg.height*sc);ex.restore()};
+window.drawEd=()=>{
+    if(!curEdImg || !ex || !ec) return;
+    ex.clearRect(0,0,ec.width,ec.height);
+    ex.save();
+    ex.translate(ec.width/2,ec.height/2);
+    ex.rotate(edCfg.r*Math.PI/180);
+    ex.scale(edCfg.h,edCfg.v);
+    ex.filter=edCfg.f;
+    const sc=Math.max(ec.width/curEdImg.width,ec.height/curEdImg.height)*edCfg.s;
+    ex.drawImage(curEdImg,-curEdImg.width*sc/2+edCfg.x,-curEdImg.height*sc/2+edCfg.y,curEdImg.width*sc,curEdImg.height*sc);
+    ex.restore();
+};
 window.editorRotate=()=>{edCfg.r=(edCfg.r+90)%360;drawEd()};window.editorFlip=a=>{if(a==='h')edCfg.h*=-1;if(a==='v')edCfg.v*=-1;drawEd()};window.editorFilter=f=>{edCfg.f=f;drawEd()};window.editorZoom=v=>{edCfg.s=parseFloat(v);drawEd()};
-on(ec,'mousedown',e=>{isDrag=!0;dragStart={x:e.clientX,y:e.clientY}});
+if(ec) on(ec,'mousedown',e=>{isDrag=!0;dragStart={x:e.clientX,y:e.clientY}});
 window.addEventListener('mousemove',e=>{if(isDrag&&curEdImg){const dx=e.clientX-dragStart.x,dy=e.clientY-dragStart.y,r=-edCfg.r*Math.PI/180;edCfg.x+=(dx*Math.cos(r)-dy*Math.sin(r))*edCfg.h;edCfg.y+=(dx*Math.sin(r)+dy*Math.cos(r))*edCfg.v;dragStart={x:e.clientX,y:e.clientY};drawEd()}});
 window.addEventListener('mouseup',()=>isDrag=!1);
-window.saveEditor=()=>{pAv=ec.toDataURL('image/jpeg',.9);get('profile-avatar-img').src=pAv;closeEditor()};
+window.saveEditor=()=>{if(!ec)return;pAv=ec.toDataURL('image/jpeg',.9);get('profile-avatar-img').src=pAv;closeEditor()};
 window.saveProfileChanges=async()=>{if(!curUser)return;const p={username:get('edit-username-input').value,bio:get('edit-bio-input').value,presence:get('edit-status-input').value,settings:{soundMsg:get('pref-sound-msg').checked,soundMention:get('pref-sound-mention').checked}};if(pAv)p.photoURL=pAv;if(pBn)p.bannerURL=pBn;try{await updateDoc(doc(db,"users",curUser.uid),p);pAv=null;pBn=null;toggleProfileEdit()}catch(e){alert("Error")}};
 window.toggleProfileEdit=()=>{isEditing=!isEditing;const v=get('profile-view-mode'),e=get('profile-edit-mode'),o=document.querySelectorAll('.edit-overlay');if(isEditing){v.classList.add('hidden');e.classList.remove('hidden');o.forEach(x=>x.classList.remove('hidden'))}else{v.classList.remove('hidden');e.classList.add('hidden');o.forEach(x=>x.classList.add('hidden'))}};
 window.closeProfile=()=>get('profile-modal').classList.add('hidden');
@@ -547,19 +695,8 @@ window.toggleMobileMenu=()=>{const s=get('right-sidebar'),o=get('mobile-menu-ove
 window.copyInviteLink=()=>{if(!curUser)return;navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?ref=${curUser.uid}`);alert("Copied")};
 window.toggleLike=async()=>{if(!curUser||!viewId||viewId===curUser.uid)return;const r=doc(db,"users",viewId),b=get('like-btn'),c=get('profile-likes-count'),l=b.classList.contains('text-ruby-500');let n=parseInt(c.innerText)||0;if(l){b.classList.remove('text-ruby-500');b.classList.add('text-gray-500');c.innerText=Math.max(0,n-1);await updateDoc(r,{likes:Math.max(0,n-1),likedBy:arrayRemove(curUser.uid)})}else{b.classList.add('text-ruby-500');b.classList.remove('text-gray-500');c.innerText=n+1;await updateDoc(r,{likes:n+1,likedBy:arrayUnion(curUser.uid)});sendNotif(viewId,`${userData.username} liked your profile.`)}};
 window.initiatePrivateChat=async(fl=!1)=>{if(!curUser||!viewId)return;const s=await getDoc(doc(db,"users",viewId)),p=s.exists()?s.data():{username:"User",photoURL:D_PFP};closeProfile();if(fl)openFloatingChat(viewId,p.username,p.photoURL||D_PFP);else{const cid=curUser.uid<viewId?`${curUser.uid}_${viewId}`:`${viewId}_${curUser.uid}`;loadChat(cid,{...p,uid:viewId})}};
-window.toggleUserMenu=e=>{e.stopPropagation();const t=e.target.closest('.relative');const d=get('user-menu-dropdown'),p=get('pm-dropdown');p.classList.add('hidden');d.classList.toggle('hidden');const c=v=>{if(t&&!t.contains(v.target)){d.classList.add('hidden');document.removeEventListener('click',c)}};document.addEventListener('click',c)};
 window.openWallet=()=>{if(!userData)return;get('wallet-coins').innerText=(userData.coins||0).toLocaleString();get('wallet-gems').innerText=(userData.gems||0).toLocaleString();get('wallet-modal').classList.remove('hidden')};
 window.closeWallet=()=>get('wallet-modal').classList.add('hidden');
 window.logoutUser=()=>signOut(auth).catch(e=>alert(e.message));
-window.initThemes=()=>{
-    const bs=[{id:'default',n:'Ruby Dark',c:['#030712','#111827','#1f2937','#e0115f','#c20e50']},{id:'light',n:'Flashbang',c:['#f9fafb','#f3f4f6','#e5e7eb','#e0115f','#c20e50']},{id:'midnight',n:'Midnight',c:['#020617','#0f172a','#1e293b','#3b82f6','#2563eb']},{id:'forest',n:'Deep Forest',c:['#052e16','#064e3b','#065f46','#10b981','#059669']},{id:'hacker',n:'The Matrix',c:['#000000','#0d1117','#161b22','#22c55e','#16a34a']},{id:'candy',n:'Candy Floss',c:['#fdf2f8','#fce7f3','#fbcfe8','#db2777','#be185d']},{id:'royal',n:'Royal Guard',c:['#1e1b4b','#312e81','#3730a3','#c026d3','#a21caf']},{id:'coffee',n:'Espresso',c:['#271c19','#431407','#5d2e1e','#d97706','#b45309']},{id:'ocean',n:'Ocean Depth',c:['#082f49','#0c4a6e','#075985','#0ea5e9','#0284c7']},{id:'sunset',n:'Sunset',c:['#2e1065','#4c1d95','#5b21b6','#f97316','#ea580c']},{id:'dracula',n:'Vampire',c:['#282a36','#44475a','#6272a4','#ff79c6','#bd93f9']}];
-    allThemes=[...bs];
-    for(let i=0;i<190;i++){const h=Math.floor((i*137.5)%360),l=i%2==0?10:95,s=i%2==0?90:10;allThemes.push({id:`gen_${i}`,n:`Hue ${h}° ${i%2==0?'Dark':'Light'}`,c:[`hsl(${h},${s}%,${i%2==0?5:98}%)`,`hsl(${h},${s}%,${i%2==0?10:95}%)`,`hsl(${h},${s}%,${i%2==0?15:90}%)`,`hsl(${(h+180)%360},80%,50%)`,`hsl(${(h+180)%360},80%,40%)`]})}
-    get('theme-count-badge').innerText=allThemes.length+"+";renderThemes(allThemes)};
-window.renderThemes=t=>{const g=get('themes-grid');g.innerHTML=t.map(x=>`<div onclick="selectTheme('${x.id}')" class="bg-gray-800 p-2 rounded-lg theme-card flex flex-col gap-2" title="${x.n}"><div class="theme-preview"><div class="theme-p-col" style="background:${x.c[0]}"></div><div class="theme-p-col" style="background:${x.c[1]}"></div><div class="theme-p-col" style="background:${x.c[3]}"></div></div><div class="text-[10px] text-center text-gray-400 font-bold truncate">${x.n}</div></div>`).join('')};
-window.openThemes=()=>{get('themes-modal').classList.remove('hidden');get('theme-search').focus()};
-window.closeThemes=()=>get('themes-modal').classList.add('hidden');
-window.selectTheme=async id=>{applyTheme(id);if(curUser)try{await updateDoc(doc(db,"users",curUser.uid),{theme:id})}catch(e){}};
-window.applyTheme=id=>{const t=allThemes.find(x=>x.id===id)||allThemes[0],r=document.documentElement.style;r.setProperty('--bg-950',t.c[0]);r.setProperty('--bg-900',t.c[1]);r.setProperty('--bg-850',t.c[2]);r.setProperty('--acc-500',t.c[3]);r.setProperty('--acc-600',t.c[4])};
-on(get('theme-search'),'input',e=>{const v=e.target.value.toLowerCase();renderThemes(allThemes.filter(t=>t.n.toLowerCase().includes(v)))});
+on(get('theme-search'),'input',e=>{const v=e.target.value.toLowerCase();window.renderThemes(allThemes.filter(t=>t.n.toLowerCase().includes(v)))});
 </script></body></html>
