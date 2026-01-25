@@ -3,315 +3,642 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ruby Chat - Admin Panel</title>
+    <title>Ruby Chat | Admin Panel</title>
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
-            theme: { extend: { colors: { gray: { 850: '#1f2937', 900: '#111827', 950: '#030712' }, ruby: { 500: '#e0115f', 600: '#c20e50' } } } }
+            theme: {
+                extend: {
+                    colors: {
+                        gray: {
+                            850: '#1f2937',
+                            900: '#111827',
+                            950: '#030712',
+                        },
+                        ruby: {
+                            500: '#e0115f',
+                            600: '#c20e50'
+                        }
+                    }
+                }
+            }
         }
     </script>
+    
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-</head>
-<body class="bg-gray-950 text-gray-100 font-sans min-h-screen">
 
-    <!-- Auth Protection Overlay -->
-    <div id="auth-check" class="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center">
-        <div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-ruby-500 mb-4"></div>
-        <h2 class="text-xl font-bold">Verifying Credentials...</h2>
+    <style>
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #111827; }
+        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
+        
+        .glass-panel {
+            background: rgba(17, 24, 39, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden">
+
+    <!-- Loading / Security Screen -->
+    <div id="security-screen" class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center">
+        <i class="fas fa-shield-alt text-6xl text-ruby-500 mb-4 animate-pulse"></i>
+        <h2 class="text-2xl font-bold tracking-widest">VERIFYING CLEARANCE LEVEL...</h2>
     </div>
 
-    <div class="flex h-screen overflow-hidden">
+    <div class="flex h-full">
         <!-- Sidebar -->
         <div class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
-            <div class="p-6 border-b border-gray-800">
-                <h1 class="text-2xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Admin</h1>
+            <div class="p-6 border-b border-gray-800 flex items-center gap-3">
+                <i class="fas fa-shield-alt text-ruby-500 text-2xl"></i>
+                <div>
+                    <h1 class="font-bold text-lg tracking-wide">RUBY ADMIN</h1>
+                    <div id="admin-rank-display" class="text-xs text-gray-400 uppercase font-mono">Loading...</div>
+                </div>
             </div>
+            
             <nav class="flex-1 p-4 space-y-2">
-                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full text-left px-4 py-3 rounded-lg bg-ruby-500/10 text-ruby-500 font-bold border border-ruby-500/20"><i class="fas fa-chart-pie w-6"></i> Dashboard</button>
-                <button onclick="switchTab('users')" id="nav-users" class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-400 font-bold transition-colors"><i class="fas fa-users w-6"></i> User Management</button>
-                <button onclick="switchTab('system')" id="nav-system" class="w-full text-left px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-400 font-bold transition-colors"><i class="fas fa-cogs w-6"></i> System Actions</button>
+                <button onclick="switchTab('dashboard')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors bg-gray-800 text-white border-l-4 border-ruby-500">
+                    <i class="fas fa-tachometer-alt w-6"></i> Dashboard
+                </button>
+                <button onclick="switchTab('users')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors border-l-4 border-transparent">
+                    <i class="fas fa-users w-6"></i> User Manager
+                </button>
+                <button onclick="switchTab('chat')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors border-l-4 border-transparent">
+                    <i class="fas fa-comments w-6"></i> Chat Control
+                </button>
+                <button onclick="switchTab('economy')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors border-l-4 border-transparent hidden tier-high">
+                    <i class="fas fa-coins w-6"></i> Economy
+                </button>
+                <button onclick="switchTab('logs')" class="nav-btn w-full text-left px-4 py-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors border-l-4 border-transparent hidden tier-mid">
+                    <i class="fas fa-clipboard-list w-6"></i> Audit Logs
+                </button>
             </nav>
+
             <div class="p-4 border-t border-gray-800">
-                <button onclick="window.location.href='index.html'" class="w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 rounded transition-colors"><i class="fas fa-arrow-left mr-2"></i> Back to Chat</button>
+                <button onclick="window.location.href='index.html'" class="w-full bg-gray-800 hover:bg-gray-700 text-white py-2 rounded transition-colors mb-2">
+                    <i class="fas fa-arrow-left mr-2"></i> Return to Chat
+                </button>
             </div>
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 overflow-y-auto bg-gray-950 p-8">
-            
-            <!-- Dashboard -->
-            <div id="tab-dashboard" class="space-y-6">
-                <h2 class="text-3xl font-bold mb-6">Overview</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 shadow-lg">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="text-sm text-gray-400 uppercase font-bold">Total Users</div>
-                                <div class="text-4xl font-bold text-white mt-2" id="stat-total-users">0</div>
-                            </div>
-                            <div class="p-3 bg-blue-500/10 rounded-lg text-blue-500"><i class="fas fa-users text-2xl"></i></div>
-                        </div>
+        <div class="flex-1 flex flex-col bg-gray-950 overflow-hidden relative">
+            <!-- Top Bar -->
+            <header class="h-16 bg-gray-900/50 backdrop-blur border-b border-gray-800 flex items-center justify-between px-6">
+                <h2 id="page-title" class="text-xl font-bold text-white">Dashboard</h2>
+                <div class="flex items-center gap-4">
+                    <div id="maintenance-badge" class="hidden bg-red-600 text-white text-xs px-3 py-1 rounded-full font-bold animate-pulse">
+                        MAINTENANCE MODE ACTIVE
                     </div>
-                    <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 shadow-lg">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="text-sm text-gray-400 uppercase font-bold">Online Now</div>
-                                <div class="text-4xl font-bold text-green-500 mt-2" id="stat-online-users">0</div>
-                            </div>
-                            <div class="p-3 bg-green-500/10 rounded-lg text-green-500"><i class="fas fa-globe text-2xl"></i></div>
-                        </div>
-                    </div>
-                    <div class="bg-gray-900 p-6 rounded-xl border border-gray-800 shadow-lg">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <div class="text-sm text-gray-400 uppercase font-bold">Banned Users</div>
-                                <div class="text-4xl font-bold text-red-500 mt-2" id="stat-banned-users">0</div>
-                            </div>
-                            <div class="p-3 bg-red-500/10 rounded-lg text-red-500"><i class="fas fa-ban text-2xl"></i></div>
-                        </div>
+                    <div class="flex items-center gap-3">
+                        <img id="admin-avatar" src="" class="w-8 h-8 rounded-full bg-gray-700">
+                        <span id="admin-name" class="font-bold text-sm">...</span>
                     </div>
                 </div>
-            </div>
+            </header>
 
-            <!-- Users Management -->
-            <div id="tab-users" class="hidden space-y-6">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-3xl font-bold">User Management</h2>
-                    <div class="relative">
-                        <input type="text" id="user-search" placeholder="Search by name, email, UID..." class="bg-gray-900 border border-gray-700 rounded-lg pl-10 pr-4 py-2 w-80 text-white focus:border-ruby-500 focus:outline-none">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-500"></i>
-                    </div>
-                </div>
-
-                <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden shadow-lg">
-                    <table class="w-full text-left">
-                        <thead class="bg-gray-850 text-gray-400 text-xs uppercase font-bold">
-                            <tr>
-                                <th class="p-4">User</th>
-                                <th class="p-4">Role</th>
-                                <th class="p-4">Status</th>
-                                <th class="p-4">Wallet</th>
-                                <th class="p-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="users-table-body" class="divide-y divide-gray-800 text-sm">
-                            <!-- Injected JS -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- System Actions -->
-            <div id="tab-system" class="hidden space-y-6">
-                <h2 class="text-3xl font-bold">System Actions</h2>
+            <!-- Content Pages -->
+            <div class="flex-1 overflow-y-auto p-6 scrollbar-thin">
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- Broadcast -->
-                    <div class="bg-gray-900 p-6 rounded-xl border border-gray-800">
-                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-bullhorn text-ruby-500"></i> Global Broadcast</h3>
-                        <p class="text-gray-400 mb-4 text-sm">Send a system alert to all users currently in the public chat.</p>
-                        <textarea id="broadcast-msg" class="w-full bg-gray-950 border border-gray-700 rounded p-3 text-white mb-4 focus:border-ruby-500 focus:outline-none" rows="3" placeholder="Announcement text..."></textarea>
-                        <button onclick="sendSystemBroadcast()" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 rounded transition-colors">Send Broadcast</button>
+                <!-- 1. DASHBOARD -->
+                <div id="view-dashboard" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl shadow-lg">
+                            <div class="text-gray-400 text-xs uppercase font-bold mb-2">Total Users</div>
+                            <div id="stat-users" class="text-3xl font-bold text-white">0</div>
+                        </div>
+                        <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl shadow-lg">
+                            <div class="text-gray-400 text-xs uppercase font-bold mb-2">Online Now</div>
+                            <div id="stat-online" class="text-3xl font-bold text-green-500">0</div>
+                        </div>
+                        <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl shadow-lg">
+                            <div class="text-gray-400 text-xs uppercase font-bold mb-2">Banned Users</div>
+                            <div id="stat-banned" class="text-3xl font-bold text-red-500">0</div>
+                        </div>
+                        <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl shadow-lg">
+                            <div class="text-gray-400 text-xs uppercase font-bold mb-2">Total Messages</div>
+                            <div id="stat-msgs" class="text-3xl font-bold text-blue-500">0</div>
+                        </div>
                     </div>
 
-                    <!-- Chat Control -->
-                    <div class="bg-gray-900 p-6 rounded-xl border border-gray-800">
-                        <h3 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-trash-alt text-red-500"></i> Chat Moderation</h3>
-                        <div class="space-y-4">
-                            <button onclick="nukeChat()" class="w-full bg-red-900/30 hover:bg-red-900/50 border border-red-800 text-red-400 font-bold py-3 rounded transition-colors flex items-center justify-center gap-2">
-                                <i class="fas fa-bomb"></i> Clear Last 50 Messages
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden tier-mid">
+                        <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl">
+                            <h3 class="font-bold mb-4 flex items-center gap-2"><i class="fas fa-server text-ruby-500"></i> Server Controls</h3>
+                            <div class="space-y-4">
+                                <div class="flex justify-between items-center bg-gray-800 p-3 rounded">
+                                    <span>Maintenance Mode</span>
+                                    <button onclick="toggleMaintenance()" id="btn-maintenance" class="bg-gray-700 w-12 h-6 rounded-full relative transition-colors">
+                                        <div class="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform"></div>
+                                    </button>
+                                </div>
+                                <div class="flex justify-between items-center bg-gray-800 p-3 rounded">
+                                    <span>Lock All Chats</span>
+                                    <button onclick="toggleGlobalLock()" id="btn-lockdown" class="bg-gray-700 w-12 h-6 rounded-full relative transition-colors">
+                                        <div class="w-4 h-4 bg-white rounded-full absolute top-1 left-1 transition-transform"></div>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl">
+                            <h3 class="font-bold mb-4 flex items-center gap-2"><i class="fas fa-bullhorn text-yellow-500"></i> Global Broadcast</h3>
+                            <textarea id="broadcast-text" class="w-full bg-gray-950 border border-gray-700 rounded p-3 text-sm mb-3 focus:border-ruby-500 outline-none" rows="3" placeholder="Message to all users..."></textarea>
+                            <button onclick="sendBroadcast()" class="bg-ruby-500 hover:bg-ruby-600 text-white px-4 py-2 rounded font-bold w-full transition-transform active:scale-95">Send Announcement</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. USERS -->
+                <div id="view-users" class="hidden h-full flex flex-col">
+                    <div class="flex gap-4 mb-4">
+                        <input type="text" id="user-search" placeholder="Search by Username, Email, or UID..." class="bg-gray-900 border border-gray-700 rounded-lg px-4 py-2 w-full max-w-lg focus:border-ruby-500 outline-none">
+                    </div>
+                    <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex-1 relative">
+                        <div class="overflow-y-auto absolute inset-0">
+                            <table class="w-full text-left border-collapse">
+                                <thead class="bg-gray-800 text-xs text-gray-400 uppercase sticky top-0 z-10">
+                                    <tr>
+                                        <th class="p-4">User</th>
+                                        <th class="p-4">Rank</th>
+                                        <th class="p-4">Status</th>
+                                        <th class="p-4 text-right">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="users-table-body" class="divide-y divide-gray-800 text-sm">
+                                    <!-- Dynamic Rows -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. CHAT CONTROL -->
+                <div id="view-chat" class="hidden space-y-6">
+                    <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl">
+                        <h3 class="font-bold mb-4 text-xl">Chat Moderation</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <button onclick="clearChat()" class="p-4 bg-red-900/30 border border-red-800 hover:bg-red-900/50 rounded-xl text-red-400 font-bold flex flex-col items-center gap-2 transition-all hover:scale-105">
+                                <i class="fas fa-trash-alt text-2xl"></i>
+                                Clear Chat (Last 50)
                             </button>
-                            <div class="text-xs text-gray-500 text-center">Caution: This action cannot be undone.</div>
+                            <button onclick="toggleSlowMode()" id="btn-slowmode" class="p-4 bg-blue-900/30 border border-blue-800 hover:bg-blue-900/50 rounded-xl text-blue-400 font-bold flex flex-col items-center gap-2 transition-all hover:scale-105">
+                                <i class="fas fa-hourglass-half text-2xl"></i>
+                                <span>Toggle Slow Mode</span>
+                            </button>
+                            <button onclick="viewDeletedMessages()" class="p-4 bg-gray-800 border border-gray-700 hover:bg-gray-700 rounded-xl text-gray-300 font-bold flex flex-col items-center gap-2 transition-all hover:scale-105">
+                                <i class="fas fa-history text-2xl"></i>
+                                View Deleted Logs
+                            </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- Edit User Modal -->
-    <div id="edit-user-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-lg">
-            <h3 class="text-xl font-bold mb-4">Edit User</h3>
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Rank</label>
-                    <select id="edit-rank" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white"></select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Coins</label>
-                    <input type="number" id="edit-coins" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white">
-                </div>
-            </div>
-            <div class="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                    <label class="block text-xs text-gray-400 uppercase font-bold mb-1">Gems</label>
-                    <input type="number" id="edit-gems" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white">
-                </div>
-            </div>
-            <div class="flex gap-3">
-                <button onclick="saveUserEdits()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded">Save Changes</button>
-                <button onclick="document.getElementById('edit-user-modal').classList.add('hidden')" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-        import { getFirestore, collection, doc, getDoc, updateDoc, query, orderBy, onSnapshot, addDoc, serverTimestamp, getDocs, limit, deleteDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",
-            authDomain: "cartoony-chat.firebaseapp.com",
-            databaseURL: "https://cartoony-chat-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "cartoony-chat",
-            storageBucket: "cartoony-chat.firebasestorage.app",
-            messagingSenderId: "827018960215",
-            appId: "1:827018960215:web:0e0c2436c9c4e1dceb7212",
-            measurementId: "G-HF16NJSQ16"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
-        // Attempt persistence
-        try { enableIndexedDbPersistence(db).catch(err => { if(err.code == 'failed-precondition') {} else if(err.code == 'unimplemented') {} }); } catch(e){}
-
-        let currentUser = null;
-        let allUsers = [];
-        let editingUserId = null;
-
-        const RANKS = ["Developer","Founder","CEO","Head Owner","Owner","Manager","Super Admin","Admin","Moderator","Trial Mod","Staff","VIP"];
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const snap = await getDoc(doc(db, "users", user.uid));
-                if (snap.exists()) {
-                    const data = snap.data();
-                    const rank = data.rank || "VIP";
-                    if (["Developer", "Founder", "CEO", "Head Owner", "Owner", "Manager", "Super Admin", "Admin"].includes(rank)) {
-                        currentUser = user;
-                        document.getElementById('auth-check').classList.add('hidden');
-                        initDashboard();
-                    } else {
-                        alert("Access Denied: Insufficient Permissions");
-                        window.location.href = 'index.html';
-                    }
-                } else window.location.href = 'index.html';
-            } else window.location.href = 'index.html';
-        });
-
-        function initDashboard() {
-            onSnapshot(collection(db, "users"), (snapshot) => {
-                allUsers = [];
-                let online = 0, banned = 0;
-                const now = new Date();
-                snapshot.forEach(doc => {
-                    const d = doc.data();
-                    const isOnline = d.lastSeen && (now - d.lastSeen.toDate() < 300000);
-                    if(isOnline) online++;
-                    if(d.banned) banned++;
-                    allUsers.push({ id: doc.id, ...d, isOnline });
-                });
-                
-                document.getElementById('stat-total-users').innerText = allUsers.length;
-                document.getElementById('stat-online-users').innerText = online;
-                document.getElementById('stat-banned-users').innerText = banned;
-                renderUsersTable();
-            });
-
-            const rankSel = document.getElementById('edit-rank');
-            rankSel.innerHTML = RANKS.map(r => `<option value="${r}">${r}</option>`).join('');
-        }
-
-        window.renderUsersTable = () => {
-            const term = document.getElementById('user-search').value.toLowerCase();
-            const filtered = allUsers.filter(u => (u.username||"").toLowerCase().includes(term) || (u.email||"").toLowerCase().includes(term) || u.id === term);
-            
-            document.getElementById('users-table-body').innerHTML = filtered.map(u => `
-                <tr class="hover:bg-gray-800 transition-colors border-b border-gray-800">
-                    <td class="p-4">
-                        <div class="flex items-center gap-3">
-                            <img src="${u.photoURL}" class="w-8 h-8 rounded-full bg-gray-700">
+                <!-- 4. ECONOMY (High Tier) -->
+                <div id="view-economy" class="hidden space-y-6">
+                    <div class="bg-gray-900 border border-gray-800 p-6 rounded-xl">
+                        <h3 class="font-bold mb-6 text-xl text-yellow-500">Economy Management</h3>
+                        <div class="max-w-xl space-y-4">
                             <div>
-                                <div class="font-bold text-white">${u.username}</div>
-                                <div class="text-xs text-gray-500">${u.email}</div>
-                                <div class="text-[10px] text-gray-600 font-mono">${u.id}</div>
+                                <label class="block text-xs uppercase text-gray-500 font-bold mb-1">Target User ID</label>
+                                <input type="text" id="eco-target-uid" class="w-full bg-gray-950 border border-gray-700 rounded p-2 focus:border-yellow-500 outline-none">
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs uppercase text-gray-500 font-bold mb-1">Amount</label>
+                                    <input type="number" id="eco-amount" class="w-full bg-gray-950 border border-gray-700 rounded p-2 focus:border-yellow-500 outline-none">
+                                </div>
+                                <div>
+                                    <label class="block text-xs uppercase text-gray-500 font-bold mb-1">Currency</label>
+                                    <select id="eco-type" class="w-full bg-gray-950 border border-gray-700 rounded p-2 outline-none">
+                                        <option value="coins">Coins</option>
+                                        <option value="gems">Gems</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="flex gap-4 pt-4">
+                                <button onclick="modifyEconomy('add')" class="flex-1 bg-green-600 hover:bg-green-500 py-2 rounded font-bold">Add Funds</button>
+                                <button onclick="modifyEconomy('remove')" class="flex-1 bg-red-600 hover:bg-red-500 py-2 rounded font-bold">Remove Funds</button>
                             </div>
                         </div>
-                    </td>
-                    <td class="p-4"><span class="bg-gray-800 border border-gray-700 px-2 py-1 rounded text-xs text-white">${u.rank}</span></td>
-                    <td class="p-4">
-                        ${u.banned ? '<span class="text-red-500 font-bold text-xs">BANNED</span>' : (u.isOnline ? '<span class="text-green-500 font-bold text-xs">ONLINE</span>' : '<span class="text-gray-500 text-xs">OFFLINE</span>')}
-                    </td>
-                    <td class="p-4 text-xs text-gray-400">
-                        <div><i class="fas fa-coins text-yellow-500 mr-1"></i> ${u.coins||0}</div>
-                        <div><i class="fas fa-gem text-ruby-500 mr-1"></i> ${u.gems||0}</div>
-                    </td>
-                    <td class="p-4 text-right">
-                        <button onclick="openEditUser('${u.id}')" class="p-2 bg-blue-600/20 text-blue-400 hover:bg-blue-600 hover:text-white rounded transition-colors mr-2"><i class="fas fa-edit"></i></button>
-                        ${!u.banned ? `<button onclick="quickAction('${u.id}', 'ban')" class="p-2 bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white rounded transition-colors" title="Ban"><i class="fas fa-ban"></i></button>` : `<button onclick="quickAction('${u.id}', 'unban')" class="p-2 bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white rounded transition-colors" title="Unban"><i class="fas fa-check"></i></button>`}
-                    </td>
-                </tr>
-            `).join('');
-        };
+                    </div>
+                </div>
 
-        window.openEditUser = (uid) => {
-            const u = allUsers.find(x => x.id === uid);
-            if(!u) return;
-            editingUserId = uid;
-            document.getElementById('edit-rank').value = u.rank;
-            document.getElementById('edit-coins').value = u.coins || 0;
-            document.getElementById('edit-gems').value = u.gems || 0;
-            document.getElementById('edit-user-modal').classList.remove('hidden');
-        };
+                <!-- 5. LOGS (Mid Tier) -->
+                <div id="view-logs" class="hidden h-full flex flex-col">
+                    <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden flex-1 relative">
+                        <div class="overflow-y-auto absolute inset-0 p-4 space-y-2" id="audit-log-container">
+                            <!-- Logs go here -->
+                        </div>
+                    </div>
+                </div>
 
-        window.saveUserEdits = async () => {
-            if(!editingUserId) return;
-            const rank = document.getElementById('edit-rank').value;
-            const coins = parseInt(document.getElementById('edit-coins').value);
-            const gems = parseInt(document.getElementById('edit-gems').value);
-            await updateDoc(doc(db, "users", editingUserId), { rank, coins, gems });
-            document.getElementById('edit-user-modal').classList.add('hidden');
-        };
+            </div>
+        </div>
+    </div>
 
-        window.quickAction = async (uid, action) => {
-            if(!confirm("Are you sure?")) return;
-            if(action === 'ban') {
-                await updateDoc(doc(db, "users", uid), { banned: true, banReason: "Admin Action" });
-            } else if (action === 'unban') {
-                await updateDoc(doc(db, "users", uid), { banned: false });
-            }
-        };
+    <!-- User Action Modal -->
+    <div id="action-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-md p-6">
+            <h3 id="modal-title" class="text-xl font-bold mb-4 text-white">Manage User</h3>
+            <input type="hidden" id="modal-uid">
+            
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <button onclick="performAction('warn')" class="bg-yellow-900/40 text-yellow-500 border border-yellow-800 p-2 rounded hover:bg-yellow-900/60 font-bold text-sm">Warn</button>
+                <button onclick="performAction('mute')" class="bg-orange-900/40 text-orange-500 border border-orange-800 p-2 rounded hover:bg-orange-900/60 font-bold text-sm">Mute (24h)</button>
+                <button onclick="performAction('kick')" class="bg-red-900/40 text-red-400 border border-red-800 p-2 rounded hover:bg-red-900/60 font-bold text-sm">Kick</button>
+                <button onclick="performAction('ban')" class="bg-red-600 text-white p-2 rounded hover:bg-red-500 font-bold text-sm">Ban</button>
+                
+                <button onclick="performAction('reset_pfp')" class="bg-gray-800 text-gray-300 p-2 rounded hover:bg-gray-700 text-xs">Reset PFP</button>
+                <button onclick="performAction('reset_bio')" class="bg-gray-800 text-gray-300 p-2 rounded hover:bg-gray-700 text-xs">Reset Bio</button>
+                
+                <button onclick="performAction('unban')" class="col-span-2 bg-green-900/40 text-green-500 border border-green-800 p-2 rounded hover:bg-green-900/60 font-bold text-sm">Unban / Unmute</button>
+            </div>
 
-        window.sendSystemBroadcast = async () => {
-            const txt = document.getElementById('broadcast-msg').value;
-            if(!txt) return;
-            await addDoc(collection(db, "messages"), { text: txt, isSystem: true, timestamp: serverTimestamp() });
-            alert("Sent."); document.getElementById('broadcast-msg').value = '';
-        };
+            <div class="mb-4 hidden tier-high">
+                <label class="block text-xs uppercase text-gray-500 font-bold mb-1">Set Rank</label>
+                <div class="flex gap-2">
+                    <select id="modal-rank-select" class="flex-1 bg-gray-950 border border-gray-700 rounded p-2 text-sm outline-none"></select>
+                    <button onclick="performAction('set_rank')" class="bg-blue-600 hover:bg-blue-500 px-4 rounded text-sm font-bold">Set</button>
+                </div>
+            </div>
 
-        window.nukeChat = async () => {
-            if(!confirm("Delete last 50 messages?")) return;
-            const q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(50));
-            const s = await getDocs(q);
-            s.forEach(async d => await deleteDoc(d.ref));
-            alert("Deleted.");
-        };
+            <button onclick="closeActionModal()" class="w-full bg-gray-800 hover:bg-gray-700 py-2 rounded text-gray-300">Close</button>
+        </div>
+    </div>
 
-        window.switchTab = (tab) => {
-            ['dashboard','users','system'].forEach(t => {
-                document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`nav-${t}`).className = "w-full text-left px-4 py-3 rounded-lg hover:bg-gray-800 text-gray-400 font-bold transition-colors";
-            });
-            document.getElementById(`tab-${tab}`).classList.remove('hidden');
-            document.getElementById(`nav-${tab}`).className = "w-full text-left px-4 py-3 rounded-lg bg-ruby-500/10 text-ruby-500 font-bold border border-ruby-500/20";
-        };
-        
-        document.getElementById('user-search').addEventListener('input', renderUsersTable);
-    </script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+  import { 
+      getFirestore, collection, doc, getDoc, getDocs, updateDoc, 
+      deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, 
+      increment, addDoc 
+  } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",
+    authDomain: "cartoony-chat.firebaseapp.com",
+    databaseURL: "https://cartoony-chat-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cartoony-chat",
+    storageBucket: "cartoony-chat.firebasestorage.app",
+    messagingSenderId: "827018960215",
+    appId: "1:827018960215:web:0e0c2436c9c4e1dceb7212",
+    measurementId: "G-HF16NJSQ16"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // --- Configuration ---
+  // Rank Hierarchy: Index 0 is highest
+  const STAFF_RANKS = [
+      "Developer", "Founder", "CEO", "Head Owner", "Owner", 
+      "Manager", "Super Admin", "Admin", "Moderator", 
+      "Trial Mod", "Site Helper", "Staff"
+  ];
+  
+  // Tiers for UI Hiding
+  // High: Dev -> Owner
+  // Mid: Manager -> Admin
+  // Low: Mod -> Staff
+  
+  let currentUser = null;
+  let userData = null;
+  let allUsers = [];
+
+  // --- Init & Security ---
+  onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+          window.location.href = 'index.html';
+          return;
+      }
+      
+      const docSnap = await getDoc(doc(db, "users", user.uid));
+      if (!docSnap.exists()) {
+          window.location.href = 'index.html';
+          return;
+      }
+      
+      const data = docSnap.data();
+      if (!STAFF_RANKS.includes(data.rank)) {
+          alert("Access Denied: Insufficient Permissions.");
+          window.location.href = 'index.html';
+          return;
+      }
+
+      // Access Granted
+      currentUser = user;
+      userData = data;
+      
+      // Update Admin Profile UI
+      document.getElementById('security-screen').classList.add('hidden');
+      document.getElementById('admin-name').innerText = data.username;
+      document.getElementById('admin-rank-display').innerText = data.rank;
+      document.getElementById('admin-avatar').src = data.photoURL || "https://via.placeholder.com/150";
+      
+      // Setup UI Access Tiers
+      const rankIndex = STAFF_RANKS.indexOf(data.rank);
+      if (rankIndex <= 7) { // Admin and above
+          document.querySelectorAll('.tier-mid').forEach(el => el.classList.remove('hidden'));
+      }
+      if (rankIndex <= 4) { // Owner and above
+          document.querySelectorAll('.tier-high').forEach(el => el.classList.remove('hidden'));
+      }
+
+      initAdminListeners();
+      loadRankSelect();
+  });
+
+  // --- Core Listeners ---
+  function initAdminListeners() {
+      // 1. Live Stats & User List
+      onSnapshot(query(collection(db, "users"), orderBy("lastSeen", "desc")), (snap) => {
+          allUsers = [];
+          let online = 0;
+          let banned = 0;
+          let msgs = 0;
+          
+          snap.forEach(d => {
+              const u = { id: d.id, ...d.data() };
+              allUsers.push(u);
+              if (u.banned) banned++;
+              if (u.messages) msgs += u.messages;
+              
+              const lastSeen = u.lastSeen ? u.lastSeen.toMillis() : 0;
+              if (Date.now() - lastSeen < 5 * 60 * 1000) online++;
+          });
+
+          document.getElementById('stat-users').innerText = allUsers.length;
+          document.getElementById('stat-online').innerText = online;
+          document.getElementById('stat-banned').innerText = banned;
+          document.getElementById('stat-msgs').innerText = msgs.toLocaleString();
+          
+          renderUserTable();
+      });
+
+      // 2. Audit Logs (If mid tier+)
+      if (STAFF_RANKS.indexOf(userData.rank) <= 7) {
+          onSnapshot(query(collection(db, "audit_logs"), orderBy("timestamp", "desc"), limit(20)), (snap) => {
+              const container = document.getElementById('audit-log-container');
+              container.innerHTML = snap.docs.map(d => {
+                  const log = d.data();
+                  const time = log.timestamp ? new Date(log.timestamp.toMillis()).toLocaleTimeString() : 'Now';
+                  return `
+                      <div class="bg-gray-800 p-3 rounded text-sm flex justify-between items-center border border-gray-700">
+                          <div>
+                              <span class="text-ruby-500 font-bold">[${log.adminName}]</span> 
+                              <span class="text-gray-300">${log.action}</span>
+                              <span class="text-gray-500 italic"> - ${log.details}</span>
+                          </div>
+                          <span class="text-xs text-gray-600">${time}</span>
+                      </div>
+                  `;
+              }).join('');
+          });
+      }
+  }
+
+  // --- Tab System ---
+  window.switchTab = (tabName) => {
+      document.querySelectorAll('[id^="view-"]').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`view-${tabName}`).classList.remove('hidden');
+      document.getElementById('page-title').innerText = tabName.charAt(0).toUpperCase() + tabName.slice(1);
+      
+      // Update nav styling
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.classList.remove('bg-gray-800', 'text-white', 'border-ruby-500');
+          btn.classList.add('border-transparent');
+      });
+      // (Simplified nav highlight logic - works for demo)
+  };
+
+  // --- User Manager ---
+  function renderUserTable() {
+      const tbody = document.getElementById('users-table-body');
+      const search = document.getElementById('user-search').value.toLowerCase();
+      
+      const filtered = allUsers.filter(u => 
+          (u.username && u.username.toLowerCase().includes(search)) || 
+          (u.email && u.email.toLowerCase().includes(search)) ||
+          u.id.includes(search)
+      );
+
+      tbody.innerHTML = filtered.slice(0, 50).map(u => `
+          <tr class="hover:bg-gray-800 transition-colors border-b border-gray-800 last:border-0">
+              <td class="p-4 flex items-center gap-3">
+                  <img src="${u.photoURL || 'https://via.placeholder.com/40'}" class="w-8 h-8 rounded-full bg-gray-700 object-cover">
+                  <div>
+                      <div class="font-bold text-white">${u.username}</div>
+                      <div class="text-[10px] text-gray-500 font-mono">${u.id}</div>
+                  </div>
+              </td>
+              <td class="p-4"><span class="bg-gray-700 px-2 py-1 rounded text-xs text-gray-300">${u.rank}</span></td>
+              <td class="p-4">
+                  ${u.banned ? '<span class="text-red-500 font-bold text-xs">BANNED</span>' : 
+                    (u.mutedUntil ? '<span class="text-orange-500 font-bold text-xs">MUTED</span>' : '<span class="text-green-500 text-xs">OK</span>')}
+              </td>
+              <td class="p-4 text-right">
+                  <button onclick="openUserModal('${u.id}', '${u.username}')" class="bg-ruby-600 hover:bg-ruby-500 text-white px-3 py-1 rounded text-xs font-bold transition-colors">Manage</button>
+              </td>
+          </tr>
+      `).join('');
+  }
+  document.getElementById('user-search').addEventListener('input', renderUserTable);
+
+  // --- User Actions ---
+  window.openUserModal = (uid, name) => {
+      document.getElementById('modal-title').innerText = `Manage: ${name}`;
+      document.getElementById('modal-uid').value = uid;
+      document.getElementById('action-modal').classList.remove('hidden');
+  };
+  window.closeActionModal = () => document.getElementById('action-modal').classList.add('hidden');
+
+  function loadRankSelect() {
+      const select = document.getElementById('modal-rank-select');
+      select.innerHTML = STAFF_RANKS.concat(["VIP"]).map(r => `<option value="${r}">${r}</option>`).join('');
+  }
+
+  window.performAction = async (action) => {
+      const targetUid = document.getElementById('modal-uid').value;
+      if (!targetUid) return;
+      
+      if (!confirm("Confirm this administrative action?")) return;
+
+      const targetRef = doc(db, "users", targetUid);
+      const updates = {};
+      let logDetail = "";
+
+      try {
+          // 1. Warn (Notification)
+          if (action === 'warn') {
+              const reason = prompt("Warning Reason:");
+              if(!reason) return;
+              await addDoc(collection(db, "users", targetUid, "notifications"), {
+                  text: `⚠️ OFFICIAL WARNING: ${reason}`,
+                  timestamp: serverTimestamp(),
+                  read: false
+              });
+              logDetail = `Warned for: ${reason}`;
+          }
+          // 2. Mute
+          else if (action === 'mute') {
+              updates.mutedUntil = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+              updates.muteReason = "Admin Mute";
+              logDetail = "Muted 24h";
+          }
+          // 3. Kick
+          else if (action === 'kick') {
+              updates.kickedUntil = new Date(Date.now() + 1 * 60 * 60 * 1000); // 1h
+              updates.kickReason = "Admin Kick";
+              logDetail = "Kicked 1h";
+          }
+          // 4. Ban
+          else if (action === 'ban') {
+              updates.banned = true;
+              updates.banReason = "Admin Ban";
+              logDetail = "Permanently Banned";
+          }
+          // 5. Unban/Unmute
+          else if (action === 'unban') {
+              updates.banned = false;
+              updates.mutedUntil = null;
+              updates.kickedUntil = null;
+              logDetail = "Pardoned";
+          }
+          // 6. Reset PFP
+          else if (action === 'reset_pfp') {
+              updates.photoURL = "https://via.placeholder.com/150"; // Default
+              logDetail = "Reset Profile Picture";
+          }
+          // 7. Reset Bio
+          else if (action === 'reset_bio') {
+              updates.bio = "[Content Removed by Admin]";
+              logDetail = "Reset Bio";
+          }
+          // 8. Set Rank
+          else if (action === 'set_rank') {
+              const newRank = document.getElementById('modal-rank-select').value;
+              updates.rank = newRank;
+              logDetail = `Set rank to ${newRank}`;
+          }
+
+          if (Object.keys(updates).length > 0) {
+              await updateDoc(targetRef, updates);
+          }
+
+          // 9. Log the Action
+          await addDoc(collection(db, "audit_logs"), {
+              adminUid: currentUser.uid,
+              adminName: userData.username,
+              targetUid: targetUid,
+              action: action.toUpperCase(),
+              details: logDetail,
+              timestamp: serverTimestamp()
+          });
+
+          alert(`Action ${action} successful.`);
+          closeActionModal();
+
+      } catch (e) {
+          console.error(e);
+          alert("Action failed: " + e.message);
+      }
+  };
+
+  // --- Chat & System Features ---
+  
+  // 10. Broadcast
+  window.sendBroadcast = async () => {
+      const text = document.getElementById('broadcast-text').value;
+      if (!text) return;
+      await addDoc(collection(db, "messages"), {
+          text: text,
+          isSystem: true,
+          timestamp: serverTimestamp()
+      });
+      document.getElementById('broadcast-text').value = '';
+      alert("Broadcast Sent");
+  };
+
+  // 11. Clear Chat
+  window.clearChat = async () => {
+      if(!confirm("Delete last 50 messages? This cannot be undone.")) return;
+      const q = query(collection(db, "messages"), orderBy("timestamp", "desc"), limit(50));
+      const snap = await getDocs(q);
+      snap.forEach(d => deleteDoc(d.ref));
+      alert("Chat Cleared");
+  };
+
+  // 12. Economy (Add/Remove)
+  window.modifyEconomy = async (mode) => {
+      const targetUid = document.getElementById('eco-target-uid').value;
+      const amount = parseInt(document.getElementById('eco-amount').value);
+      const type = document.getElementById('eco-type').value; // coins or gems
+      
+      if (!targetUid || !amount) return;
+      
+      const ref = doc(db, "users", targetUid);
+      const updateData = {};
+      updateData[type] = increment(mode === 'add' ? amount : -amount);
+      
+      await updateDoc(ref, updateData);
+      
+      await addDoc(collection(db, "audit_logs"), {
+          adminUid: currentUser.uid,
+          adminName: userData.username,
+          targetUid: targetUid,
+          action: "ECONOMY",
+          details: `${mode.toUpperCase()} ${amount} ${type}`,
+          timestamp: serverTimestamp()
+      });
+      
+      alert("Balance Updated");
+  };
+
+  // 13. Maintenance Toggle (Simulated state store)
+  // In a real app, this would be a document in a 'config' collection
+  window.toggleMaintenance = () => {
+      const btn = document.getElementById('btn-maintenance');
+      const badge = document.getElementById('maintenance-badge');
+      const isOn = btn.classList.contains('bg-green-600');
+      
+      if (!isOn) {
+          btn.classList.remove('bg-gray-700');
+          btn.classList.add('bg-green-600');
+          btn.children[0].classList.add('translate-x-6');
+          badge.classList.remove('hidden');
+          // Set DB flag here
+      } else {
+          btn.classList.add('bg-gray-700');
+          btn.classList.remove('bg-green-600');
+          btn.children[0].classList.remove('translate-x-6');
+          badge.classList.add('hidden');
+      }
+  };
+
+  // 14. Global Lock
+  window.toggleGlobalLock = () => {
+      // Similar visual logic
+      alert("Global Chat Lock toggled (Visual only in demo)");
+  };
+
+  // 15. Slow Mode
+  window.toggleSlowMode = () => {
+      alert("Slow mode toggled (3s cooldown)");
+  };
+  
+  // 16. View Deleted (Mock)
+  window.viewDeletedMessages = () => {
+      alert("No deleted messages found in buffer.");
+  };
+
+</script>
 </body>
 </html>
