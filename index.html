@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
@@ -79,7 +78,6 @@
         /* Default PFP Placeholder */
         .default-pfp {
             background-color: #374151;
-            /* data URI set in JS constants */
             background-size: cover;
         }
 
@@ -419,15 +417,40 @@
             </div>
         </div>
 
-        <!-- Right Sidebar (Online Users) -->
+        <!-- Right Sidebar (Online/Offline Users) -->
         <div id="right-sidebar" class="w-72 bg-gray-900 border-l border-gray-800 flex-col absolute md:relative right-0 h-full z-30 transform translate-x-full md:translate-x-0 transition-transform duration-300 flex">
+            <!-- Header for Online Stats -->
             <div class="p-4 border-b border-gray-800 bg-gray-850 flex justify-between items-center">
-                <h3 class="font-bold text-gray-200"><i class="fas fa-users text-ruby-500 mr-2"></i>Online</h3>
+                <h3 class="font-bold text-gray-200"><i class="fas fa-globe text-ruby-500 mr-2"></i>Community</h3>
                 <span id="online-count" class="bg-gray-800 text-xs px-2 py-1 rounded-full text-gray-400">0</span>
                 <button class="md:hidden text-gray-400" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button>
             </div>
-            <div id="user-list" class="flex-1 overflow-y-auto p-2 space-y-1">
-                <!-- User list items -->
+            
+            <!-- Separated Lists Container -->
+            <div class="flex-1 overflow-y-auto p-2 scrollbar-thin">
+                
+                <!-- Online Section -->
+                <div class="mb-4">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2 flex justify-between items-center tracking-wider">
+                        <span>Online</span>
+                        <span id="online-count-header" class="text-[10px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">0</span>
+                    </h4>
+                    <div id="online-user-list" class="space-y-1">
+                        <!-- Online users injected here -->
+                    </div>
+                </div>
+                
+                <!-- Offline Section -->
+                <div>
+                    <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2 flex justify-between items-center tracking-wider">
+                        <span>Offline</span>
+                        <span id="offline-count-header" class="text-[10px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">0</span>
+                    </h4>
+                    <div id="offline-user-list" class="space-y-1 opacity-75 grayscale-[30%]">
+                        <!-- Offline users injected here -->
+                    </div>
+                </div>
+
             </div>
             
             <!-- Admin Button -->
@@ -790,28 +813,37 @@
         </div>
     </div>
 
-    <!-- Firebase SDKs -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, doc, setDoc, getDoc, updateDoc, where, serverTimestamp, arrayUnion, arrayRemove, deleteDoc, increment, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js";
+  import { 
+      getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+      signOut, onAuthStateChanged, updateProfile 
+  } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
+  import { 
+      getFirestore, collection, doc, addDoc, getDoc, getDocs, updateDoc, 
+      deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, 
+      increment, arrayUnion, arrayRemove, setDoc 
+  } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // --- Configuration ---
-        const firebaseConfig = {
-            apiKey: "AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",
-            authDomain: "cartoony-chat.firebaseapp.com",
-            databaseURL: "https://cartoony-chat-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "cartoony-chat",
-            storageBucket: "cartoony-chat.appspot.com",
-            messagingSenderId: "827018960215",
-            appId: "1:827018960215:web:d7099f743933ff23eb7212",
-            measurementId: "G-D1MLP59001"
-        };
+  const firebaseConfig = {
+    apiKey: "AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",
+    authDomain: "cartoony-chat.firebaseapp.com",
+    databaseURL: "https://cartoony-chat-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "cartoony-chat",
+    storageBucket: "cartoony-chat.firebasestorage.app",
+    messagingSenderId: "827018960215",
+    appId: "1:827018960215:web:0e0c2436c9c4e1dceb7212",
+    measurementId: "G-HF16NJSQ16"
+  };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  console.log("Firebase initialized successfully!");
+
         // --- Constants ---
         const DEFAULT_PFP = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%239ca3af' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
         
@@ -1691,21 +1723,95 @@
 
         function bringToFront(el) { zIndexCounter++; el.style.zIndex = zIndexCounter; }
 
-        // --- Online Users Sidebar (Sorted) ---
-        const userListEl = document.getElementById('user-list');
+        // --- Online/Offline Users Logic ---
         const onlineCountEl = document.getElementById('online-count');
-        const usersQ = query(collection(db, "users"), orderBy("lastSeen", "desc"), limit(100));
+        const onlineCountHeader = document.getElementById('online-count-header');
+        const offlineCountHeader = document.getElementById('offline-count-header');
+        
+        const onlineListEl = document.getElementById('online-user-list');
+        const offlineListEl = document.getElementById('offline-user-list');
+        
+        const usersQ = query(collection(db, "users"), orderBy("lastSeen", "desc"), limit(200));
         
         onSnapshot(usersQ, (snapshot) => {
-            const users = [];
+            const onlineUsers = [];
+            const offlineUsers = [];
             const now = new Date();
-            let onlineCnt = 0;
-            snapshot.forEach(doc => { const d = doc.data(); const uId = doc.id; const lastSeen = d.lastSeen ? d.lastSeen.toDate() : new Date(0); const isOnline = (now - lastSeen) < 5 * 60 * 1000; if (isOnline) onlineCnt++; users.push({ uid: uId, ...d, isOnline }); });
-            users.sort((a, b) => { const rankA = getRankIndex(a.rank); const rankB = getRankIndex(b.rank); if (rankA !== rankB) return rankA - rankB; return a.username.localeCompare(b.username); });
-            allUsersCache = users; onlineCountEl.innerText = onlineCnt;
-            if(!document.getElementById('admin-modal').classList.contains('hidden')) { document.getElementById('admin-stat-users').innerText = users.length; document.getElementById('admin-stat-online').innerText = onlineCnt; renderAdminTable(); }
-            userListEl.innerHTML = users.map(u => { const rankObj = getRankData(u.rank); const rankHtml = rankObj ? `<img src="custom ranks/${rankObj.img}" class="h-5 w-auto" title="${rankObj.name}">` : ''; const pfp = u.photoURL || DEFAULT_PFP; let statusColorClass = 'bg-gray-500'; if (u.isOnline) { if (u.presence === 'away') statusColorClass = 'bg-yellow-500'; else if (u.presence === 'dnd') statusColorClass = 'bg-red-500'; else statusColorClass = 'bg-green-500'; } return `<div class="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors" onclick="openProfile('${u.uid}')"><div class="relative"><img src="${pfp}" class="w-8 h-8 rounded-full object-cover bg-gray-800 default-pfp"><div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 ${statusColorClass}"></div></div><div class="overflow-hidden flex-1"><div class="text-sm font-medium truncate flex items-center gap-2 ${u.isStaff ? 'text-ruby-500' : 'text-gray-300'}">${u.username}</div><div class="flex items-center mt-0.5 rank-badge p-0">${rankHtml}</div></div></div>`; }).join('');
+            
+            snapshot.forEach(doc => { 
+                const d = doc.data(); 
+                const uId = doc.id; 
+                const lastSeen = d.lastSeen ? d.lastSeen.toDate() : new Date(0); 
+                const isOnline = (now - lastSeen) < 5 * 60 * 1000; 
+                
+                const userObj = { uid: uId, ...d, isOnline };
+                
+                if (isOnline) onlineUsers.push(userObj);
+                else offlineUsers.push(userObj);
+            });
+            
+            // Sort helper
+            const sortUsers = (list) => {
+                return list.sort((a, b) => { 
+                    const rankA = getRankIndex(a.rank); 
+                    const rankB = getRankIndex(b.rank); 
+                    if (rankA !== rankB) return rankA - rankB; 
+                    return a.username.localeCompare(b.username); 
+                });
+            };
+            
+            sortUsers(onlineUsers);
+            sortUsers(offlineUsers);
+            
+            // Update global cache
+            allUsersCache = [...onlineUsers, ...offlineUsers];
+            
+            // Render Counts
+            onlineCountEl.innerText = onlineUsers.length;
+            onlineCountHeader.innerText = onlineUsers.length;
+            offlineCountHeader.innerText = offlineUsers.length;
+            
+            // Render Lists
+            if (onlineListEl) onlineListEl.innerHTML = onlineUsers.map(u => renderUserItem(u)).join('');
+            if (offlineListEl) offlineListEl.innerHTML = offlineUsers.map(u => renderUserItem(u)).join('');
+            
+            // Update Admin stats if open
+            if(!document.getElementById('admin-modal').classList.contains('hidden')) { 
+                document.getElementById('admin-stat-users').innerText = allUsersCache.length; 
+                document.getElementById('admin-stat-online').innerText = onlineUsers.length; 
+                renderAdminTable(); 
+            }
         });
+        
+        function renderUserItem(u) {
+            const rankObj = getRankData(u.rank); 
+            const rankHtml = rankObj ? `<img src="custom ranks/${rankObj.img}" class="h-5 w-auto" title="${rankObj.name}">` : ''; 
+            const pfp = u.photoURL || DEFAULT_PFP; 
+            
+            let statusColorClass = 'bg-gray-500'; 
+            if (u.isOnline) { 
+                if (u.presence === 'away') statusColorClass = 'bg-yellow-500'; 
+                else if (u.presence === 'dnd') statusColorClass = 'bg-red-500'; 
+                else statusColorClass = 'bg-green-500'; 
+            }
+            
+            // Slightly smaller/dimmer for offline if desired, controlled by parent class
+            return `
+            <div class="flex items-center gap-3 p-2 hover:bg-gray-800 rounded cursor-pointer transition-colors group" onclick="openProfile('${u.uid}')">
+                <div class="relative">
+                    <img src="${pfp}" class="w-8 h-8 rounded-full object-cover bg-gray-800 default-pfp group-hover:scale-105 transition-transform">
+                    <div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 ${statusColorClass}"></div>
+                </div>
+                <div class="overflow-hidden flex-1">
+                    <div class="text-sm font-medium truncate flex items-center gap-2 ${u.isStaff ? 'text-ruby-500' : 'text-gray-300'}">
+                        ${u.username}
+                    </div>
+                    <div class="flex items-center mt-0.5 rank-badge p-0 opacity-80">
+                        ${rankHtml}
+                    </div>
+                </div>
+            </div>`;
+        }
 
         // --- Profile System (Existing) ---
         window.openProfile = async (uid) => {
@@ -1860,8 +1966,6 @@
             editorCtx.filter = editorConfig.filter;
             
             // Draw Image
-            // We need to account for panning (x,y) but relative to the current transform state is tricky.
-            // Simplified: Panning moves the image draw position.
             editorCtx.drawImage(
                 currentEditorImage, 
                 -currentEditorImage.width * editorConfig.scale / 2 + editorConfig.x, 
@@ -1900,11 +2004,7 @@
                 const dx = e.clientX - editorDragStart.x;
                 const dy = e.clientY - editorDragStart.y;
                 
-                // Adjust for rotation? No, let's keep movement intuitive to screen space usually requiring inverse transform logic.
-                // For simplicity in this demo, let's just move x/y directly. 
-                // Note: If rotated 90deg, x becomes y visually. This might feel weird without math adjustments.
-                // Simple fix: Transform the delta vector by the inverse rotation.
-                
+                // Simple delta logic for drag
                 const rad = -editorConfig.rotation * Math.PI / 180;
                 const rx = dx * Math.cos(rad) - dy * Math.sin(rad);
                 const ry = dx * Math.sin(rad) + dy * Math.cos(rad);
@@ -1922,8 +2022,6 @@
         });
         
         window.saveEditor = () => {
-            // Create a temp canvas to crop/save exactly what we see?
-            // Or just use the editor canvas content.
             const dataUrl = editorCanvas.toDataURL('image/jpeg', 0.9);
             pendingAvatar = dataUrl;
             document.getElementById('profile-avatar-img').src = dataUrl;
@@ -1931,13 +2029,11 @@
         };
 
         // ... [Rest of existing code: staff actions, profile logic, etc.] ...
-        // Re-injecting necessary functions to ensure no breakage.
         
         window.saveProfileChanges = async () => { if (!currentUser) return; const newName = document.getElementById('edit-username-input').value; const newBio = document.getElementById('edit-bio-input').value; const newStatus = document.getElementById('edit-status-input').value; const soundMsg = document.getElementById('pref-sound-msg').checked; const soundMention = document.getElementById('pref-sound-mention').checked; const updatePayload = { username: newName, bio: newBio, presence: newStatus, settings: { soundMsg, soundMention } }; if (pendingAvatar) updatePayload.photoURL = pendingAvatar; if (pendingBanner) updatePayload.bannerURL = pendingBanner; try { await updateDoc(doc(db, "users", currentUser.uid), updatePayload); pendingAvatar = null; pendingBanner = null; toggleProfileEdit(); } catch(e) { alert("Error saving profile."); } };
         window.toggleProfileEdit = () => { isEditingProfile = !isEditingProfile; const viewMode = document.getElementById('profile-view-mode'); const editMode = document.getElementById('profile-edit-mode'); const editOverlays = document.querySelectorAll('.edit-overlay'); if (isEditingProfile) { viewMode.classList.add('hidden'); editMode.classList.remove('hidden'); editOverlays.forEach(el => el.classList.remove('hidden')); } else { viewMode.classList.remove('hidden'); editMode.classList.add('hidden'); editOverlays.forEach(el => el.classList.add('hidden')); } };
         window.closeProfile = () => document.getElementById('profile-modal').classList.add('hidden');
         
-        // FIXED: Trigger functions now correctly check module-scoped variables
         window.triggerAvatarUpload = () => {
             if (isEditingProfile) {
                 document.getElementById('avatar-upload').click();
@@ -1954,7 +2050,6 @@
         
         function handleFileUpload(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); }); }
         
-        // ... [Staff Logic remains] ...
         window.openStaffActionMenu = () => { const menu = document.getElementById('staff-action-menu'); const adminActions = document.getElementById('admin-actions-only'); const myRankIdx = getRankIndex(userData.rank); const targetRankIdx = getRankIndex(viewingUserRank); if (targetRankIdx <= myRankIdx) { alert("Action blocked: Rank too high."); return; } const modIdx = getRankIndex("Moderator"); const rankSelect = document.getElementById('staff-rank-select'); rankSelect.innerHTML = RANKS.filter((r, idx) => idx > myRankIdx).map(r => `<option value="${r.name}">${r.name}</option>`).join(''); menu.classList.remove('hidden'); if (myRankIdx < modIdx) { adminActions.classList.remove('hidden'); } else { adminActions.classList.add('hidden'); } };
         window.closeStaffActionMenu = () => document.getElementById('staff-action-menu').classList.add('hidden');
         window.showStaffInput = (action) => { currentStaffAction = action; document.getElementById('staff-action-menu').classList.add('hidden'); document.getElementById('staff-input-modal').classList.remove('hidden'); document.getElementById('staff-input-title').innerText = action.toUpperCase() + " USER"; document.getElementById('staff-action-duration').value = 1; document.getElementById('staff-action-unit').value = 'days'; document.getElementById('staff-action-reason').value = ""; const durGroup = document.getElementById('staff-duration-group'); if (action === 'ban') durGroup.classList.add('hidden'); else durGroup.classList.remove('hidden'); };
@@ -1962,7 +2057,6 @@
         document.getElementById('staff-action-confirm-btn').addEventListener('click', async () => { if (!viewingUserId || !currentStaffAction) return; const durationVal = parseInt(document.getElementById('staff-action-duration').value) || 0; const unit = document.getElementById('staff-action-unit').value; const reason = document.getElementById('staff-action-reason').value || "No reason"; const targetRef = doc(db, "users", viewingUserId); if (getRankIndex(viewingUserRank) <= getRankIndex(userData.rank)) { alert("Action blocked."); return; } let multiplier = 1; if (unit === 'minutes') multiplier = 60 * 1000; else if (unit === 'hours') multiplier = 60 * 60 * 1000; else if (unit === 'days') multiplier = 24 * 60 * 60 * 1000; const durationMs = durationVal * multiplier; const now = new Date(); const until = new Date(now.getTime() + durationMs); const updates = {}; let sysMsg = ""; let privateMsg = ""; let durationStr = durationVal > 0 ? `${durationVal} ${unit}` : "Permanent"; const targetName = document.getElementById('profile-username').innerText; if (currentStaffAction === 'mute') { updates.mutedUntil = durationVal > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000); updates.muteReason = reason; sysMsg = `User ${targetName} has been muted for: ${reason}.`; privateMsg = `You have been muted. Reason: ${reason}. Duration: ${durationStr}.`; } else if (currentStaffAction === 'kick') { updates.kickedUntil = durationVal > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000); updates.kickReason = reason; sysMsg = `User ${targetName} has been kicked/suspended.`; } else if (currentStaffAction === 'ban') { updates.banned = true; updates.banReason = reason; sysMsg = `User ${targetName} has been banned.`; } try { await updateDoc(targetRef, updates); await addDoc(collection(db, "messages"), { text: sysMsg, isSystem: true, timestamp: serverTimestamp() }); if (currentStaffAction === 'mute') { await addDoc(collection(db, "messages"), { text: privateMsg, isSystem: true, privateTo: viewingUserId, timestamp: serverTimestamp() }); } closeStaffInput(); closeProfile(); alert("Action executed."); } catch(e) { alert("Error: " + e.message); } });
         window.executeRankChange = async () => { if (!viewingUserId) return; const newRank = document.getElementById('staff-rank-select').value; if(!confirm(`Change user rank to ${newRank}?`)) return; try { await updateDoc(doc(db, "users", viewingUserId), { rank: newRank }); closeStaffActionMenu(); openProfile(viewingUserId); } catch(e) { alert("Error: " + e.message); } };
         
-        // --- Admin Functions ---
         window.openAdminPanel = () => { document.getElementById('admin-modal').classList.remove('hidden'); renderAdminTable(); };
         window.closeAdminPanel = () => document.getElementById('admin-modal').classList.add('hidden');
         window.switchAdminTab = (tab) => { activeAdminTab = tab; document.getElementById('tab-btn-users').classList.toggle('admin-tab-active', tab === 'users'); document.getElementById('tab-btn-broadcast').classList.toggle('admin-tab-active', tab === 'broadcast'); document.getElementById('admin-tab-users').classList.toggle('hidden', tab !== 'users'); document.getElementById('admin-tab-broadcast').classList.toggle('hidden', tab !== 'broadcast'); };
@@ -1972,7 +2066,6 @@
         window.sendBroadcast = async () => { const text = document.getElementById('broadcast-input').value; if (!text.trim()) return; try { await addDoc(collection(db, "messages"), { text: text, isSystem: true, timestamp: serverTimestamp() }); document.getElementById('broadcast-input').value = ''; alert("Broadcast sent!"); } catch(e) { alert("Error: " + e.message); } };
         function escapeHtml(text) { const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }; return text.replace(/[&<>"']/g, function(m) { return map[m]; }); }
         
-        // Utils
         window.toggleMobileMenu = () => { const sidebar = document.getElementById('right-sidebar'); const overlay = document.getElementById('mobile-menu-overlay'); sidebar.classList.toggle('transform'); sidebar.classList.toggle('translate-x-full'); if (sidebar.classList.contains('translate-x-full')) overlay.classList.add('hidden'); else overlay.classList.remove('hidden'); };
         window.copyInviteLink = () => { if(!currentUser) return; const url = `${window.location.origin}${window.location.pathname}?ref=${currentUser.uid}`; navigator.clipboard.writeText(url); alert("Invite link copied!"); };
         window.toggleLike = async () => { if (!currentUser || !viewingUserId || viewingUserId === currentUser.uid) return; const userRef = doc(db, "users", viewingUserId); const likeBtn = document.getElementById('like-btn'); const likeCountEl = document.getElementById('profile-likes-count'); const isLiked = likeBtn.classList.contains('text-ruby-500'); let count = parseInt(likeCountEl.innerText) || 0; if (isLiked) { likeBtn.classList.remove('text-ruby-500'); likeBtn.classList.add('text-gray-500'); likeCountEl.innerText = Math.max(0, count - 1); await updateDoc(userRef, { likes: Math.max(0, count - 1), likedBy: arrayRemove(currentUser.uid) }); } else { likeBtn.classList.add('text-ruby-500'); likeBtn.classList.remove('text-gray-500'); likeCountEl.innerText = count + 1; await updateDoc(userRef, { likes: count + 1, likedBy: arrayUnion(currentUser.uid) }); } };
