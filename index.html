@@ -35,6 +35,49 @@
         input[type=range]{-webkit-appearance:none;width:100%;background:transparent}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;height:16px;width:16px;border-radius:50%;background:white;margin-top:-6px;cursor:pointer;box-shadow:0 0 5px #0005}input[type=range]::-webkit-slider-runnable-track{width:100%;height:4px;cursor:pointer;background:#4b5563;border-radius:2px}
         .collapsed-sidebar {width: 0 !important; overflow: hidden; border: none !important;}
         .sidebar-transition {transition: width 0.3s ease-in-out;}
+        
+        /* New Info Card Styles */
+        .info-card {
+            background: linear-gradient(135deg, var(--bg-900) 0%, var(--bg-850) 100%);
+            border: 1px solid var(--acc-500);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            width: 280px;
+            margin: 10px auto;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .info-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 5px;
+            background: linear-gradient(90deg, var(--acc-500), var(--acc-600));
+        }
+        .info-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            margin: 0 auto 10px;
+            border: 3px solid var(--bg-950);
+            box-shadow: 0 0 15px rgba(224,17,95,0.3);
+            object-fit: cover;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .info-avatar:hover { transform: scale(1.05); }
+        .info-username { font-weight: bold; color: white; font-size: 1.1rem; margin-bottom: 2px; }
+        .info-title {
+            color: var(--acc-500);
+            font-family: monospace;
+            font-weight: bold;
+            margin-bottom: 12px;
+            font-size: 1rem;
+            letter-spacing: 1px;
+        }
+        .info-content { color: #d1d5db; font-size: 0.9rem; line-height: 1.6; }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -175,105 +218,6 @@
         <div class="flex gap-4 mb-6"><input type="text" id="theme-search" placeholder="Search themes (e.g., 'Matrix', 'Pink', 'Funny')..." class="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:border-ruby-500 focus:outline-none text-lg"></div>
         <div id="themes-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 overflow-y-auto flex-1 pb-4"></div>
     </div>
-    <div id="image-editor-modal" class="fixed inset-0 z-[60] bg-black/95 hidden flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-lg bg-gray-900 rounded-xl border border-gray-700 shadow-2xl p-6">
-            <h3 class="text-white font-bold mb-6 flex justify-between items-center text-lg"><span>Adjust & Transform</span><button onclick="closeEditor()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button></h3>
-            <div class="flex justify-center mb-6 overflow-hidden relative bg-black rounded-lg border border-gray-800" style="height: 350px;"><canvas id="editor-canvas" width="350" height="350"></canvas><div class="absolute inset-0 pointer-events-none flex items-center justify-center"><div class="w-[300px] h-[300px] rounded-full border-2 border-ruby-500 shadow-[0_0_20px_rgba(224,17,95,0.3)] opacity-70"></div><div class="w-2 h-2 bg-white rounded-full absolute"></div></div></div>
-            <div class="space-y-6">
-                <div class="bg-gray-800 p-4 rounded-xl flex items-center justify-between gap-4">
-                    <button onclick="editorRotate()" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors" title="Rotate"><i class="fas fa-undo"></i></button>
-                    <button onclick="editorFlip('h')" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors" title="Flip H"><i class="fas fa-arrows-alt-h"></i></button>
-                    <div class="flex-1 px-2 flex items-center gap-3"><i class="fas fa-search-minus text-gray-400 text-xs"></i><input type="range" id="editor-zoom" min="0.1" max="3" step="0.1" value="1" oninput="window.editorZoom(this.value)"><i class="fas fa-search-plus text-gray-400 text-xs"></i></div>
-                    <button onclick="editorFlip('v')" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors" title="Flip V"><i class="fas fa-arrows-alt-v"></i></button>
-                </div>
-                <div>
-                    <span class="text-xs text-gray-400 uppercase font-bold block mb-3 tracking-widest">Filters</span>
-                    <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
-                        <button onclick="editorFilter('none')" class="filter-btn active bg-gray-700 text-[10px] text-white flex-shrink-0 flex items-center justify-center">Normal</button>
-                        <button onclick="editorFilter('grayscale(1)')" class="filter-btn bg-gray-500 flex-shrink-0" style="filter:grayscale(1);background:linear-gradient(45deg,#333,#999)"></button>
-                        <button onclick="editorFilter('sepia(1)')" class="filter-btn bg-yellow-700 flex-shrink-0" style="filter:sepia(1);background:linear-gradient(45deg,#5e4b35,#c2a683)"></button>
-                        <button onclick="editorFilter('invert(1)')" class="filter-btn bg-white flex-shrink-0" style="filter:invert(1);background:linear-gradient(45deg,#000,#fff)"></button>
-                        <button onclick="editorFilter('contrast(1.5)')" class="filter-btn bg-gray-800 flex-shrink-0" style="filter:contrast(1.5);background:linear-gradient(45deg,#222,#eee)"></button>
-                        <button onclick="editorFilter('brightness(1.2)')" class="filter-btn bg-gray-400 flex-shrink-0" style="filter:brightness(1.2);background:linear-gradient(45deg,#444,#bbb)"></button>
-                    </div>
-                </div>
-                <div class="flex gap-4 pt-2"><button onclick="closeEditor()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition-colors">Cancel</button><button onclick="saveEditor()" class="flex-1 bg-gradient-to-r from-ruby-600 to-ruby-500 hover:from-ruby-500 hover:to-ruby-400 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-ruby-500/20 flex items-center justify-center gap-2"><i class="fas fa-magic"></i> Apply & Save</button></div>
-            </div>
-        </div>
-    </div>
-    <div id="profile-modal" class="fixed inset-0 z-40 bg-black/80 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-900 rounded-xl w-full max-w-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative">
-            <div class="relative h-32 bg-gray-800 cursor-pointer group" onclick="triggerBannerUpload()">
-                <img id="profile-banner-img" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity bg-gray-800"><div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity edit-overlay hidden"><i class="fas fa-camera text-white text-2xl drop-shadow-lg"></i></div><button onclick="closeProfile()" class="absolute top-2 right-2 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors z-10"><i class="fas fa-times"></i></button>
-                <button id="staff-action-btn" onclick="openStaffActionMenu()" class="hidden absolute top-2 left-2 bg-yellow-500 hover:bg-yellow-400 text-black w-8 h-8 rounded-full flex items-center justify-center transition-colors z-10 shadow-lg shadow-yellow-500/50"><i class="fas fa-bolt"></i></button>
-            </div>
-            <div class="px-6 pb-6 -mt-12 flex flex-col items-center relative overflow-y-auto">
-                <div class="relative mb-3 group cursor-pointer" onclick="triggerAvatarUpload()">
-                    <img id="profile-avatar-img" src="" class="w-24 h-24 rounded-full border-4 border-gray-900 object-cover bg-gray-800 default-pfp"><div class="absolute inset-0 rounded-full flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity edit-overlay hidden"><i class="fas fa-camera text-white drop-shadow-lg"></i></div>
-                </div>
-                <div id="profile-view-mode" class="text-center w-full">
-                    <div class="flex items-center justify-center gap-2 mb-1"><h2 id="profile-username" class="text-2xl font-bold text-white">User</h2><button id="like-btn" onclick="toggleLike()" class="text-gray-500 hover:text-ruby-500 transition-colors"><i class="fas fa-heart text-xl"></i><span id="profile-likes-count" class="text-xs font-bold ml-1">0</span></button></div>
-                    <div id="profile-status-badges" class="flex justify-center gap-2 mb-2"></div><div id="profile-rank-badge" class="mb-4 flex justify-center h-8"></div><div id="profile-bio-display" class="mb-6 text-sm text-gray-400 italic px-4 break-words">No bio set.</div>
-                    <div class="grid grid-cols-2 gap-4 w-full mb-6"><div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center"><div class="text-xs text-gray-400 uppercase tracking-wide">Messages</div><div id="profile-stats-msgs" class="text-xl font-bold text-ruby-500">0</div></div><div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center"><div class="text-xs text-gray-400 uppercase tracking-wide">Invites</div><div id="profile-stats-invites" class="text-xl font-bold text-blue-400">0</div></div></div>
-                    <div id="rank-progress-container" class="w-full mb-6 bg-gray-800 rounded-lg p-3 border border-gray-700"><div class="flex justify-between text-xs mb-1"><span class="text-gray-400">Progress to <span id="next-rank-name" class="text-ruby-500 font-bold">Next Rank</span></span><span id="rank-progress-text" class="text-white">0 / 0</span></div><div class="w-full bg-gray-700 rounded-full h-2.5"><div id="rank-progress-bar" class="bg-ruby-500 h-2.5 rounded-full" style="width:0%"></div></div><div id="msgs-needed-text" class="text-xs text-center mt-1 text-gray-500 italic">0 more messages needed</div></div>
-                    <button id="edit-profile-btn" onclick="toggleProfileEdit()" class="hidden w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 rounded border border-gray-600 transition-colors">Edit Profile</button><div id="private-msg-container" class="w-full mt-2 hidden"><button onclick="initiatePrivateChat(true)" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 rounded transition-colors shadow-lg shadow-ruby-500/20"><i class="fas fa-envelope mr-2"></i>Send Message</button></div>
-                </div>
-                <div id="profile-edit-mode" class="w-full hidden space-y-4">
-                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Username</label><input type="text" id="edit-username-input" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"></div>
-                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Bio / About Me</label><textarea id="edit-bio-input" rows="3" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none resize-none" placeholder="Tell us about yourself..."></textarea></div>
-                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Status</label><select id="edit-status-input" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"><option value="online">Online</option><option value="away">Away</option><option value="dnd">Do Not Disturb</option></select></div>
-                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-2">Notifications</label><div class="space-y-2"><label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="pref-sound-msg" class="form-checkbox text-ruby-500 bg-gray-950 border-gray-700 rounded"><span class="text-sm text-gray-300">Play sound on new messages</span></label><label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="pref-sound-mention" class="form-checkbox text-ruby-500 bg-gray-950 border-gray-700 rounded"><span class="text-sm text-gray-300">Play sound on mentions (@)</span></label></div></div>
-                    <div class="flex gap-2 mt-4"><button onclick="saveProfileChanges()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded">Save</button><button onclick="toggleProfileEdit()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded">Cancel</button></div>
-                </div>
-                <input type="file" id="avatar-upload" accept="image/*" class="hidden"><input type="file" id="banner-upload" accept="image/*" class="hidden">
-            </div>
-        </div>
-    </div>
-    <div id="staff-action-menu" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm">
-            <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-yellow-500"><i class="fas fa-bolt mr-2"></i>Staff Actions</h3><button onclick="closeStaffActionMenu()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button></div>
-            <div class="space-y-3">
-                <button id="btn-mute" onclick="showStaffInput('mute')" class="w-full bg-gray-800 hover:bg-yellow-900/40 text-yellow-500 border border-yellow-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-microphone-slash"></i> Mute User</button>
-                <button id="btn-unmute" onclick="executeStaffAction('unmute')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-microphone"></i> Unmute User</button>
-                <div id="admin-actions-only" class="space-y-3 hidden">
-                    <button id="btn-kick" onclick="showStaffInput('kick')" class="w-full bg-gray-800 hover:bg-orange-900/40 text-orange-500 border border-orange-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i> Kick User (Temp Ban)</button>
-                    <button id="btn-unkick" onclick="executeStaffAction('unkick')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-door-open"></i> Unkick User</button>
-                    <button id="btn-ban" onclick="showStaffInput('ban')" class="w-full bg-gray-800 hover:bg-red-900/40 text-red-500 border border-red-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-ban"></i> Ban User (Perm)</button>
-                    <button id="btn-unban" onclick="executeStaffAction('unban')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-check-circle"></i> Unban User</button>
-                    <div class="bg-gray-800 p-3 rounded border border-gray-700"><label class="block text-xs text-gray-400 uppercase font-bold mb-2">Rank User</label><div class="flex gap-2"><select id="staff-rank-select" class="flex-1 bg-gray-900 text-white text-sm rounded p-2 border border-gray-700 focus:outline-none"></select><button onclick="executeRankChange()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 rounded font-bold text-sm">Set</button></div></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div id="staff-input-modal" class="fixed inset-0 z-[60] bg-black/90 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm">
-            <h3 id="staff-input-title" class="text-xl font-bold text-white mb-4">Action</h3>
-            <div id="staff-duration-group" class="mb-4"><label class="block text-xs text-gray-400 uppercase font-bold mb-1">Duration</label><div class="flex gap-2"><input type="number" id="staff-action-duration" min="0" value="1" class="flex-1 bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"><select id="staff-action-unit" class="bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"><option value="minutes">Minutes</option><option value="hours">Hours</option><option value="days" selected>Days</option></select></div><p class="text-[10px] text-gray-500 mt-1">0 for permanent (if applicable).</p></div>
-            <div class="mb-6"><label class="block text-xs text-gray-400 uppercase font-bold mb-1">Reason</label><input type="text" id="staff-action-reason" placeholder="Reason for this action..." class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"></div>
-            <div class="flex gap-3"><button id="staff-action-confirm-btn" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-2 rounded">Confirm</button><button onclick="closeStaffInput()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded">Cancel</button></div>
-        </div>
-    </div>
-    <div id="wallet-modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-900 border border-gray-700 p-8 rounded-xl w-full max-w-sm text-center relative shadow-2xl dropdown-enter">
-            <button onclick="closeWallet()" class="absolute top-3 right-4 text-gray-400 hover:text-white transition-colors"><i class="fas fa-times text-xl"></i></button><h2 class="text-2xl font-bold text-white mb-6 tracking-wide flex items-center justify-center gap-2"><i class="fas fa-wallet text-ruby-500"></i> My Wallet</h2>
-            <div class="space-y-5"><div class="bg-gray-800 p-5 rounded-xl border border-yellow-600/30 shadow-lg shadow-yellow-900/10"><div class="text-yellow-400 text-3xl mb-2 drop-shadow-md"><i class="fas fa-coins"></i></div><div class="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">Coins</div><div id="wallet-coins" class="text-3xl font-black text-white tracking-tight">0</div></div><div class="bg-gray-800 p-5 rounded-xl border border-ruby-500/30 shadow-lg shadow-ruby-900/10"><div class="text-ruby-500 text-3xl mb-2 drop-shadow-md"><i class="fas fa-gem"></i></div><div class="text-xs text-gray-400 uppercase font-bold tracking-widest mb-1">Gems</div><div id="wallet-gems" class="text-3xl font-black text-white tracking-tight">0</div></div></div>
-        </div>
-    </div>
-    <div id="admin-modal" class="fixed inset-0 z-50 bg-black/95 hidden flex flex-col p-4 md:p-6">
-        <div class="flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-ruby-500 flex items-center"><i class="fas fa-shield-alt mr-3"></i>Admin Command Center</h2><button onclick="closeAdminPanel()" class="text-gray-400 hover:text-white text-2xl"><i class="fas fa-times"></i></button></div>
-        <div class="flex gap-4 mb-4 border-b border-gray-800"><button onclick="switchAdminTab('users')" id="tab-btn-users" class="px-4 py-2 text-sm font-bold text-gray-400 hover:text-white admin-tab-active transition-colors">Users</button><button onclick="switchAdminTab('broadcast')" id="tab-btn-broadcast" class="px-4 py-2 text-sm font-bold text-gray-400 hover:text-white transition-colors">System Actions</button></div>
-        <div class="grid grid-cols-3 gap-4 mb-4"><div class="bg-gray-900 border border-gray-800 p-3 rounded flex flex-col items-center"><span class="text-xs text-gray-500 uppercase">Total Users</span><span id="admin-stat-users" class="text-xl font-bold text-white">0</span></div><div class="bg-gray-900 border border-gray-800 p-3 rounded flex flex-col items-center"><span class="text-xs text-gray-500 uppercase">Online</span><span id="admin-stat-online" class="text-xl font-bold text-green-500">0</span></div><div class="bg-gray-900 border border-gray-800 p-3 rounded flex flex-col items-center"><span class="text-xs text-gray-500 uppercase">Msg Activity</span><span class="text-xl font-bold text-blue-500">Live</span></div></div>
-        <div id="admin-tab-users" class="bg-gray-900 border border-gray-800 rounded-xl flex-1 overflow-hidden flex flex-col">
-            <div class="p-4 border-b border-gray-800 bg-gray-850 flex gap-4"><input type="text" id="admin-search" placeholder="Search users by name or email..." class="bg-gray-950 border border-gray-700 rounded px-3 py-2 text-white w-full max-w-sm focus:border-ruby-500 focus:outline-none"></div>
-            <div class="flex-1 overflow-y-auto p-0"><table class="w-full text-left border-collapse"><thead class="bg-gray-800 text-gray-400 text-xs uppercase sticky top-0 z-10"><tr><th class="p-4">User</th><th class="p-4">Status</th><th class="p-4">Rank</th><th class="p-4 text-center">Stats</th><th class="p-4 text-right">Actions</th></tr></thead><tbody id="admin-user-table" class="divide-y divide-gray-800"></tbody></table></div>
-        </div>
-        <div id="admin-tab-broadcast" class="bg-gray-900 border border-gray-800 rounded-xl flex-1 overflow-y-auto p-8 hidden">
-            <div class="max-w-4xl mx-auto w-full">
-                <div class="mb-10 p-6 bg-gray-800 rounded-xl border border-gray-700"><h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2"><i class="fas fa-comments text-blue-400"></i> Global Chat Control</h3><p class="text-gray-400 mb-4 text-sm">Emergency controls for the public chat channel.</p><button onclick="adminClearChat()" class="bg-red-900/50 hover:bg-red-800 text-red-400 font-bold py-3 px-6 rounded border border-red-800 transition-colors"><i class="fas fa-trash-alt mr-2"></i> CLEAR LAST 50 MESSAGES</button></div>
-                <div class="mb-10"><i class="fas fa-bullhorn text-4xl text-ruby-500 mb-4 block text-center"></i><h3 class="text-2xl font-bold text-white mb-2 text-center">System Broadcast</h3><p class="text-gray-400 text-center mb-6">Send a global announcement to all online users.</p><textarea id="broadcast-input" rows="4" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-4 text-white focus:border-ruby-500 focus:outline-none mb-4" placeholder="Type your announcement here..."></textarea><div class="text-center"><button onclick="sendBroadcast()" class="bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-ruby-500/20 transition-transform hover:scale-105">SEND BROADCAST</button></div></div>
-            </div>
-        </div>
-    </div>
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";import{getAnalytics}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js";import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";import{getFirestore,collection,doc,addDoc,getDoc,getDocs,updateDoc,deleteDoc,onSnapshot,query,where,orderBy,limit,serverTimestamp,increment,arrayUnion,arrayRemove,setDoc}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 const config={apiKey:"AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",authDomain:"cartoony-chat.firebaseapp.com",databaseURL:"https://cartoony-chat-default-rtdb.europe-west1.firebasedatabase.app",projectId:"cartoony-chat",storageBucket:"cartoony-chat.firebasestorage.app",messagingSenderId:"827018960215",appId:"1:827018960215:web:0e0c2436c9c4e1dceb7212",measurementId:"G-HF16NJSQ16"};
@@ -325,6 +269,18 @@ function renderMsg(m){
     const ig=localStorage.getItem('ignored_'+curUser?.uid)||'[]';
     if(JSON.parse(ig).includes(m.uid)) return '';
     if(m.privateTo&&m.privateTo!==curUser.uid)return'';
+
+    // RENDER INFO CARD (Center Message)
+    if(m.isInfoCard) {
+        const p = m.photoURL || D_PFP;
+        const u = m.username || 'System';
+        const c = (m.text||"").split('\n').map(l => `<div>${l}</div>`).join('');
+        const me = curUser && m.uid === curUser.uid;
+        const stf = getRank(userData?.rank)?.isStaff;
+        const del = (stf || (me && !m.isSystem)) ? `<button onclick="deleteMessage('${m.id}')" class="absolute top-2 right-2 text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-trash"></i></button>` : '';
+        return `<div class="flex justify-center my-6 group fade-in"><div class="info-card">${del}<img src="${p}" class="info-avatar" onclick="openProfile('${m.uid}')"><div class="info-username">${u}</div><div class="info-title">${m.cardTitle||'-=- INFO -=-'}</div><div class="info-content">${c}</div></div></div>`;
+    }
+
     if(m.isSystem)return`<div class="flex justify-center my-6 animate-pulse-fast"><div class="bg-gray-900/80 border border-ruby-500/50 px-6 py-2 rounded-full flex items-center gap-3 shadow-lg shadow-ruby-500/10"><i class="fas fa-bullhorn text-ruby-500"></i><div class="text-ruby-500 text-sm font-bold tracking-wide text-center">${(m.text||"").replace(/\n/g,'<br>')}</div></div></div>`;
     const me=curUser&&m.uid===curUser.uid,rO=getRank(m.rank||"VIP"),stf=getRank(userData?.rank)?.isStaff,del=stf?`<button onclick="deleteMessage('${m.id}')" class="text-gray-500 hover:text-red-500 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-trash"></i></button>`:'',men=!me&&userData?.username&&(m.text||"").toLowerCase().includes(`@${userData.username.toLowerCase()}`)?'bg-yellow-900/40 border-yellow-600/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] text-yellow-100':'',rH=rO?`<img src="custom ranks/${rO.img}" class="rank-img" title="${rO.name}" onerror="this.style.display='none'">`:'',ts=m.timestamp?new Date(m.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'',rep=m.replyTo?`<div class="reply-context"><div class="flex items-center gap-1 text-[10px] text-ruby-500 font-bold"><i class="fas fa-share"></i> Replying to ${m.replyTo.username}</div><div class="truncate opacity-75">${esc(m.replyTo.text)}</div></div>`:'',rx=m.reactions||[],rh=rx.length>0?`<div class="absolute -bottom-2 right-2 bg-gray-900 border border-gray-700 rounded-full px-1.5 py-0.5 text-[10px] flex items-center gap-1 shadow-sm"><i class="fas fa-heart text-ruby-500"></i> <span class="text-white font-bold">${rx.length}</span></div>`:'',bc=`msg-bubble px-4 py-2 rounded-2xl text-sm relative group/bubble cursor-pointer select-none ${me?'bg-ruby-500 text-white rounded-tr-none':'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700 '+men}`,med=m.mediaURL?(m.mediaType.startsWith('image/')?`<img src="${m.mediaURL}" class="chat-media-img mb-2" onclick="window.open('${m.mediaURL}','_blank')">`:`<video src="${m.mediaURL}" controls class="chat-media-video mb-2"></video>`):'';
     const isAct=m.isAction?'msg-action':'';
@@ -340,22 +296,46 @@ async function handleCommand(txt){
     const show=m=>showToast(m);
     try{switch(cmd){
         case 'help':
-            const helpMsg = `🎲 <b>GAMBLING COMMANDS</b> 🎲\n\n` +
+            const helpMsg = `🎲 <b>GAMBLING COMMANDS</b> 🎲\n` +
             `/bank - Show your Gold and Gems\n` +
+            `/stats - Show your Statistics\n` +
             `/pay [user] [amt] [gold/gems] - Pay a user\n` +
-            `/convert [amt] [gold/gems] - Exchange currency (1 Gem = 100 Gold)\n` +
-            `/convertall [gold/gems] - Convert everything\n\n` +
-            `/allin [gold/gems] - High risk, up to 10x return!\n` +
+            `/convert [amt] [gold/gems] - Exchange currency\n` +
+            `/convertall [gold/gems] - Convert all\n` +
+            `/allin [gold/gems] - Risky bet x10\n` +
             `/slots [bet] [gold/gems] - Slot machine\n` +
-            `/dice [bet] [gold/gems] - Roll > 55 to win\n` +
-            `/coinflip [bet] [heads/tails] [gold/gems] - Double or nothing\n` +
-            `/roulette [bet] [red/black/green] [gold/gems] - Casino style\n` +
-            `/scratch [bet] [gold/gems] - Scratch card\n\n` +
-            `/clear - Clear local chat`;
-            await addDoc(collection(db,"messages"),{text:helpMsg,privateTo:curUser.uid,isSystem:!0,timestamp:serverTimestamp()});
+            `/dice [bet] [gold/gems] - Roll > 55\n` +
+            `/coinflip [bet] [h/t] [gold/gems]\n` +
+            `/roulette [bet] [r/b/g] [gold/gems]\n` +
+            `/scratch [bet] [gold/gems]\n` +
+            `/clear - Clear chat`;
+            await addDoc(collection(db,"messages"),{
+                text:helpMsg,
+                privateTo:curUser.uid,
+                isSystem:!0,
+                isInfoCard:!0,
+                cardTitle:"-=- COMMANDS -=-",
+                uid:curUser.uid,
+                username:userData.username,
+                photoURL:userData.photoURL||D_PFP,
+                timestamp:serverTimestamp()
+            });
             return!0;
         case 'clear':get('chat-feed').innerHTML='';show("Chat cleared locally");return!0;
-        case 'bank':await sndMsg(`🏦 Wallet: 🪙 ${(userData.coins||0).toLocaleString()} Gold | 💎 ${(userData.gems||0).toLocaleString()} Gems`);return!0;
+        case 'bank':
+            await sndMsg("", {
+                isInfoCard: true,
+                cardTitle: "-=- WALLET -=-",
+                text: `🪙 ${(userData.coins||0).toLocaleString()} Gold\n💎 ${(userData.gems||0).toLocaleString()} Gems`
+            });
+            return!0;
+        case 'stats':
+            await sndMsg("", {
+                isInfoCard: true,
+                cardTitle: "-=- STATS -=-",
+                text: `Rank: ${userData.rank}\nMessages: ${userData.messages||0}\nInvites: ${userData.invites||0}\nLikes: ${userData.likes||0}`
+            });
+            return!0;
         case 'pay':{
             const u=findUid(args[0]),am=parseInt(args[1]),c=args[2]?.toLowerCase();
             if(!u||isNaN(am)||am<=0||!['gold','gems'].includes(c)){show("Usage: /pay [user] [amount] [gold/gems]",!0);return!0}
@@ -572,7 +552,7 @@ window.logoutUser=()=>signOut(auth).catch(e=>alert(e.message));
 window.initThemes=()=>{
     const bs=[{id:'default',n:'Ruby Dark',c:['#030712','#111827','#1f2937','#e0115f','#c20e50']},{id:'light',n:'Flashbang',c:['#f9fafb','#f3f4f6','#e5e7eb','#e0115f','#c20e50']},{id:'midnight',n:'Midnight',c:['#020617','#0f172a','#1e293b','#3b82f6','#2563eb']},{id:'forest',n:'Deep Forest',c:['#052e16','#064e3b','#065f46','#10b981','#059669']},{id:'hacker',n:'The Matrix',c:['#000000','#0d1117','#161b22','#22c55e','#16a34a']},{id:'candy',n:'Candy Floss',c:['#fdf2f8','#fce7f3','#fbcfe8','#db2777','#be185d']},{id:'royal',n:'Royal Guard',c:['#1e1b4b','#312e81','#3730a3','#c026d3','#a21caf']},{id:'coffee',n:'Espresso',c:['#271c19','#431407','#5d2e1e','#d97706','#b45309']},{id:'ocean',n:'Ocean Depth',c:['#082f49','#0c4a6e','#075985','#0ea5e9','#0284c7']},{id:'sunset',n:'Sunset',c:['#2e1065','#4c1d95','#5b21b6','#f97316','#ea580c']},{id:'dracula',n:'Vampire',c:['#282a36','#44475a','#6272a4','#ff79c6','#bd93f9']}];
     allThemes=[...bs];
-    for(let i=0;i<90;i++){const h=Math.floor((i*137.5)%360),l=i%2==0?10:95,s=i%2==0?90:10;allThemes.push({id:`gen_${i}`,n:`Hue ${h}° ${i%2==0?'Dark':'Light'}`,c:[`hsl(${h},${s}%,${i%2==0?5:98}%)`,`hsl(${h},${s}%,${i%2==0?10:95}%)`,`hsl(${h},${s}%,${i%2==0?15:90}%)`,`hsl(${(h+180)%360},80%,50%)`,`hsl(${(h+180)%360},80%,40%)`]})}
+    for(let i=0;i<140;i++){const h=Math.floor((i*137.5)%360),l=i%2==0?10:95,s=i%2==0?90:10;allThemes.push({id:`gen_${i}`,n:`Hue ${h}° ${i%2==0?'Dark':'Light'}`,c:[`hsl(${h},${s}%,${i%2==0?5:98}%)`,`hsl(${h},${s}%,${i%2==0?10:95}%)`,`hsl(${h},${s}%,${i%2==0?15:90}%)`,`hsl(${(h+180)%360},80%,50%)`,`hsl(${(h+180)%360},80%,40%)`]})}
     get('theme-count-badge').innerText=allThemes.length+"+";renderThemes(allThemes)};
 window.renderThemes=t=>{const g=get('themes-grid');g.innerHTML=t.map(x=>`<div onclick="selectTheme('${x.id}')" class="bg-gray-800 p-2 rounded-lg theme-card flex flex-col gap-2" title="${x.n}"><div class="theme-preview"><div class="theme-p-col" style="background:${x.c[0]}"></div><div class="theme-p-col" style="background:${x.c[1]}"></div><div class="theme-p-col" style="background:${x.c[3]}"></div></div><div class="text-[10px] text-center text-gray-400 font-bold truncate">${x.n}</div></div>`).join('')};
 window.openThemes=()=>{get('themes-modal').classList.remove('hidden');get('theme-search').focus()};
