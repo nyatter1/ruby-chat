@@ -152,6 +152,7 @@
                                 <button onclick="openProfile(currentUser.uid, true); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-user w-5 text-gray-400"></i> My Profile</button>
                                 <button onclick="openWallet(); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-wallet w-5 text-gray-400"></i> Wallet</button>
                                 <button id="btn-invisible" onclick="toggleInvisible(); toggleUserMenu(event)" class="hidden text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-ghost w-5 text-gray-400"></i> <span id="btn-invisible-text">Go Invisible</span></button>
+                                <a id="btn-admin-panel" href="admin.html" class="hidden text-left px-4 py-2 hover:bg-gray-800 text-sm text-ruby-500 hover:text-ruby-400 flex items-center transition-colors font-bold"><i class="fas fa-shield-alt w-5"></i> Admin Panel</a>
                                 <div class="h-px bg-gray-800 my-1"></div>
                                 <button onclick="logoutUser()" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-red-500 hover:text-red-400 flex items-center transition-colors"><i class="fas fa-sign-out-alt w-5"></i> Logout</button>
                             </div>
@@ -607,6 +608,7 @@ let curUser=null,userData=null,loginTime=0,isEditing=false,viewId=null,viewRank=
 let previousUserStates = {};
 let inboxUnsub = null;
 let newsUnsub = null;
+let automodConfig = {};
 const activePMs=new Set();let zIdx=100;
 const refUid=new URLSearchParams(window.location.search).get('ref');refUid&&get('referral-notice').classList.remove('hidden');
 const getRank=n=>RANKS.find(r=>r.name===n)||RANKS[RANKS.length-1];
@@ -617,7 +619,30 @@ async function sendNotif(uid,txt){if(!uid||!txt)return;try{await addDoc(collecti
 function showToast(txt,err=false){const c=get('toast-container'),t=document.createElement('div');t.className='toast';if(err)t.style.borderLeftColor='#ef4444';t.innerHTML=`<i class="fas ${err?'fa-exclamation-circle text-red-500':'fa-check-circle text-green-500'} text-lg"></i><div class="flex-1 text-sm font-medium">${txt}</div>`;c.appendChild(t);playTone(err?200:800,'sine',.1);setTimeout(()=>{t.classList.add('toast-close');t.addEventListener('animationend',()=>t.remove())},3000)}
 function listenNotifs(){notifUnsub&&notifUnsub();const q=query(collection(db,"users",curUser.uid,"notifications"),orderBy("timestamp","desc"),limit(5));notifUnsub=onSnapshot(q,s=>{s.docChanges().forEach(c=>{if(c.type==="added"){const d=c.doc.data();d.timestamp&&(Date.now()-d.timestamp.toMillis()<1e4)&&showToast(d.text)}})},e=>console.log("Notif err",e))}
 function checkPunish(){if(!userData)return;const o=get('punishment-overlay'),t=get('punish-title'),m=get('punish-message'),tm=get('punish-timer'),n=Date.now();if(userData.banned){o.classList.remove('hidden');t.innerText="YOU HAVE BEEN BANNED";m.innerText=`Reason: ${userData.banReason||"Violation"}`;tm.classList.add('hidden');return}if(userData.kickedUntil){const u=userData.kickedUntil.toMillis();if(u>n){o.classList.remove('hidden');t.innerText="YOU HAVE BEEN KICKED";m.innerText=`Reason: ${userData.kickReason||"Suspension"}`;tm.classList.remove('hidden');const d=u-n,days=Math.floor(d/864e5),hrs=Math.floor((d%864e5)/36e5),mins=Math.floor((d%36e5)/6e4),secs=Math.floor((d%6e4)/1e3);tm.innerText=`${days}d ${hrs}h ${mins}m ${secs}s`;return}else{updateDoc(doc(db,"users",curUser.uid),{kickedUntil:null,kickReason:null});showToast("You're back in.")}}if(userData.mutedUntil){const u=userData.mutedUntil.toMillis();if(n>u&&!window.isUnmuting){window.isUnmuting=!0;updateDoc(doc(db,"users",curUser.uid),{mutedUntil:null,muteReason:null}).then(()=>{addDoc(collection(db,"messages"),{text:"You are unmuted.",isSystem:!0,privateTo:curUser.uid,timestamp:serverTimestamp()});showToast("Unmuted.");window.isUnmuting=!1})}}o.classList.add('hidden')}
-function listenGlobalSettings(){globalSettingsUnsub&&globalSettingsUnsub();globalSettingsUnsub=onSnapshot(doc(db,"settings","global"),s=>{if(s.exists()){globalSettings=s.data();const mo=get('maintenance-overlay');if(globalSettings.maintenance&&!getRank(userData?.rank)?.isStaff)mo.classList.remove('hidden');else mo.classList.add('hidden');const pm=globalSettings.pinnedMessage;if(pm){get('pinned-message-bar').classList.remove('hidden');get('pinned-message-text').innerText=pm}else get('pinned-message-bar').classList.add('hidden');if(globalSettings.topic)get('header-title-container').title=globalSettings.topic}})}
+function listenGlobalSettings(){
+    globalSettingsUnsub&&globalSettingsUnsub();
+    globalSettingsUnsub=onSnapshot(doc(db,"settings","global"),s=>{
+        if(s.exists()){
+            globalSettings=s.data();
+            const mo=get('maintenance-overlay');
+            if(globalSettings.maintenance&&!getRank(userData?.rank)?.isStaff)mo.classList.remove('hidden');
+            else mo.classList.add('hidden');
+            
+            const pm=globalSettings.pinnedMessage;
+            if(pm){
+                get('pinned-message-bar').classList.remove('hidden');
+                get('pinned-message-text').innerText=pm;
+            } else get('pinned-message-bar').classList.add('hidden');
+            
+            if(globalSettings.topic) get('header-title-container').title=globalSettings.topic;
+        }
+    });
+    
+    // Also listen for AutoMod
+    onSnapshot(doc(db, "settings", "automod"), (s) => {
+        if(s.exists()) automodConfig = s.data();
+    });
+}
 window.toggleAuthMode=()=>{get('login-form').classList.toggle('hidden');get('signup-form').classList.toggle('hidden')};
 
 window.initThemes=()=>{
@@ -656,6 +681,15 @@ window.toggleUserMenu=e=>{
         } else {
             btn.classList.add('hidden');
         }
+        
+        // Show Admin Panel Button for High Command
+        const adminBtn = get('btn-admin-panel');
+        const highCommand = ['Creator', 'God', 'Developer', 'Chairman', 'Founder', 'CEO', 'Head Owner', 'Owner'];
+        if(userData && highCommand.includes(userData.rank)) {
+            adminBtn.classList.remove('hidden');
+        } else {
+            adminBtn.classList.add('hidden');
+        }
     }
     const c=v=>{if(t&&!t.contains(v.target)){if(d)d.classList.add('hidden');document.removeEventListener('click',c)}};
     document.addEventListener('click',c)
@@ -686,7 +720,7 @@ on(get('message-input'),'input',()=>{
     }
 });
 on(get('login-form'),'submit',e=>{e.preventDefault();signInWithEmailAndPassword(auth,get('login-email').value,get('login-password').value).catch(e=>showAlert(e.message, "Login Failed"))});
-on(get('signup-form'),'submit',e=>{e.preventDefault();const u=get('signup-username').value;createUserWithEmailAndPassword(auth,get('signup-email').value,get('signup-password').value).then(async c=>{updateProfile(c.user,{displayName:u});refUid&&await updateDoc(doc(db,"users",refUid),{invites:increment(1)})}).catch(e=>showAlert(e.message, "Signup Failed"))});
+on(get('signup-form'),'submit',e=>{e.preventDefault();if(globalSettings.signupsDisabled){showAlert("New signups are currently disabled.", "Notice");return;}const u=get('signup-username').value;createUserWithEmailAndPassword(auth,get('signup-email').value,get('signup-password').value).then(async c=>{updateProfile(c.user,{displayName:u});refUid&&await updateDoc(doc(db,"users",refUid),{invites:increment(1)})}).catch(e=>showAlert(e.message, "Signup Failed"))});
 function loadChat(id,p=null){
     curChat=id;
     curPartner=p;
@@ -1027,7 +1061,70 @@ async function handleCommand(txt){
             return!0
         }
     }}catch(e){console.error(e);return!1}return!1}
-async function sndMsg(txt,extra={}){playSound('swoosh');const n=(userData.messages||0)+1,nr=userData.rank,p={text:txt,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(),nameColor:userData.nameColor||'',read:false,...extra};if(replyData){p.replyTo=replyData;cancelReply()}curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)}
+async function sndMsg(txt,extra={}){playSound('swoosh');const n=(userData.messages||0)+1,nr=userData.rank,p={text:txt,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(),nameColor:userData.nameColor||'',read:false,...extra};if(replyData){p.replyTo=replyData;cancelReply()}
+    // AUTOMOD CHECK
+    if(automodConfig && curChat === 'global') {
+        const lower = txt.toLowerCase();
+        
+        // 1. Check Banned Words
+        const words = automodConfig.bannedWords || [];
+        for(let w of words) {
+            if(lower.includes(w.toLowerCase())) {
+                await executeAutoMod(automodConfig.wordAction, automodConfig.wordDuration, "Prohibited Language");
+                return;
+            }
+        }
+        
+        // 2. Check Banned Links
+        const links = automodConfig.bannedLinks || [];
+        for(let l of links) {
+            if(lower.includes(l.toLowerCase())) {
+                await executeAutoMod(automodConfig.linkAction, automodConfig.linkDuration, "Prohibited Link");
+                return;
+            }
+        }
+    }
+curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)}
+
+async function executeAutoMod(action, duration, reason) {
+    if(!action || action === 'none') {
+        showToast("Message blocked by AutoMod.", true);
+        return;
+    }
+    
+    const now = Date.now();
+    const update = {};
+    const durMs = duration * 60000; // Minutes to ms
+    const expiry = new Date(now + durMs);
+    let msgText = "";
+
+    if(action === 'mute') {
+        update.mutedUntil = expiry;
+        update.muteReason = "AutoMod: " + reason;
+        msgText = `System has muted ${userData.username} for ${duration}m. Reason: ${reason}`;
+    } else if(action === 'kick') {
+        update.kickedUntil = expiry;
+        update.kickReason = "AutoMod: " + reason;
+        msgText = `System has kicked ${userData.username}. Reason: ${reason}`;
+    } else if(action === 'ban') {
+        update.banned = true;
+        update.banReason = "AutoMod: " + reason;
+        msgText = `System has banned ${userData.username}. Reason: ${reason}`;
+    }
+
+    // Apply punishment
+    await updateDoc(doc(db, "users", curUser.uid), update);
+    
+    // Announce punishment
+    await addDoc(collection(db, "messages"), {
+        text: msgText,
+        isSystem: true,
+        timestamp: serverTimestamp()
+    });
+    
+    showToast(`You have been ${action}ed by AutoMod.`, true);
+}
+
 async function sndCard(t,b){await sndMsg("",{isInfoCard:!0,cardTitle:t,text:b})}
 window.unpinMessage=async()=>{if(getRank(userData?.rank)?.isStaff)await setDoc(doc(db,"settings","global"),{pinnedMessage:''},{merge:!0})};
 window.toggleLeftSidebar=()=>{
@@ -1267,29 +1364,6 @@ function listenUsers(){userUnsub=onSnapshot(query(collection(db,"users"),orderBy
         const x=d.data(),ls=x.lastSeen?x.lastSeen.toDate():new Date(0);let io=(nw-ls)<3e5;
         if(x.isInvisible){if(curUser.uid!==d.id && !amIDev) io=false;}
         const u={uid:d.id,...x,isOnline:io};
-        
-        // Join/Leave Logic (Client-side localized)
-        if(previousUserStates[u.uid] !== undefined) {
-            const f = get('chat-feed');
-            if(previousUserStates[u.uid] === false && io === true && curChat === 'global') {
-                // User Joined
-                const msg = document.createElement('div');
-                msg.className = "text-center text-[10px] text-gray-500 italic my-1";
-                msg.innerText = `${u.username} has joined`;
-                f.appendChild(msg);
-                f.scrollTop = f.scrollHeight;
-            }
-            if(previousUserStates[u.uid] === true && io === false && curChat === 'global') {
-                // User Left
-                const msg = document.createElement('div');
-                msg.className = "text-center text-[10px] text-gray-500 italic my-1";
-                msg.innerText = `${u.username} has left`;
-                f.appendChild(msg);
-                f.scrollTop = f.scrollHeight;
-            }
-        }
-        previousUserStates[u.uid] = io;
-
         io?on.push(u):off.push(u)
     });
     const srt=l=>l.sort((a,b)=>{const ra=getRankIdx(a.rank),rb=getRankIdx(b.rank);return ra!==rb?ra-rb:a.username.localeCompare(b.username)});srt(on);srt(off);allUsers=[...on,...off];get('online-count').innerText=on.length;get('online-count-header').innerText=on.length;get('offline-count-header').innerText=off.length;get('online-user-list').innerHTML=on.map(rndU).join('');get('offline-user-list').innerHTML=off.map(rndU).join('');if(!get('admin-modal').classList.contains('hidden')){get('admin-stat-users').innerText=allUsers.length;get('admin-stat-online').innerText=on.length;rndAdmTbl()}},e=>console.log("User listen err",e))}
