@@ -355,6 +355,12 @@
                     <div id="offline-user-list" class="space-y-1 opacity-75 grayscale-[30%]"></div>
                 </div>
             </div>
+            <!-- Admin Button Container -->
+            <div id="admin-panel-btn-container" class="p-3 border-t border-gray-800 hidden">
+                <button onclick="window.location.href='admin.php'" class="w-full bg-gray-800 hover:bg-gray-700 text-ruby-500 font-bold py-2 px-4 rounded border border-gray-700 transition-colors">
+                    <i class="fas fa-shield-alt mr-2"></i>Admin Panel
+                </button>
+            </div>
         </div>
     </div>
 
@@ -413,6 +419,7 @@
                     <i class="fas fa-camera text-white text-2xl drop-shadow-lg"></i>
                 </div>
                 <button onclick="closeProfile()" class="absolute top-2 right-2 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors z-10"><i class="fas fa-times"></i></button>
+                <button id="staff-action-btn" onclick="openStaffActionMenu()" class="hidden absolute top-2 left-2 bg-yellow-500 hover:bg-yellow-400 text-black w-8 h-8 rounded-full flex items-center justify-center transition-colors z-10 shadow-lg shadow-yellow-500/50"><i class="fas fa-bolt"></i></button>
             </div>
 
             <div class="px-6 pb-6 -mt-12 flex flex-col items-center relative overflow-y-auto">
@@ -532,7 +539,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
   import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-  import { getFirestore, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, increment, arrayUnion, arrayRemove, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+  import { getFirestore, collection, doc, addDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit, serverTimestamp, increment, arrayUnion, arrayRemove, setDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",
@@ -548,6 +555,9 @@
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
   const db = getFirestore(app);
+  
+  // Attempt persistence to reduce network calls
+  try { enableIndexedDbPersistence(db).catch(err => { if(err.code == 'failed-precondition') {} else if(err.code == 'unimplemented') {} }); } catch(e){}
 
         const DEFAULT_PFP = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%239ca3af' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -711,10 +721,17 @@
                     if(punishmentInterval) clearInterval(punishmentInterval);
                     punishmentInterval = setInterval(checkPunishments, 1000);
                     window.updateHeaderProfile(); window.updateHeaderStatusColor(); window.updateHeaderProgression(); 
+                    
+                    if (getRankData(userData.rank)?.isStaff) {
+                        document.getElementById('admin-panel-btn-container').classList.remove('hidden');
+                        document.getElementById('staff-action-btn').classList.remove('hidden');
+                    } else {
+                        document.getElementById('admin-panel-btn-container').classList.add('hidden');
+                        document.getElementById('staff-action-btn').classList.add('hidden');
+                    }
                 });
                 
                 loadChat('global'); initTypingListener(); updatePresence(); setInterval(updatePresence, 60000); 
-                // Listen for Conversation Updates for Badge
                 onSnapshot(collection(db, "users", currentUser.uid, "conversations"), (snap) => {
                     let totalUnread = 0;
                     snap.forEach(d => totalUnread += (d.data().unread || 0));
@@ -974,6 +991,7 @@
              const ms = d * (u==='minutes'?60000:(u==='hours'?3600000:86400000)); const until = new Date(Date.now()+ms);
              const up = {}; if (currentStaffAction==='mute') { up.mutedUntil = d>0?until:new Date(Date.now()+100000000000); up.muteReason=r; } else if (currentStaffAction==='kick') { up.kickedUntil = d>0?until:new Date(Date.now()+100000000000); up.kickReason=r; } else { up.banned=true; up.banReason=r; }
              await updateDoc(doc(db, "users", viewingUserId), up); await addDoc(collection(db, "messages"), { text: `User has been ${currentStaffAction}ed.`, isSystem: true, timestamp: serverTimestamp() });
+             if (currentStaffAction === 'mute') await addDoc(collection(db, "messages"), { text: `You have been muted. Reason: ${r}`, isSystem: true, privateTo: viewingUserId, timestamp: serverTimestamp() });
              closeStaffInput(); closeProfile();
         });
         
