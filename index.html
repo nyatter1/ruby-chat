@@ -129,7 +129,7 @@
             <div class="p-4 border-b border-gray-800 font-bold text-ruby-500 flex justify-between items-center h-16"><span class="sidebar-title tracking-wider">MENU</span><button onclick="toggleLeftSidebar()" class="md:hidden text-gray-400"><i class="fas fa-times"></i></button></div>
             <div class="flex-1 p-4 space-y-2 overflow-y-auto">
                 <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openNews()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-newspaper"></i></div><span class="sidebar-text font-medium">News</span></button>
-                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('Rules feature coming soon!')"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-book"></i></div><span class="sidebar-text font-medium">Rules</span></button>
+                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openRules()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-book"></i></div><span class="sidebar-text font-medium">Rules</span></button>
                 <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openStaffModal()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-user-shield"></i></div><span class="sidebar-text font-medium">Staff</span></button>
             </div>
             <div class="p-4 text-xs text-gray-600 text-center sidebar-text">RubyChat v2.4</div>
@@ -220,6 +220,41 @@
             <!-- NEWS FEED -->
             <div id="news-feed" class="w-full max-w-2xl space-y-6">
                 <div class="text-center text-gray-500 italic mt-10">Loading news...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RULES MODAL -->
+    <div id="rules-modal" class="fixed inset-0 z-[70] bg-black/95 hidden flex flex-col p-4 md:p-8">
+        <div class="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-2xl mx-auto flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-gray-800 flex justify-between items-center">
+                <h2 class="text-3xl font-bold text-white flex items-center gap-3"><i class="fas fa-book text-ruby-500"></i> Server Rules</h2>
+                <button onclick="closeRules()" class="text-gray-400 hover:text-white text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-6 space-y-4 text-gray-200">
+                <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                    <h3 class="font-bold text-ruby-500 mb-2">1. Respect Everyone</h3>
+                    <p class="text-sm">Treat all members with respect. Harassment, hate speech, or bullying will not be tolerated.</p>
+                </div>
+                <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                    <h3 class="font-bold text-ruby-500 mb-2">2. No Spamming</h3>
+                    <p class="text-sm">Do not spam messages, emojis, or caps. Keep the chat readable for everyone.</p>
+                </div>
+                <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                    <h3 class="font-bold text-ruby-500 mb-2">3. No NSFW Content</h3>
+                    <p class="text-sm">This is a community for everyone. Do not post Not Safe For Work content, images, or links.</p>
+                </div>
+                <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                    <h3 class="font-bold text-ruby-500 mb-2">4. Follow Staff Instructions</h3>
+                    <p class="text-sm">Moderators and Admins are here to help. Please follow their instructions.</p>
+                </div>
+                <div class="bg-gray-800/50 p-4 rounded-lg border border-gray-700">
+                    <h3 class="font-bold text-ruby-500 mb-2">5. No Advertising</h3>
+                    <p class="text-sm">Do not advertise other servers or products without permission.</p>
+                </div>
+            </div>
+            <div class="p-4 border-t border-gray-800 text-center text-xs text-gray-500">
+                By using Ruby Chat, you agree to these rules.
             </div>
         </div>
     </div>
@@ -460,8 +495,10 @@
                 <div id="admin-actions-only" class="space-y-3 hidden">
                     <button id="btn-kick" onclick="showStaffInput('kick')" class="w-full bg-gray-800 hover:bg-orange-900/40 text-orange-500 border border-orange-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-sign-out-alt"></i> Kick User (Temp Ban)</button>
                     <button id="btn-unkick" onclick="executeStaffAction('unkick')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-door-open"></i> Unkick User</button>
-                    <button id="btn-ban" onclick="showStaffInput('ban')" class="w-full bg-gray-800 hover:bg-red-900/40 text-red-500 border border-red-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-ban"></i> Ban User (Perm)</button>
-                    <button id="btn-unban" onclick="executeStaffAction('unban')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-check-circle"></i> Unban User</button>
+                    <div id="super-admin-actions" class="space-y-3 hidden">
+                        <button id="btn-ban" onclick="showStaffInput('ban')" class="w-full bg-gray-800 hover:bg-red-900/40 text-red-500 border border-red-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-ban"></i> Ban User (Perm)</button>
+                        <button id="btn-unban" onclick="executeStaffAction('unban')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2"><i class="fas fa-check-circle"></i> Unban User</button>
+                    </div>
                     <div class="bg-gray-800 p-3 rounded border border-gray-700"><label class="block text-xs text-gray-400 uppercase font-bold mb-2">Rank User</label><div class="flex gap-2"><select id="staff-rank-select" class="flex-1 bg-gray-900 text-white text-sm rounded p-2 border border-gray-700 focus:outline-none"></select><button onclick="executeRankChange()" class="bg-blue-600 hover:bg-blue-500 text-white px-3 rounded font-bold text-sm">Set</button></div></div>
                 </div>
             </div>
@@ -562,7 +599,6 @@ window.showConfirm = (msg, title="Confirm") => {
     });
 };
 
-// UPDATED RANKS: Removed auto-rank logic usage in msg sending, changed Chairman to .gif
 const RANKS=[
 {name:"Creator",img:"creator.gif",invites:1000,isStaff:!0},{name:"God",img:"god.gif",invites:500,isStaff:!0},{name:"Developer",img:"developer.gif",invites:50,isStaff:!0},{name:"Chairman",img:"chairman.gif",invites:48,isStaff:!0},{name:"Founder",img:"founder.gif",invites:45,isStaff:!0},{name:"CEO",img:"CEO.gif",invites:40,isStaff:!0},{name:"Head Owner",img:"head-owner.gif",invites:35,isStaff:!0},{name:"Owner",img:"owner.gif",invites:30,isStaff:!0},{name:"Manager",img:"manager.gif",invites:25,isStaff:!0},{name:"Super Admin",img:"super-admin.png",invites:20,isStaff:!0},{name:"Admin",img:"admin.png",invites:15,isStaff:!0},{name:"Moderator",img:"mod.png",invites:10,isStaff:!0},{name:"Trial Mod",img:"trial-mod.png",invites:5,isStaff:!0},{name:"Site Helper",img:"site-helper.gif",invites:3,isStaff:!0},{name:"Staff",img:"st.gif",invites:0,isStaff:!0},
 {name:"Bean",img:"bean.png",msgs:57e3},{name:"Heart 4",img:"heart4.gif",msgs:54500},{name:"Heart 3",img:"heart3.gif",msgs:52e3},{name:"Heart 2",img:"heart2.gif",msgs:49500},{name:"Heart 1",img:"heart1.gif",msgs:47e3},{name:"IDK",img:"idk.gif",msgs:44500},{name:"Luck",img:"luck.gif",msgs:42e3},{name:"Banana",img:"banana.gif",msgs:39500},{name:"Snail",img:"snail.gif",msgs:37e3},{name:"Teddy",img:"teddy.gif",msgs:34500},{name:"Kirby",img:"kirby.gif",msgs:32e3},{name:"Homer",img:"homer.gif",msgs:29500},{name:"Ghost",img:"ghost.gif",msgs:27e3},{name:"Scooby 2",img:"scooby2.gif",msgs:24500},{name:"Scooby",img:"scooby.gif",msgs:22e3},{name:"Batman 3",img:"batman3.gif",msgs:19500},{name:"Batman 2",img:"batman2.gif",msgs:17e3},{name:"Batman",img:"batman.gif",msgs:14500},{name:"Princess",img:"princess.gif",msgs:12e3},{name:"Premium",img:"premium.gif",msgs:9500},{name:"Mega VIP",img:"mega-vip.gif",msgs:7e3},{name:"Elite",img:"elite.png",msgs:5e3},{name:"Mega Elite",img:"mega-elite.gif",msgs:3500},{name:"Coding",img:"coding.gif",msgs:2e3},{name:"Bot",img:"bot1.gif",msgs:1e3},{name:"VIP",img:"vip.gif",msgs:0}
@@ -605,7 +641,8 @@ window.toggleUserMenu=e=>{
     if(d){
         d.classList.toggle('hidden');
         const btn = get('btn-invisible');
-        if(userData && userData.rank === 'Creator'){
+        // Allowed ranks: Creator, God, Developer, Founder
+        if(userData && ['Creator','God','Developer','Founder'].includes(userData.rank)){
             btn.classList.remove('hidden');
             const txt = get('btn-invisible-text');
             const icon = btn.querySelector('i');
@@ -626,7 +663,8 @@ window.toggleUserMenu=e=>{
 
 window.toggleInvisible=async()=>{
     if(!userData)return;
-    if(userData.rank!=='Creator') return;
+    // Check extended permissions for invisibility
+    if(!['Creator','God','Developer','Founder'].includes(userData.rank)) return;
     const n = !userData.isInvisible;
     try{
         await updateDoc(doc(db,"users",curUser.uid),{isInvisible:n});
@@ -722,7 +760,76 @@ function renderMsg(m){
     return`<div class="flex gap-3 mb-4 ${me?'flex-row-reverse':''} group"><img src="${m.photoURL||D_PFP}" onclick="openProfile('${m.uid}')" class="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 border border-gray-700 bg-gray-800 object-cover default-pfp"><div class="flex flex-col ${me?'items-end':'items-start'} max-w-[80%]"><div class="flex items-center gap-2 mb-1"><span ${nCol} onclick="openProfile('${m.uid}')">${m.username}</span><div class="rank-badge">${rH}</div><span class="text-[10px] text-gray-600 ${document.body.classList.contains('hide-ts')?'hidden':''}">${ts}</span>${del}</div>${rep}<div class="${bc} ${isAct}" ondblclick="toggleReaction('${m.id}')" title="Double click to heart">${med}${m.text?esc(m.text):''}${rh}<button onclick="replyToMessage('${m.id}','${m.username}','${esc(m.text||"Media").replace(/'/g,"\\'")}')" class="absolute top-1/2 -translate-y-1/2 ${me?'-left-8':'-right-8'} text-gray-500 hover:text-ruby-500 opacity-0 group-hover/bubble:opacity-100 transition-opacity p-1"><i class="fas fa-reply"></i></button></div><div class="flex justify-end w-full">${rr}</div></div></div>`
 }
 function chkMute(){if(userData.banned)return{m:!0,r:userData.banReason};if(userData.kickedUntil&&userData.kickedUntil.toMillis()>Date.now())return{m:!0,r:userData.kickReason};if(userData.mutedUntil&&userData.mutedUntil.toMillis()>Date.now())return{m:!0,r:userData.muteReason};return{m:!1}}
-window.handleChatMediaUpload=(f)=>{if(!f.length)return;const r=new FileReader();if(f[0].size>2e6){showAlert("File > 2MB", "Error");return}r.onload=async e=>{if(!await showConfirm("Send?", "Send Media"))return;try{const n=(userData.messages||0)+1,nr=userData.rank,p={text:"",mediaURL:e.target.result,mediaType:f[0].type,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(), read:false};curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)}catch(x){console.error(x)}};r.readAsDataURL(f[0]);get('chat-file-input').value=''};
+
+// IMAGE COMPRESSION UTILITY
+async function compressImage(file) {
+    if(!file.type.startsWith('image/')) return file; // Skip if not image
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            const img = new Image();
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+                const MAX_WIDTH = 800;
+                const MAX_HEIGHT = 800;
+
+                if (width > height) {
+                    if (width > MAX_WIDTH) {
+                        height *= MAX_WIDTH / width;
+                        width = MAX_WIDTH;
+                    }
+                } else {
+                    if (height > MAX_HEIGHT) {
+                        width *= MAX_HEIGHT / height;
+                        height = MAX_HEIGHT;
+                    }
+                }
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+                // Convert to data URL with reduced quality
+                const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+                resolve(dataUrl); 
+            };
+            img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+    });
+}
+
+window.handleChatMediaUpload=(f)=>{
+    if(!f.length)return;
+    // Check size before compression (rough check), but proceed to compress anyway
+    // If raw file > 10MB, maybe reject. Here we just try to compress.
+    const file = f[0];
+    
+    // Compress logic
+    compressImage(file).then(async (result) => {
+        // result is either DataURL string or original file if not image
+        let finalData = result;
+        let type = file.type;
+        
+        // If video, read as DataURL directly (no compression implemented for video here)
+        if(file.type.startsWith('video/')) {
+             if(file.size > 5e6){showAlert("Video > 5MB", "Error");return} // Lower video limit for base64 storage safety
+             finalData = await hFU(file);
+        }
+
+        if(!await showConfirm("Send?", "Send Media"))return;
+        try{
+            const n=(userData.messages||0)+1,nr=userData.rank,p={text:"",mediaURL:finalData,mediaType:type,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(), read:false};
+            curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)
+        }catch(x){
+            console.error(x);
+            showAlert("Upload Failed. Image might be too large even after compression.", "Error");
+        }
+    });
+    get('chat-file-input').value='';
+};
+
 async function handleCommand(txt){
     const args=txt.slice(1).split(' '),cmd=args.shift().toLowerCase(),rest=args.join(' ');
     const isStaff=getRank(userData?.rank)?.isStaff;
@@ -979,17 +1086,11 @@ function listenInbox() {
             chats.push({ uid: doc.id, ...data });
         });
 
-        // Filter: Show chats where (I received a message) OR (I sent one and they replied)
-        // Strictly adhering to: "it wont show in ur pms it will only show when the reciever sends back"
-        // This implies if *I* was the last sender and there is only 1 message, maybe hide it? 
-        // But simpler logic is: Show all conversations in 'chats'. The send logic determines if 'chats' doc is created.
-        
         // Sort by timestamp
         chats.sort((a,b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
         if(unreadCount > 0) {
             badge.classList.remove('hidden');
-            // badge.innerText = unreadCount; // Optional: show number
         } else {
             badge.classList.add('hidden');
         }
@@ -1119,17 +1220,23 @@ window.sendFMsg=async(e,tid)=>{
 
 window.handlePMMediaUpload=(f, tid)=>{
     if(!f.length)return;
-    const r=new FileReader();
-    if(f[0].size>2e6){showAlert("File > 2MB", "Error");return}
-    r.onload=async e=>{
+    const file = f[0];
+    
+    compressImage(file).then(async (result) => {
+        let finalData = result;
+        let type = file.type;
+        if(file.type.startsWith('video/')) {
+             if(file.size > 5e6){showAlert("Video > 5MB", "Error");return}
+             finalData = await hFU(file);
+        }
+
         if(!await showConfirm("Send?", "Send Media"))return;
         try{
             const cid=curUser.uid<tid?`${curUser.uid}_${tid}`:`${tid}_${curUser.uid}`;
-            const tx = "Sent a file";
             await addDoc(collection(db,"direct_messages",cid,"messages"),{
                 text:"",
-                mediaURL:e.target.result,
-                mediaType:f[0].type,
+                mediaURL:finalData,
+                mediaType:type,
                 uid:curUser.uid,
                 username:userData.username,
                 photoURL:userData.photoURL||D_PFP,
@@ -1144,9 +1251,11 @@ window.handlePMMediaUpload=(f, tid)=>{
                 read: false,
                 sender: curUser.uid
             }, { merge: true });
-        }catch(x){console.error(x)}
-    };
-    r.readAsDataURL(f[0]);
+        }catch(x){
+            console.error(x);
+            showAlert("Upload Failed", "Error");
+        }
+    });
     get(`pm-file-${tid}`).value='';
 };
 
@@ -1311,13 +1420,61 @@ window.closeProfile=()=>get('profile-modal').classList.add('hidden');
 window.triggerAvatarUpload=()=>{isEditing&&get('avatar-upload').click()};window.triggerBannerUpload=()=>{isEditing&&get('banner-upload').click()};
 on(get('banner-upload'),'change',async e=>{if(e.target.files[0]){const b=await hFU(e.target.files[0]);get('profile-banner-img').src=b;pBn=b;saveProfileChanges()}});
 function hFU(f){return new Promise((r,j)=>{const x=new FileReader();x.readAsDataURL(f);x.onload=()=>r(x.result);x.onerror=e=>j(e)})}
-window.openStaffActionMenu=async()=>{const m=get('staff-action-menu'),aa=get('admin-actions-only'),mr=getRankIdx(userData.rank),tr=getRankIdx(viewRank);if(tr<=mr){showAlert("Blocked", "Access Denied");return}const s=await getDoc(doc(db,"users",viewId));if(!s.exists())return;const d=s.data(),n=Date.now(),im=d.mutedUntil&&d.mutedUntil.toMillis()>n,ik=d.kickedUntil&&d.kickedUntil.toMillis()>n,ib=d.banned;const t=(i,v)=>get(i).classList.toggle('hidden',!v);t('btn-mute',!im);t('btn-unmute',im);t('btn-kick',!ik);t('btn-unkick',ik);t('btn-ban',!ib);t('btn-unban',ib);get('staff-rank-select').innerHTML=RANKS.filter((r,i)=>i>mr).map(r=>`<option value="${r.name}">${r.name}</option>`).join('');m.classList.remove('hidden');aa.classList.toggle('hidden',mr>=getRankIdx("Moderator"))};
+
+// Updated Staff Action Menu with stricter permission checks
+window.openStaffActionMenu=async()=>{
+    const m=get('staff-action-menu'), aa=get('admin-actions-only'), sa=get('super-admin-actions');
+    const mr=getRankIdx(userData.rank), tr=getRankIdx(viewRank);
+    
+    // If target has higher or equal rank (lower or equal index), block
+    if(tr<=mr){showAlert("You cannot moderate this user.", "Access Denied");return}
+    
+    const s=await getDoc(doc(db,"users",viewId));if(!s.exists())return;const d=s.data(),n=Date.now(),im=d.mutedUntil&&d.mutedUntil.toMillis()>n,ik=d.kickedUntil&&d.kickedUntil.toMillis()>n,ib=d.banned;
+    const t=(i,v)=>get(i).classList.toggle('hidden',!v);
+    
+    // Basic Mod (Mute only) - Rank Index <= 11 (Moderator)
+    if(mr > 11) { showAlert("Insufficient Rank", "Access Denied"); return; }
+    
+    t('btn-mute',!im);t('btn-unmute',im);
+    
+    // Admin (Kick + Mute) - Rank Index <= 10 (Admin)
+    const isAdmin = mr <= 10;
+    aa.classList.toggle('hidden', !isAdmin);
+    if(isAdmin) {
+        t('btn-kick',!ik);t('btn-unkick',ik);
+        // Rank Select Population - Only ranks LOWER than user
+        get('staff-rank-select').innerHTML=RANKS.filter((r,i)=>i>mr).map(r=>`<option value="${r.name}">${r.name}</option>`).join('');
+    }
+
+    // Super Admin (Ban + Kick + Mute) - Rank Index <= 9 (Super Admin)
+    const isSuperAdmin = mr <= 9;
+    sa.classList.toggle('hidden', !isSuperAdmin);
+    if(isSuperAdmin) {
+        t('btn-ban',!ib);t('btn-unban',ib);
+    }
+
+    m.classList.remove('hidden');
+};
 window.closeStaffActionMenu=()=>get('staff-action-menu').classList.add('hidden');
 window.showStaffInput=a=>{curAct=a;get('staff-action-menu').classList.add('hidden');get('staff-input-modal').classList.remove('hidden');get('staff-input-title').innerText=a.toUpperCase()+" USER";get('staff-action-duration').value=1;get('staff-action-reason').value="";get('staff-duration-group').classList.toggle('hidden',a==='ban')};
 window.closeStaffInput=()=>get('staff-input-modal').classList.add('hidden');
 window.executeStaffAction=async a=>{if(!await showConfirm("Confirm "+a+"?", "Staff Action"))return;const t=doc(db,"users",viewId);try{if(a==='unmute'){await updateDoc(t,{mutedUntil:null,muteReason:null});sendNotif(viewId,"Unmuted.")}else if(a==='unkick'){await updateDoc(t,{kickedUntil:null,kickReason:null});sendNotif(viewId,"Unkicked.")}else if(a==='unban'){await updateDoc(t,{banned:!1,banReason:null});sendNotif(viewId,"Unbanned.")}closeStaffActionMenu();openProfile(viewId);showAlert("Done", "Success")}catch(e){showAlert(e.message, "Error")}};
 on(get('staff-action-confirm-btn'),'click',async()=>{if(!viewId||!curAct)return;const d=parseInt(get('staff-action-duration').value)||0,u=get('staff-action-unit').value,r=get('staff-action-reason').value||"None",tr=doc(db,"users",viewId);if(getRankIdx(viewRank)<=getRankIdx(userData.rank))return;let m=1;if(u==='hours')m=36e5;else if(u==='days')m=864e5;else m=6e4;const dm=d*m,n=Date.now(),ut=new Date(n+dm),up={};let sm="",pm="",nt="";const tn=get('profile-username').innerText;if(curAct==='mute'){up.mutedUntil=d>0?ut:new Date(n+31536e6);up.muteReason=r;sm=`${tn} muted: ${r}.`;pm=`Muted. Reason: ${r}.`;nt="Silenced."}else if(curAct==='kick'){up.kickedUntil=d>0?ut:new Date(n+31536e6);up.kickReason=r;sm=`${tn} kicked.`;nt="Kicked."}else if(curAct==='ban'){up.banned=!0;up.banReason=r;sm=`${tn} banned.`;nt="Banned."}try{await updateDoc(tr,up);await addDoc(collection(db,"messages"),{text:sm,isSystem:!0,timestamp:serverTimestamp()});curAct==='mute'&&await addDoc(collection(db,"messages"),{text:pm,isSystem:!0,privateTo:viewId,timestamp:serverTimestamp()});sendNotif(viewId,nt);closeStaffInput();closeProfile();showAlert("Done", "Success")}catch(e){showAlert(e.message, "Error")}});
-window.executeRankChange=async()=>{if(!viewId)return;const n=get('staff-rank-select').value;if(!await showConfirm("Set rank "+n+"?", "Change Rank"))return;try{await updateDoc(doc(db,"users",viewId),{rank:n});closeStaffActionMenu();openProfile(viewId)}catch(e){showAlert(e.message, "Error")}};
+window.executeRankChange=async()=>{
+    if(!viewId)return;
+    const n=get('staff-rank-select').value;
+    const targetRankIndex = getRankIdx(n);
+    const myRankIndex = getRankIdx(userData.rank);
+    
+    // Safety check: Cannot assign a rank higher or equal to my own
+    if(targetRankIndex <= myRankIndex) {
+        showAlert("Cannot assign this rank.", "Permission Denied");
+        return;
+    }
+
+    if(!await showConfirm("Set rank "+n+"?", "Change Rank"))return;
+    try{await updateDoc(doc(db,"users",viewId),{rank:n});closeStaffActionMenu();openProfile(viewId)}catch(e){showAlert(e.message, "Error")}
+};
 window.openAdminPanel=()=>{playSound('open');get('admin-modal').classList.remove('hidden');rndAdmTbl()};window.closeAdminPanel=()=>{playSound('close');get('admin-modal').classList.add('hidden')};
 window.switchAdminTab=t=>{actAdm=t;get('tab-btn-users').classList.toggle('admin-tab-active',t==='users');get('tab-btn-broadcast').classList.toggle('admin-tab-active',t==='broadcast');get('admin-tab-users').classList.toggle('hidden',t!=='users');get('admin-tab-broadcast').classList.toggle('hidden',t!=='broadcast')};
 function rndAdmTbl(){if(actAdm!=='users')return;const b=get('admin-user-table'),s=get('admin-search').value.toLowerCase();b.innerHTML=allUsers.filter(u=>u.username.toLowerCase().includes(s)||u.email.toLowerCase().includes(s)).map(u=>{let st=u.isOnline?'<span class="text-green-500 font-bold">Online</span>':'<span class="text-gray-500">Offline</span>';if(u.banned)st='<span class="text-red-500 font-bold bg-red-500/10 px-2 rounded">BANNED</span>';return`<tr class="hover:bg-gray-800 transition-colors"><td class="p-4"><div class="flex items-center gap-3"><img src="${u.photoURL||D_PFP}" class="w-8 h-8 rounded-full bg-gray-700 default-pfp"><div><div class="font-bold text-gray-200">${u.username}</div><div class="text-xs text-gray-500">${u.email}</div></div></div></td><td class="p-4 text-sm">${st}</td><td class="p-4"><span class="text-xs text-gray-500">Use Profile</span></td><td class="p-4 text-center"><div class="text-xs text-gray-400 flex flex-col items-center"><div><span class="text-ruby-500 font-bold">${u.messages||0}</span> msgs</div><div><span class="text-blue-400 font-bold">${u.invites||0}</span> inv</div></div></td><td class="p-4 text-right"><button onclick="openProfile('${u.uid}')" class="p-2 rounded bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors"><i class="fas fa-bolt"></i> Actions</button></td></tr>`}).join('')}
@@ -1333,6 +1490,16 @@ window.openWallet=()=>{playSound('open');if(!userData)return;get('wallet-coins')
 window.closeWallet=()=>{playSound('close');get('wallet-modal').classList.add('hidden')};
 window.logoutUser=()=>signOut(auth).catch(e=>showAlert(e.message, "Error"));
 on(get('theme-search'),'input',e=>{const v=e.target.value.toLowerCase();window.renderThemes(allThemes.filter(t=>t.n.toLowerCase().includes(v)))});
+
+// RULES LOGIC
+window.openRules=()=>{
+    playSound('open');
+    get('rules-modal').classList.remove('hidden');
+};
+window.closeRules=()=>{
+    playSound('close');
+    get('rules-modal').classList.add('hidden');
+};
 
 // NEW STAFF MODAL LOGIC
 window.openStaffModal=()=>{
@@ -1426,8 +1593,13 @@ window.toggleNewsForm = () => {
 };
 window.previewNewsImage = async (input) => {
     if (input.files && input.files[0]) {
-        get('news-file-name').innerText = input.files[0].name;
-        newsImageBase64 = await hFU(input.files[0]);
+        const file = input.files[0];
+        get('news-file-name').innerText = file.name;
+        // Use compression for news images too
+        const compressed = await compressImage(file);
+        // If it's a promise (from compressImage) it resolves to string, 
+        // if compressImage returns promise we await.
+        newsImageBase64 = compressed; 
         const p = get('news-preview');
         p.src = newsImageBase64;
         p.classList.remove('hidden');
