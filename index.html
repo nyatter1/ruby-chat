@@ -56,6 +56,17 @@
         .profile-stat-icon { width: 20px; text-align: center; margin-right: 8px; font-size: 1rem; }
         .edit-menu-btn { width: 100%; text-align: left; padding: 8px; display: flex; align-items: center; gap: 10px; border-radius: 8px; color: #d1d5db; transition: background 0.2s; }
         .edit-menu-btn:hover { background-color: #2f2f4e; color: white; }
+        
+        .news-item { background-color: var(--bg-900); border: 1px solid var(--bg-850); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
+        .news-header { padding: 12px; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .news-content { padding: 16px; }
+        .news-image { width: 100%; height: auto; border-radius: 8px; margin-bottom: 12px; max-height: 400px; object-fit: cover; }
+        .news-footer { padding: 10px 16px; background-color: rgba(0,0,0,0.2); display: flex; gap: 16px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .news-btn { display: flex; align-items: center; gap: 6px; color: #9ca3af; font-size: 0.9rem; transition: color 0.2s; }
+        .news-btn:hover { color: white; }
+        .news-btn.active { color: var(--acc-500); }
+        .news-comments { background-color: #0005; padding: 12px; display: none; }
+        .news-comment { margin-bottom: 8px; font-size: 0.9rem; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -117,7 +128,7 @@
         <div id="left-sidebar" class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col sidebar-transition z-30 transform -translate-x-full md:translate-x-0 absolute md:relative h-full">
             <div class="p-4 border-b border-gray-800 font-bold text-ruby-500 flex justify-between items-center h-16"><span class="sidebar-title tracking-wider">MENU</span><button onclick="toggleLeftSidebar()" class="md:hidden text-gray-400"><i class="fas fa-times"></i></button></div>
             <div class="flex-1 p-4 space-y-2 overflow-y-auto">
-                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('News feature coming soon!')"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-newspaper"></i></div><span class="sidebar-text font-medium">News</span></button>
+                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openNews()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-newspaper"></i></div><span class="sidebar-text font-medium">News</span></button>
                 <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('Rules feature coming soon!')"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-book"></i></div><span class="sidebar-text font-medium">Rules</span></button>
                 <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openStaffModal()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-user-shield"></i></div><span class="sidebar-text font-medium">Staff</span></button>
             </div>
@@ -173,6 +184,46 @@
             </div>
         </div>
     </div>
+    
+    <!-- NEWS MODAL -->
+    <div id="news-modal" class="fixed inset-0 z-[70] bg-black/95 hidden flex flex-col">
+        <div class="p-6 border-b border-gray-800 flex justify-between items-center bg-gray-900">
+            <h2 class="text-3xl font-bold text-white flex items-center gap-3"><i class="fas fa-newspaper text-ruby-500"></i> Community News</h2>
+            <div class="flex items-center gap-4">
+                <button id="add-news-btn" onclick="toggleNewsForm()" class="hidden bg-ruby-600 hover:bg-ruby-500 text-white font-bold py-2 px-4 rounded-lg flex items-center gap-2"><i class="fas fa-plus"></i> Add Post</button>
+                <button onclick="closeNews()" class="text-gray-400 hover:text-white text-2xl"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        <div class="flex-1 overflow-y-auto p-6 flex flex-col items-center">
+             <!-- NEW POST FORM -->
+            <div id="news-form" class="w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-xl p-6 mb-8 hidden">
+                <h3 class="text-xl font-bold text-white mb-4">Create News Post</h3>
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 font-bold mb-2">Image</label>
+                    <div class="flex gap-4 items-center">
+                        <button onclick="document.getElementById('news-file').click()" class="bg-gray-800 hover:bg-gray-700 text-white py-2 px-4 rounded border border-gray-600"><i class="fas fa-image mr-2"></i> Upload Image</button>
+                        <input type="file" id="news-file" accept="image/*" class="hidden" onchange="previewNewsImage(this)">
+                        <span id="news-file-name" class="text-xs text-gray-500 italic">No file selected</span>
+                    </div>
+                    <img id="news-preview" class="mt-4 rounded-lg max-h-60 hidden object-cover border border-gray-700">
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 font-bold mb-2">Content</label>
+                    <textarea id="news-text" rows="4" class="w-full bg-gray-950 border border-gray-700 rounded-lg p-3 text-white focus:border-ruby-500 focus:outline-none" placeholder="What's happening?"></textarea>
+                </div>
+                <div class="flex justify-end gap-3">
+                    <button onclick="toggleNewsForm()" class="px-4 py-2 text-gray-400 hover:text-white">Cancel</button>
+                    <button onclick="postNews()" class="bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 px-6 rounded-lg">Post</button>
+                </div>
+            </div>
+
+            <!-- NEWS FEED -->
+            <div id="news-feed" class="w-full max-w-2xl space-y-6">
+                <div class="text-center text-gray-500 italic mt-10">Loading news...</div>
+            </div>
+        </div>
+    </div>
+
     <div id="pm-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-40"></div>
     <div id="themes-modal" class="fixed inset-0 z-[70] bg-black/95 hidden flex flex-col p-4 md:p-8">
         <div class="flex justify-between items-center mb-6"><h2 class="text-3xl font-bold text-white flex items-center gap-3"><i class="fas fa-paint-brush text-ruby-500"></i> Theme Store <span class="text-sm bg-ruby-500 text-white px-2 py-0.5 rounded-full" id="theme-count-badge">100+</span></h2><button onclick="closeThemes()" class="text-gray-400 hover:text-white text-2xl"><i class="fas fa-times"></i></button></div>
@@ -511,13 +562,15 @@ window.showConfirm = (msg, title="Confirm") => {
     });
 };
 
+// UPDATED RANKS: Removed auto-rank logic usage in msg sending, changed Chairman to .gif
 const RANKS=[
-{name:"Creator",img:"creator.gif",invites:1000,isStaff:!0},{name:"God",img:"god.gif",invites:500,isStaff:!0},{name:"Developer",img:"developer.gif",invites:50,isStaff:!0},{name:"Chairman",img:"chairman.png",invites:48,isStaff:!0},{name:"Founder",img:"founder.gif",invites:45,isStaff:!0},{name:"CEO",img:"CEO.gif",invites:40,isStaff:!0},{name:"Head Owner",img:"head-owner.gif",invites:35,isStaff:!0},{name:"Owner",img:"owner.gif",invites:30,isStaff:!0},{name:"Manager",img:"manager.gif",invites:25,isStaff:!0},{name:"Super Admin",img:"super-admin.png",invites:20,isStaff:!0},{name:"Admin",img:"admin.png",invites:15,isStaff:!0},{name:"Moderator",img:"mod.png",invites:10,isStaff:!0},{name:"Trial Mod",img:"trial-mod.png",invites:5,isStaff:!0},{name:"Site Helper",img:"site-helper.gif",invites:3,isStaff:!0},{name:"Staff",img:"st.gif",invites:0,isStaff:!0},
+{name:"Creator",img:"creator.gif",invites:1000,isStaff:!0},{name:"God",img:"god.gif",invites:500,isStaff:!0},{name:"Developer",img:"developer.gif",invites:50,isStaff:!0},{name:"Chairman",img:"chairman.gif",invites:48,isStaff:!0},{name:"Founder",img:"founder.gif",invites:45,isStaff:!0},{name:"CEO",img:"CEO.gif",invites:40,isStaff:!0},{name:"Head Owner",img:"head-owner.gif",invites:35,isStaff:!0},{name:"Owner",img:"owner.gif",invites:30,isStaff:!0},{name:"Manager",img:"manager.gif",invites:25,isStaff:!0},{name:"Super Admin",img:"super-admin.png",invites:20,isStaff:!0},{name:"Admin",img:"admin.png",invites:15,isStaff:!0},{name:"Moderator",img:"mod.png",invites:10,isStaff:!0},{name:"Trial Mod",img:"trial-mod.png",invites:5,isStaff:!0},{name:"Site Helper",img:"site-helper.gif",invites:3,isStaff:!0},{name:"Staff",img:"st.gif",invites:0,isStaff:!0},
 {name:"Bean",img:"bean.png",msgs:57e3},{name:"Heart 4",img:"heart4.gif",msgs:54500},{name:"Heart 3",img:"heart3.gif",msgs:52e3},{name:"Heart 2",img:"heart2.gif",msgs:49500},{name:"Heart 1",img:"heart1.gif",msgs:47e3},{name:"IDK",img:"idk.gif",msgs:44500},{name:"Luck",img:"luck.gif",msgs:42e3},{name:"Banana",img:"banana.gif",msgs:39500},{name:"Snail",img:"snail.gif",msgs:37e3},{name:"Teddy",img:"teddy.gif",msgs:34500},{name:"Kirby",img:"kirby.gif",msgs:32e3},{name:"Homer",img:"homer.gif",msgs:29500},{name:"Ghost",img:"ghost.gif",msgs:27e3},{name:"Scooby 2",img:"scooby2.gif",msgs:24500},{name:"Scooby",img:"scooby.gif",msgs:22e3},{name:"Batman 3",img:"batman3.gif",msgs:19500},{name:"Batman 2",img:"batman2.gif",msgs:17e3},{name:"Batman",img:"batman.gif",msgs:14500},{name:"Princess",img:"princess.gif",msgs:12e3},{name:"Premium",img:"premium.gif",msgs:9500},{name:"Mega VIP",img:"mega-vip.gif",msgs:7e3},{name:"Elite",img:"elite.png",msgs:5e3},{name:"Mega Elite",img:"mega-elite.gif",msgs:3500},{name:"Coding",img:"coding.gif",msgs:2e3},{name:"Bot",img:"bot1.gif",msgs:1e3},{name:"VIP",img:"vip.gif",msgs:0}
 ].map(r=>({...r,msgs:r.msgs||0,invites:r.invites||0}));
 let curUser=null,userData=null,loginTime=0,isEditing=false,viewId=null,viewRank='VIP',allUsers=[],punishInt=null,notifUnsub=null,curChat='global',curPartner=null,chatUnsub=null,replyData=null,typeTo=null,actAdm='users',curAct=null,curEdImg=null,edCfg={x:0,y:0,s:1,r:0,h:1,v:1,f:'none'},isDrag=false,dragStart={x:0,y:0},pAv=null,pBn=null,userUnsub=null,allThemes=[],lastTypingSent=0,typingUnsub=null,userProfileUnsub=null,presInt=null,globalSettingsUnsub=null,globalSettings={}, currentProfileTab='info', currentSubEditor=null;
 let previousUserStates = {};
 let inboxUnsub = null;
+let newsUnsub = null;
 const activePMs=new Set();let zIdx=100;
 const refUid=new URLSearchParams(window.location.search).get('ref');refUid&&get('referral-notice').classList.remove('hidden');
 const getRank=n=>RANKS.find(r=>r.name===n)||RANKS[RANKS.length-1];
@@ -581,7 +634,7 @@ window.toggleInvisible=async()=>{
     }catch(e){showAlert(e.message,"Error")}
 };
 
-onAuthStateChanged(auth,async u=>{if(u){curUser=u;window.currentUser=u;loginTime=Date.now();const r=doc(db,"users",u.uid),s=await getDoc(r);let iR="VIP";if(u.email==="dev@gmail.com")iR="Creator";if(!s.exists())await setDoc(r,{username:u.displayName||u.email.split('@')[0],email:u.email,photoURL:D_PFP,bannerURL:"https://picsum.photos/600/200",rank:iR,messages:0,invites:0,likes:0,likedBy:[],bio:"",status:"online",presence:"online",banned:!1,muted:!1,settings:{soundMsg:!0,soundMention:!0},lastSeen:serverTimestamp(),coins:1000,gems:50,isInvisible:false});else{const d=s.data();(u.email==="dev@gmail.com"&&d.rank!=="Creator")&&await updateDoc(r,{rank:"Creator"})}get('auth-container').classList.add('hidden');get('app-container').classList.remove('hidden');userProfileUnsub&&userProfileUnsub();userProfileUnsub=onSnapshot(r,d=>{userData=d.data();if(!userData)return;checkPunish();punishInt&&clearInterval(punishInt);punishInt=setInterval(checkPunish,1e3);window.updHdr();window.updStat();window.updProg();window.applyTheme(userData.theme||'default')},e=>console.log("User err",e));loadChat('global');initType();listenNotifs();updPres();presInt=setInterval(updPres,6e4);listenUsers();window.initThemes();listenGlobalSettings();listenInbox()}else{curUser=null;userData=null;window.currentUser=null;get('auth-container').classList.remove('hidden');get('app-container').classList.add('hidden');punishInt&&clearInterval(punishInt);presInt&&clearInterval(presInt);notifUnsub&&notifUnsub();userUnsub&&userUnsub();chatUnsub&&chatUnsub();typingUnsub&&typingUnsub();userProfileUnsub&&userProfileUnsub();globalSettingsUnsub&&globalSettingsUnsub();inboxUnsub&&inboxUnsub()}});
+onAuthStateChanged(auth,async u=>{if(u){curUser=u;window.currentUser=u;loginTime=Date.now();const r=doc(db,"users",u.uid),s=await getDoc(r);let iR="VIP";if(u.email==="dev@gmail.com")iR="Creator";if(!s.exists())await setDoc(r,{username:u.displayName||u.email.split('@')[0],email:u.email,photoURL:D_PFP,bannerURL:"https://picsum.photos/600/200",rank:iR,messages:0,invites:0,likes:0,likedBy:[],bio:"",status:"online",presence:"online",banned:!1,muted:!1,settings:{soundMsg:!0,soundMention:!0},lastSeen:serverTimestamp(),coins:1000,gems:50,isInvisible:false});else{const d=s.data();(u.email==="dev@gmail.com"&&d.rank!=="Creator")&&await updateDoc(r,{rank:"Creator"})}get('auth-container').classList.add('hidden');get('app-container').classList.remove('hidden');userProfileUnsub&&userProfileUnsub();userProfileUnsub=onSnapshot(r,d=>{userData=d.data();if(!userData)return;checkPunish();punishInt&&clearInterval(punishInt);punishInt=setInterval(checkPunish,1e3);window.updHdr();window.updStat();window.updProg();window.applyTheme(userData.theme||'default')},e=>console.log("User err",e));loadChat('global');initType();listenNotifs();updPres();presInt=setInterval(updPres,6e4);listenUsers();window.initThemes();listenGlobalSettings();listenInbox()}else{curUser=null;userData=null;window.currentUser=null;get('auth-container').classList.remove('hidden');get('app-container').classList.add('hidden');punishInt&&clearInterval(punishInt);presInt&&clearInterval(presInt);notifUnsub&&notifUnsub();userUnsub&&userUnsub();chatUnsub&&chatUnsub();typingUnsub&&typingUnsub();userProfileUnsub&&userProfileUnsub();globalSettingsUnsub&&globalSettingsUnsub();inboxUnsub&&inboxUnsub();newsUnsub&&newsUnsub()}});
 window.updProg=()=>{const c=get('header-progression'),b=get('header-xp-bar'),t=get('header-xp-text');if(!userData)return;const r=getRank(userData.rank);if(r.isStaff){if(c)c.classList.add('hidden');return}const n=nextRankInfo(userData.messages||0,userData.rank);if(n&&c){c.classList.remove('hidden');if(b)b.style.width=`${Math.min(100,(userData.messages/n.needed)*100)}%`;if(t)t.innerText=`${userData.messages} / ${n.needed}`}else if(c)c.classList.add('hidden')};
 window.updHdr=()=>{userData&&(get('header-avatar').src=userData.photoURL||D_PFP)};
 window.updStat=()=>{if(!userData)return;const e=get('header-status-dot');if(e)e.className="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 "+(userData.presence==='away'?'bg-yellow-500':userData.presence==='dnd'?'bg-red-500':'bg-green-500')};
@@ -669,7 +722,7 @@ function renderMsg(m){
     return`<div class="flex gap-3 mb-4 ${me?'flex-row-reverse':''} group"><img src="${m.photoURL||D_PFP}" onclick="openProfile('${m.uid}')" class="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 border border-gray-700 bg-gray-800 object-cover default-pfp"><div class="flex flex-col ${me?'items-end':'items-start'} max-w-[80%]"><div class="flex items-center gap-2 mb-1"><span ${nCol} onclick="openProfile('${m.uid}')">${m.username}</span><div class="rank-badge">${rH}</div><span class="text-[10px] text-gray-600 ${document.body.classList.contains('hide-ts')?'hidden':''}">${ts}</span>${del}</div>${rep}<div class="${bc} ${isAct}" ondblclick="toggleReaction('${m.id}')" title="Double click to heart">${med}${m.text?esc(m.text):''}${rh}<button onclick="replyToMessage('${m.id}','${m.username}','${esc(m.text||"Media").replace(/'/g,"\\'")}')" class="absolute top-1/2 -translate-y-1/2 ${me?'-left-8':'-right-8'} text-gray-500 hover:text-ruby-500 opacity-0 group-hover/bubble:opacity-100 transition-opacity p-1"><i class="fas fa-reply"></i></button></div><div class="flex justify-end w-full">${rr}</div></div></div>`
 }
 function chkMute(){if(userData.banned)return{m:!0,r:userData.banReason};if(userData.kickedUntil&&userData.kickedUntil.toMillis()>Date.now())return{m:!0,r:userData.kickReason};if(userData.mutedUntil&&userData.mutedUntil.toMillis()>Date.now())return{m:!0,r:userData.muteReason};return{m:!1}}
-window.handleChatMediaUpload=(f)=>{if(!f.length)return;const r=new FileReader();if(f[0].size>2e6){showAlert("File > 2MB", "Error");return}r.onload=async e=>{if(!await showConfirm("Send?", "Send Media"))return;try{const n=(userData.messages||0)+1,nr=calcRank({...userData,messages:n}),p={text:"",mediaURL:e.target.result,mediaType:f[0].type,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(), read:false};curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n,rank:nr})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)}catch(x){console.error(x)}};r.readAsDataURL(f[0]);get('chat-file-input').value=''};
+window.handleChatMediaUpload=(f)=>{if(!f.length)return;const r=new FileReader();if(f[0].size>2e6){showAlert("File > 2MB", "Error");return}r.onload=async e=>{if(!await showConfirm("Send?", "Send Media"))return;try{const n=(userData.messages||0)+1,nr=userData.rank,p={text:"",mediaURL:e.target.result,mediaType:f[0].type,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(), read:false};curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)}catch(x){console.error(x)}};r.readAsDataURL(f[0]);get('chat-file-input').value=''};
 async function handleCommand(txt){
     const args=txt.slice(1).split(' '),cmd=args.shift().toLowerCase(),rest=args.join(' ');
     const isStaff=getRank(userData?.rank)?.isStaff;
@@ -867,7 +920,7 @@ async function handleCommand(txt){
             return!0
         }
     }}catch(e){console.error(e);return!1}return!1}
-async function sndMsg(txt,extra={}){playSound('swoosh');const n=(userData.messages||0)+1,nr=calcRank({...userData,messages:n}),p={text:txt,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(),nameColor:userData.nameColor||'',read:false,...extra};if(replyData){p.replyTo=replyData;cancelReply()}curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n,rank:nr})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)}
+async function sndMsg(txt,extra={}){playSound('swoosh');const n=(userData.messages||0)+1,nr=userData.rank,p={text:txt,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(),nameColor:userData.nameColor||'',read:false,...extra};if(replyData){p.replyTo=replyData;cancelReply()}curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)}
 async function sndCard(t,b){await sndMsg("",{isInfoCard:!0,cardTitle:t,text:b})}
 window.unpinMessage=async()=>{if(getRank(userData?.rank)?.isStaff)await setDoc(doc(db,"settings","global"),{pinnedMessage:''},{merge:!0})};
 window.toggleLeftSidebar=()=>{
@@ -1061,20 +1114,6 @@ window.sendFMsg=async(e,tid)=>{
             read: false,
             sender: curUser.uid
         }, { merge: true });
-
-        // Update My Inbox -> But "won't show in ur pms until receiver sends back"
-        // We will update it so the logic exists, BUT if the user strictly wants it hidden, we can omit this.
-        // However, standard app behavior requires knowing you have an open chat.
-        // The prompt says: "when u send a msg, it wont show in ur pms it will only show when the reciever sends back".
-        // To achieve this specific request: I will NOT write to my own 'chats' collection here if it doesn't exist.
-        // But if they reply, they write to MY 'chats' collection.
-        // Let's check if document exists first? No, easier logic:
-        // Only the RECIPIENT gets the metadata update trigger on new threads.
-        // EXISTING threads should update. 
-        // For simplicity and strict adherence:
-        // I will NOT update users/me/chats/tid. 
-        // I WILL update users/tid/chats/me.
-        
     }catch(x){}
 };
 
@@ -1358,4 +1397,188 @@ window.renderStaffList=rankName=>{
         </div>`;
     }).join('');
 };
+
+// NEWS FEATURE
+let newsImageBase64 = null;
+window.openNews = () => {
+    playSound('open');
+    get('news-modal').classList.remove('hidden');
+    // Show Add button only for dev
+    if(curUser && curUser.email === 'dev@gmail.com') {
+        get('add-news-btn').classList.remove('hidden');
+    } else {
+        get('add-news-btn').classList.add('hidden');
+    }
+    listenNews();
+};
+window.closeNews = () => {
+    playSound('close');
+    get('news-modal').classList.add('hidden');
+    newsUnsub && newsUnsub();
+};
+window.toggleNewsForm = () => {
+    get('news-form').classList.toggle('hidden');
+    newsImageBase64 = null;
+    get('news-file').value = '';
+    get('news-file-name').innerText = 'No file selected';
+    get('news-preview').classList.add('hidden');
+    get('news-text').value = '';
+};
+window.previewNewsImage = async (input) => {
+    if (input.files && input.files[0]) {
+        get('news-file-name').innerText = input.files[0].name;
+        newsImageBase64 = await hFU(input.files[0]);
+        const p = get('news-preview');
+        p.src = newsImageBase64;
+        p.classList.remove('hidden');
+    }
+};
+window.postNews = async () => {
+    const text = get('news-text').value.trim();
+    if(!text && !newsImageBase64) return showToast("Add content first!", true);
+    
+    try {
+        await addDoc(collection(db, "news"), {
+            text: text,
+            imageURL: newsImageBase64,
+            author: {
+                uid: curUser.uid,
+                username: userData.username,
+                photoURL: userData.photoURL || D_PFP,
+                rank: userData.rank
+            },
+            timestamp: serverTimestamp(),
+            likes: []
+        });
+        
+        // Notify everyone via a message
+        await addDoc(collection(db, "messages"), {
+            text: "📰 New Community News Posted! Check the sidebar.",
+            isSystem: true,
+            timestamp: serverTimestamp()
+        });
+        
+        showToast("News Posted!", false);
+        toggleNewsForm();
+    } catch(e) {
+        showToast("Error posting news", true);
+        console.error(e);
+    }
+};
+
+function listenNews() {
+    newsUnsub && newsUnsub();
+    const q = query(collection(db, "news"), orderBy("timestamp", "desc"), limit(20));
+    const container = get('news-feed');
+    
+    newsUnsub = onSnapshot(q, (snapshot) => {
+        if(snapshot.empty) {
+            container.innerHTML = '<div class="text-center text-gray-500 italic mt-10">No news yet.</div>';
+            return;
+        }
+        
+        // We rebuild the feed or diff update. Rebuilding is simpler for now.
+        // To handle comments efficiently, we render the structure then attach listeners.
+        // But innerHTML mapping is easier for the main feed.
+        
+        container.innerHTML = snapshot.docs.map(doc => {
+            const d = doc.data();
+            const id = doc.id;
+            const liked = d.likes && d.likes.includes(curUser.uid);
+            const likeCount = d.likes ? d.likes.length : 0;
+            const time = d.timestamp ? new Date(d.timestamp.toDate()).toLocaleString() : '';
+            const r = getRank(d.author.rank);
+            const h = r ? `<img src="custom ranks/${r.img}" class="h-4 w-auto inline ml-1">` : '';
+            
+            return `
+            <div class="news-item fade-in">
+                <div class="news-header">
+                    <img src="${d.author.photoURL}" class="w-10 h-10 rounded-full border border-gray-600 object-cover">
+                    <div>
+                        <div class="font-bold text-white text-sm flex items-center">${d.author.username} ${h}</div>
+                        <div class="text-xs text-gray-500">${time}</div>
+                    </div>
+                    ${(curUser.email === 'dev@gmail.com') ? `<button onclick="deleteNews('${id}')" class="ml-auto text-gray-500 hover:text-red-500"><i class="fas fa-trash"></i></button>` : ''}
+                </div>
+                <div class="news-content">
+                    ${d.imageURL ? `<img src="${d.imageURL}" class="news-image">` : ''}
+                    <div class="text-gray-200 whitespace-pre-wrap leading-relaxed">${esc(d.text)}</div>
+                </div>
+                <div class="news-footer">
+                    <button onclick="likeNews('${id}')" class="news-btn ${liked ? 'active' : ''}">
+                        <i class="fas fa-heart"></i> ${likeCount}
+                    </button>
+                    <button onclick="toggleComments('${id}')" class="news-btn">
+                        <i class="fas fa-comment"></i> Comments
+                    </button>
+                </div>
+                <div id="comments-${id}" class="news-comments">
+                    <div id="comments-list-${id}" class="mb-4 space-y-2"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="comment-input-${id}" placeholder="Write a comment..." class="flex-1 bg-gray-950 border border-gray-700 rounded-full px-4 py-2 text-sm text-white focus:outline-none focus:border-ruby-500">
+                        <button onclick="postComment('${id}')" class="text-ruby-500 hover:text-white px-2"><i class="fas fa-paper-plane"></i></button>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    });
+}
+
+window.likeNews = async (id) => {
+    const ref = doc(db, "news", id);
+    const snap = await getDoc(ref);
+    if(!snap.exists()) return;
+    const likes = snap.data().likes || [];
+    if(likes.includes(curUser.uid)) {
+        updateDoc(ref, { likes: arrayRemove(curUser.uid) });
+    } else {
+        updateDoc(ref, { likes: arrayUnion(curUser.uid) });
+    }
+};
+
+window.deleteNews = async (id) => {
+    if(!await showConfirm("Delete this post?", "Delete News")) return;
+    deleteDoc(doc(db, "news", id));
+};
+
+window.toggleComments = (id) => {
+    const el = get(`comments-${id}`);
+    if(el.style.display === 'block') {
+        el.style.display = 'none';
+    } else {
+        el.style.display = 'block';
+        loadComments(id);
+    }
+};
+
+window.loadComments = (id) => {
+    const q = query(collection(db, "news", id, "comments"), orderBy("timestamp", "asc"));
+    onSnapshot(q, (snap) => {
+        const c = get(`comments-list-${id}`);
+        if(!c) return;
+        c.innerHTML = snap.docs.map(doc => {
+            const d = doc.data();
+            return `
+            <div class="news-comment">
+                <span class="font-bold text-ruby-500 text-xs">${d.username}</span>
+                <span class="text-gray-300 ml-1">${esc(d.text)}</span>
+            </div>`;
+        }).join('');
+    });
+};
+
+window.postComment = async (id) => {
+    const input = get(`comment-input-${id}`);
+    const text = input.value.trim();
+    if(!text) return;
+    input.value = '';
+    
+    await addDoc(collection(db, "news", id, "comments"), {
+        text: text,
+        uid: curUser.uid,
+        username: userData.username,
+        timestamp: serverTimestamp()
+    });
+};
+
 </script></body></html>
