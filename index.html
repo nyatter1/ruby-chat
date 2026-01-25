@@ -21,7 +21,8 @@
         .pm-bubble-me{background:linear-gradient(135deg,var(--acc-500) 0,var(--acc-600) 100%);color:#fff;border-radius:18px 18px 0 18px;padding:8px 14px;font-size:.9rem;box-shadow:0 2px 4px #0003;position:relative}
         .pm-bubble-them{background-color:var(--bg-850);color:#e5e7eb;border-radius:18px 18px 18px 0;padding:8px 14px;font-size:.9rem;box-shadow:0 2px 4px #0003;position:relative}
         .resize-handle{position:absolute;bottom:0;right:0;width:15px;height:15px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,#6b7280 50%);z-index:51}
-        .dropdown-enter{animation:fadeIn .1s ease-out forwards}@keyframes fadeIn{from{opacity:0;transform:scale(.95)}to{opacity:1;transform:scale(1)}}
+        .dropdown-enter{animation:fadeIn .1s ease-out forwards}
+        @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         #editor-canvas{background-color:#000;cursor:move;border-radius:8px;box-shadow:0 0 20px #0008}
         .filter-btn{width:50px;height:50px;border-radius:50%;border:2px solid transparent;background-size:cover;background-position:center;cursor:pointer;transition:transform .2s;border-color:.2s}.filter-btn.active,.filter-btn:hover{transform:scale(1.1);border-color:var(--acc-500)}
         .chat-media-img{max-width:100%;max-height:300px;border-radius:12px;cursor:pointer;transition:transform .2s}.chat-media-img:hover{transform:scale(1.02)}.chat-media-video{max-width:100%;max-height:300px;border-radius:12px}
@@ -48,7 +49,7 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             position: relative;
             overflow: hidden;
-            animation: fadeIn 0.5s ease-out;
+            animation: fadeIn 0.5s ease-out backwards;
         }
         .info-card::before {
             content: '';
@@ -78,6 +79,9 @@
             letter-spacing: 1px;
         }
         .info-content { color: #d1d5db; font-size: 0.9rem; line-height: 1.6; }
+        .info-content div { margin-bottom: 4px; }
+        .win-text { color: #4ade80; font-weight: bold; text-shadow: 0 0 10px rgba(74,222,128,0.3); }
+        .loss-text { color: #f87171; font-weight: bold; }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -136,14 +140,14 @@
                 </button>
             </div>
             <div class="p-4 text-xs text-gray-600 text-center sidebar-text">
-                RubyChat v2.2
+                RubyChat v2.3
             </div>
         </div>
 
         <div class="flex-1 flex flex-col h-full relative z-0 min-w-0">
             <header class="h-16 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 shrink-0 relative z-30">
                 <div class="flex items-center gap-3">
-                    <button class="text-gray-400 hover:text-white" onclick="toggleLeftSidebar()"><i class="fas fa-bars text-xl"></i></button>
+                    <button class="text-gray-400 hover:text-white" onclick="toggleLeftSidebar()"><i class="fas fa-bars text-xl" id="left-toggle-icon"></i></button>
                     <div class="flex items-center gap-2" id="header-title-container"><h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1></div>
                 </div>
                 <div class="flex items-center gap-6">
@@ -222,7 +226,7 @@
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";import{getAnalytics}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js";import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";import{getFirestore,collection,doc,addDoc,getDoc,getDocs,updateDoc,deleteDoc,onSnapshot,query,where,orderBy,limit,serverTimestamp,increment,arrayUnion,arrayRemove,setDoc}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 const config={apiKey:"AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",authDomain:"cartoony-chat.firebaseapp.com",databaseURL:"https://cartoony-chat-default-rtdb.europe-west1.firebasedatabase.app",projectId:"cartoony-chat",storageBucket:"cartoony-chat.firebasestorage.app",messagingSenderId:"827018960215",appId:"1:827018960215:web:0e0c2436c9c4e1dceb7212",measurementId:"G-HF16NJSQ16"};
 const app=initializeApp(config),analytics=getAnalytics(app),auth=getAuth(app),db=getFirestore(app);
-const get=id=>document.getElementById(id),on=(el,ev,fn)=>el.addEventListener(ev,fn);
+const get=id=>document.getElementById(id),on=(el,ev,fn)=>{if(el)el.addEventListener(ev,fn);else console.warn("Missing el for event",ev)};
 const D_PFP="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%239ca3af' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>";
 const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
 function playTone(f,t,d){if(audioCtx.state==='suspended')audioCtx.resume();const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=t;o.frequency.setValueAtTime(f,audioCtx.currentTime);g.gain.setValueAtTime(.1,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(.00001,audioCtx.currentTime+d);o.connect(g);g.connect(audioCtx.destination);o.start();o.stop(audioCtx.currentTime+d)}
@@ -270,7 +274,6 @@ function renderMsg(m){
     if(JSON.parse(ig).includes(m.uid)) return '';
     if(m.privateTo&&m.privateTo!==curUser.uid)return'';
 
-    // RENDER INFO CARD (Center Message)
     if(m.isInfoCard) {
         const p = m.photoURL || D_PFP;
         const u = m.username || 'System';
@@ -323,18 +326,10 @@ async function handleCommand(txt){
             return!0;
         case 'clear':get('chat-feed').innerHTML='';show("Chat cleared locally");return!0;
         case 'bank':
-            await sndMsg("", {
-                isInfoCard: true,
-                cardTitle: "-=- WALLET -=-",
-                text: `🪙 ${(userData.coins||0).toLocaleString()} Gold\n💎 ${(userData.gems||0).toLocaleString()} Gems`
-            });
+            await sndCard("-=- WALLET -=-", `🪙 ${(userData.coins||0).toLocaleString()} Gold\n💎 ${(userData.gems||0).toLocaleString()} Gems`);
             return!0;
         case 'stats':
-            await sndMsg("", {
-                isInfoCard: true,
-                cardTitle: "-=- STATS -=-",
-                text: `Rank: ${userData.rank}\nMessages: ${userData.messages||0}\nInvites: ${userData.invites||0}\nLikes: ${userData.likes||0}`
-            });
+            await sndCard("-=- STATS -=-", `Rank: ${userData.rank}\nMessages: ${userData.messages||0}\nInvites: ${userData.invites||0}\nLikes: ${userData.likes||0}`);
             return!0;
         case 'pay':{
             const u=findUid(args[0]),am=parseInt(args[1]),c=args[2]?.toLowerCase();
@@ -348,38 +343,44 @@ async function handleCommand(txt){
                 await updateDoc(doc(db,"users",curUser.uid),{gems:increment(-am)});
                 await updateDoc(doc(db,"users",u),{gems:increment(am)});
             }
-            show(`Paid ${args[0]} ${am} ${c}`);await sndMsg(`💸 paid ${args[0]} ${am} ${c}`);return!0
+            sendNotif(u, `Received ${am} ${c} from ${userData.username}`);
+            await sndCard("-=- PAYMENT -=-", `💸 Paid ${args[0]}\n${am} ${c}`);
+            return!0
         }
         case 'convert':{
             const am=parseInt(args[0]),fr=args[1]?.toLowerCase();
             if(isNaN(am)||am<=0||!['gold','gems'].includes(fr)){show("Usage: /convert [amount] [gold/gems]",!0);return!0}
+            let msg="";
             if(fr==='gems'){
                 if((userData.gems||0)<am){show("Not enough gems",!0);return!0}
                 await updateDoc(doc(db,"users",curUser.uid),{gems:increment(-am),coins:increment(am*100)});
-                show(`Converted ${am} gems to ${am*100} gold`);
+                msg=`Converted ${am} Gems\nto ${am*100} Gold`;
             }else{
                 if((userData.coins||0)<am){show("Not enough gold",!0);return!0}
                 const g=Math.floor(am/100);
                 if(g<1){show("Need at least 100 gold",!0);return!0}
                 await updateDoc(doc(db,"users",curUser.uid),{coins:increment(-g*100),gems:increment(g)});
-                show(`Converted ${g*100} gold to ${g} gems`);
+                msg=`Converted ${g*100} Gold\nto ${g} Gems`;
             }
+            await sndCard("-=- EXCHANGE -=-", msg);
             return!0
         }
         case 'convertall':{
             const fr=args[0]?.toLowerCase();
             if(!['gold','gems'].includes(fr)){show("Usage: /convertall [gold/gems]",!0);return!0}
+            let msg="";
             if(fr==='gems'){
                 const am=userData.gems||0;
                 if(am<=0){show("No gems",!0);return!0}
                 await updateDoc(doc(db,"users",curUser.uid),{gems:0,coins:increment(am*100)});
-                show(`Converted all gems to ${am*100} gold`);
+                msg=`Converted ALL Gems (${am})\nto ${am*100} Gold`;
             }else{
                 const am=userData.coins||0,g=Math.floor(am/100);
                 if(g<1){show("Not enough gold (need 100+)",!0);return!0}
                 await updateDoc(doc(db,"users",curUser.uid),{coins:increment(-g*100),gems:increment(g)});
-                show(`Converted gold to ${g} gems`);
+                msg=`Converted ${g*100} Gold\nto ${g} Gems`;
             }
+            await sndCard("-=- EXCHANGE -=-", msg);
             return!0
         }
         case 'allin':{
@@ -388,16 +389,17 @@ async function handleCommand(txt){
             const bal=c==='gold'?userData.coins:userData.gems;
             if(!bal||bal<=0){show("You're broke!",!0);return!0}
             const r=Math.random()*100;
-            let m=0,txt="LOST everything 💀";
-            if(r>98)m=10,txt="JACKPOT! x10 🎰";
-            else if(r>90)m=5,txt="WON x5! 🔥";
-            else if(r>75)m=3,txt="WON x3! 🎉";
-            else if(r>55)m=2,txt="WON x2! 👍";
+            let m=0,txt="LOST everything 💀", cls="loss-text";
+            if(r>98){m=10;txt="JACKPOT! x10 🎰";cls="win-text"}
+            else if(r>90){m=5;txt="WON x5! 🔥";cls="win-text"}
+            else if(r>75){m=3;txt="WON x3! 🎉";cls="win-text"}
+            else if(r>55){m=2;txt="WON x2! 👍";cls="win-text"}
             
             const diff=Math.floor(bal*m)-bal;
             if(c==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(diff)});
             else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(diff)});
-            await sndMsg(`🎲 went ALL IN with ${bal} ${c} and ${txt}`);
+            
+            await sndCard("-=- ALL IN -=-", `Bet: ${bal} ${c}\n<span class="${cls}">${txt}</span>\n${diff>=0?'+':''}${diff} ${c}`);
             return!0
         }
         case 'slots':{
@@ -413,7 +415,8 @@ async function handleCommand(txt){
             const ch=w?bet*m-bet:-bet;
             if(c==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(ch)});
             else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(ch)});
-            await sndMsg(`🎰 | ${r1} ${r2} ${r3} | ${w?`WON x${m}! +${bet*m}`:'LOST'} ${c}`);
+            
+            await sndCard("-=- SLOTS -=-", `| ${r1} ${r2} ${r3} |\n<span class="${w?'win-text':'loss-text'}">${w?`WON x${m}!`:'LOST'}</span>\n${ch>=0?'+':''}${ch} ${c}`);
             return!0
         }
         case 'dice':{
@@ -425,7 +428,7 @@ async function handleCommand(txt){
             const ch=w?bet:-bet;
             if(c==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(ch)});
             else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(ch)});
-            await sndMsg(`🎲 rolled ${r}. ${w?`WON +${bet}`:'LOST'} ${c}`);
+            await sndCard("-=- DICE -=-", `Rolled: ${r}\n<span class="${w?'win-text':'loss-text'}">${w?'WIN':'LOSS'}</span>\n${ch>=0?'+':''}${ch} ${c}`);
             return!0
         }
         case 'coinflip':{
@@ -437,7 +440,7 @@ async function handleCommand(txt){
             const ch=w?bet:-bet;
             if(c==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(ch)});
             else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(ch)});
-            await sndMsg(`🪙 flipped ${res.toUpperCase()}. ${w?`WON +${bet}`:'LOST'} ${c}`);
+            await sndCard("-=- COINFLIP -=-", `Result: ${res.toUpperCase()}\n<span class="${w?'win-text':'loss-text'}">${w?'WIN':'LOSS'}</span>\n${ch>=0?'+':''}${ch} ${c}`);
             return!0
         }
         case 'roulette':{
@@ -451,7 +454,7 @@ async function handleCommand(txt){
             const change=w?bet*m-bet:-bet; 
             if(cur==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(change)});
             else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(change)});
-            await sndMsg(`🎡 landed ${n} (${col.toUpperCase()}). ${w?`WON +${bet*m}`:'LOST'} ${cur}`);
+            await sndCard("-=- ROULETTE -=-", `Landed: ${n} (${col.toUpperCase()})\n<span class="${w?'win-text':'loss-text'}">${w?'WIN':'LOSS'}</span>\n${change>=0?'+':''}${change} ${cur}`);
             return!0
         }
         case 'scratch':{
@@ -460,34 +463,33 @@ async function handleCommand(txt){
             const bal=c==='gold'?userData.coins:userData.gems;
             if((bal||0)<bet){show("Insufficient funds",!0);return!0}
             const r=Math.random();
-            let w=0, t="Try again";
-            if(r>0.9) {w=10; t="JACKPOT x10";}
-            else if(r>0.7) {w=2; t="Win x2";}
-            else if(r>0.4) {w=0.5; t="Back 50%";}
-            else {w=0; t="Loser";}
+            let w=0, t="Try again", cls="loss-text";
+            if(r>0.9) {w=10; t="JACKPOT x10"; cls="win-text";}
+            else if(r>0.7) {w=2; t="Win x2"; cls="win-text";}
+            else if(r>0.4) {w=0.5; t="Back 50%"; cls="text-yellow-500";}
+            else {w=0; t="Loser"; cls="loss-text";}
             const diff=Math.floor(bet*w)-bet;
             if(c==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(diff)});
             else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(diff)});
-            await sndMsg(`🎫 scratched: ${t} (${diff>=0?'+':''}${diff} ${c})`);
+            await sndCard("-=- SCRATCH -=-", `${t}\n<span class="${cls}">${diff>=0?'+':''}${diff} ${c}</span>`);
             return!0
         }
     }}catch(e){console.error(e);return!1}return!1}
 async function sndMsg(txt,extra={}){const n=(userData.messages||0)+1,nr=calcRank({...userData,messages:n}),p={text:txt,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(),nameColor:userData.nameColor||'',...extra};if(replyData){p.replyTo=replyData;cancelReply()}curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n,rank:nr})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)}
+async function sndCard(t,b){await sndMsg("",{isInfoCard:!0,cardTitle:t,text:b})}
 window.unpinMessage=async()=>{if(getRank(userData?.rank)?.isStaff)await setDoc(doc(db,"settings","global"),{pinnedMessage:''},{merge:!0})};
 window.toggleLeftSidebar=()=>{
     const s=get('left-sidebar');
     const i=get('left-toggle-icon');
-    if(window.innerWidth >= 768){ // Desktop collapse behavior
+    if(window.innerWidth >= 768){ 
         if(s.classList.contains('collapsed-sidebar')){
             s.classList.remove('collapsed-sidebar');
-            i.classList.remove('fa-chevron-right');
-            i.classList.add('fa-chevron-left');
+            if(i){i.classList.remove('fa-chevron-right');i.classList.add('fa-chevron-left');}
         } else {
             s.classList.add('collapsed-sidebar');
-            i.classList.remove('fa-chevron-left');
-            i.classList.add('fa-chevron-right');
+            if(i){i.classList.remove('fa-chevron-left');i.classList.add('fa-chevron-right');}
         }
-    } else { // Mobile hide/show behavior
+    } else {
         s.classList.toggle('-translate-x-full');
     }
 };
@@ -552,7 +554,7 @@ window.logoutUser=()=>signOut(auth).catch(e=>alert(e.message));
 window.initThemes=()=>{
     const bs=[{id:'default',n:'Ruby Dark',c:['#030712','#111827','#1f2937','#e0115f','#c20e50']},{id:'light',n:'Flashbang',c:['#f9fafb','#f3f4f6','#e5e7eb','#e0115f','#c20e50']},{id:'midnight',n:'Midnight',c:['#020617','#0f172a','#1e293b','#3b82f6','#2563eb']},{id:'forest',n:'Deep Forest',c:['#052e16','#064e3b','#065f46','#10b981','#059669']},{id:'hacker',n:'The Matrix',c:['#000000','#0d1117','#161b22','#22c55e','#16a34a']},{id:'candy',n:'Candy Floss',c:['#fdf2f8','#fce7f3','#fbcfe8','#db2777','#be185d']},{id:'royal',n:'Royal Guard',c:['#1e1b4b','#312e81','#3730a3','#c026d3','#a21caf']},{id:'coffee',n:'Espresso',c:['#271c19','#431407','#5d2e1e','#d97706','#b45309']},{id:'ocean',n:'Ocean Depth',c:['#082f49','#0c4a6e','#075985','#0ea5e9','#0284c7']},{id:'sunset',n:'Sunset',c:['#2e1065','#4c1d95','#5b21b6','#f97316','#ea580c']},{id:'dracula',n:'Vampire',c:['#282a36','#44475a','#6272a4','#ff79c6','#bd93f9']}];
     allThemes=[...bs];
-    for(let i=0;i<140;i++){const h=Math.floor((i*137.5)%360),l=i%2==0?10:95,s=i%2==0?90:10;allThemes.push({id:`gen_${i}`,n:`Hue ${h}° ${i%2==0?'Dark':'Light'}`,c:[`hsl(${h},${s}%,${i%2==0?5:98}%)`,`hsl(${h},${s}%,${i%2==0?10:95}%)`,`hsl(${h},${s}%,${i%2==0?15:90}%)`,`hsl(${(h+180)%360},80%,50%)`,`hsl(${(h+180)%360},80%,40%)`]})}
+    for(let i=0;i<190;i++){const h=Math.floor((i*137.5)%360),l=i%2==0?10:95,s=i%2==0?90:10;allThemes.push({id:`gen_${i}`,n:`Hue ${h}° ${i%2==0?'Dark':'Light'}`,c:[`hsl(${h},${s}%,${i%2==0?5:98}%)`,`hsl(${h},${s}%,${i%2==0?10:95}%)`,`hsl(${h},${s}%,${i%2==0?15:90}%)`,`hsl(${(h+180)%360},80%,50%)`,`hsl(${(h+180)%360},80%,40%)`]})}
     get('theme-count-badge').innerText=allThemes.length+"+";renderThemes(allThemes)};
 window.renderThemes=t=>{const g=get('themes-grid');g.innerHTML=t.map(x=>`<div onclick="selectTheme('${x.id}')" class="bg-gray-800 p-2 rounded-lg theme-card flex flex-col gap-2" title="${x.n}"><div class="theme-preview"><div class="theme-p-col" style="background:${x.c[0]}"></div><div class="theme-p-col" style="background:${x.c[1]}"></div><div class="theme-p-col" style="background:${x.c[3]}"></div></div><div class="text-[10px] text-center text-gray-400 font-bold truncate">${x.n}</div></div>`).join('')};
 window.openThemes=()=>{get('themes-modal').classList.remove('hidden');get('theme-search').focus()};
