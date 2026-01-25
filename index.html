@@ -32,6 +32,7 @@
         .maintenance-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;text-align:center}.hidden-msg{display:none!important}
         .msg-action{font-style:italic;color:#d1d5db;background:transparent!important;border:none!important;padding-left:0!important}
         #pinned-message-bar{background:linear-gradient(90deg,var(--bg-900),var(--bg-850));border-bottom:1px solid var(--acc-500);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:0.85rem;color:white;cursor:pointer}
+        input[type=range]{-webkit-appearance:none;width:100%;background:transparent}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;height:16px;width:16px;border-radius:50%;background:white;margin-top:-6px;cursor:pointer;box-shadow:0 0 5px #0005}input[type=range]::-webkit-slider-runnable-track{width:100%;height:4px;cursor:pointer;background:#4b5563;border-radius:2px}
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -146,22 +147,28 @@
         <div id="themes-grid" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 overflow-y-auto flex-1 pb-4"></div>
     </div>
     <div id="image-editor-modal" class="fixed inset-0 z-[60] bg-black/95 hidden flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-lg bg-gray-900 rounded-xl border border-gray-700 shadow-2xl p-4">
-            <h3 class="text-white font-bold mb-4 flex justify-between"><span>Edit Profile Picture</span><button onclick="closeEditor()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button></h3>
-            <div class="flex justify-center mb-4 overflow-hidden relative" style="height: 300px;"><canvas id="editor-canvas" width="300" height="300"></canvas><div class="absolute inset-0 pointer-events-none flex items-center justify-center"><div class="w-[300px] h-[300px] rounded-full border-2 border-ruby-500 opacity-50"></div></div></div>
-            <div class="space-y-4">
-                <div class="flex justify-between items-center bg-gray-800 p-2 rounded">
-                    <span class="text-xs text-gray-400 uppercase font-bold">Transform</span>
-                    <div class="flex gap-2"><button onclick="editorRotate()" class="p-2 bg-gray-700 hover:bg-gray-600 rounded text-white" title="Rotate 90deg"><i class="fas fa-undo"></i></button><button onclick="editorFlip('h')" class="p-2 bg-gray-700 hover:bg-gray-600 rounded text-white" title="Flip Horizontal"><i class="fas fa-arrows-alt-h"></i></button><button onclick="editorFlip('v')" class="p-2 bg-gray-700 hover:bg-gray-600 rounded text-white" title="Flip Vertical"><i class="fas fa-arrows-alt-v"></i></button></div>
+        <div class="w-full max-w-lg bg-gray-900 rounded-xl border border-gray-700 shadow-2xl p-6">
+            <h3 class="text-white font-bold mb-6 flex justify-between items-center text-lg"><span>Adjust & Transform</span><button onclick="closeEditor()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button></h3>
+            <div class="flex justify-center mb-6 overflow-hidden relative bg-black rounded-lg border border-gray-800" style="height: 350px;"><canvas id="editor-canvas" width="350" height="350"></canvas><div class="absolute inset-0 pointer-events-none flex items-center justify-center"><div class="w-[300px] h-[300px] rounded-full border-2 border-ruby-500 shadow-[0_0_20px_rgba(224,17,95,0.3)] opacity-70"></div><div class="w-2 h-2 bg-white rounded-full absolute"></div></div></div>
+            <div class="space-y-6">
+                <div class="bg-gray-800 p-4 rounded-xl flex items-center justify-between gap-4">
+                    <button onclick="editorRotate()" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors" title="Rotate"><i class="fas fa-undo"></i></button>
+                    <button onclick="editorFlip('h')" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors" title="Flip H"><i class="fas fa-arrows-alt-h"></i></button>
+                    <div class="flex-1 px-2 flex items-center gap-3"><i class="fas fa-search-minus text-gray-400 text-xs"></i><input type="range" id="editor-zoom" min="0.1" max="3" step="0.1" value="1" oninput="window.editorZoom(this.value)"><i class="fas fa-search-plus text-gray-400 text-xs"></i></div>
+                    <button onclick="editorFlip('v')" class="p-3 bg-gray-700 hover:bg-gray-600 rounded-lg text-white transition-colors" title="Flip V"><i class="fas fa-arrows-alt-v"></i></button>
                 </div>
-                <div class="bg-gray-800 p-2 rounded">
-                    <span class="text-xs text-gray-400 uppercase font-bold block mb-2">Effects</span>
-                    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
-                        <button onclick="editorFilter('none')" class="filter-btn active bg-gray-600 text-[10px] flex items-center justify-center text-white" title="Normal">None</button><button onclick="editorFilter('grayscale(1)')" class="filter-btn bg-gray-500" style="filter:grayscale(1);background-image:linear-gradient(45deg,#ff0000,#0000ff)" title="B&W"></button><button onclick="editorFilter('sepia(1)')" class="filter-btn bg-yellow-700" style="filter:sepia(1);background-image:linear-gradient(45deg,#ff0000,#0000ff)" title="Vintage"></button><button onclick="editorFilter('invert(1)')" class="filter-btn bg-white" style="filter:invert(1);background-image:linear-gradient(45deg,#ff0000,#0000ff)" title="Invert"></button><button onclick="editorFilter('contrast(1.5)')" class="filter-btn bg-gray-800" style="filter:contrast(1.5);background-image:linear-gradient(45deg,#ff0000,#0000ff)" title="Vivid"></button><button onclick="editorFilter('blur(2px)')" class="filter-btn bg-gray-400" style="filter:blur(2px);background-image:linear-gradient(45deg,#ff0000,#0000ff)" title="Blur"></button>
+                <div>
+                    <span class="text-xs text-gray-400 uppercase font-bold block mb-3 tracking-widest">Filters</span>
+                    <div class="flex gap-3 overflow-x-auto pb-2 scrollbar-thin">
+                        <button onclick="editorFilter('none')" class="filter-btn active bg-gray-700 text-[10px] text-white flex-shrink-0 flex items-center justify-center">Normal</button>
+                        <button onclick="editorFilter('grayscale(1)')" class="filter-btn bg-gray-500 flex-shrink-0" style="filter:grayscale(1);background:linear-gradient(45deg,#333,#999)"></button>
+                        <button onclick="editorFilter('sepia(1)')" class="filter-btn bg-yellow-700 flex-shrink-0" style="filter:sepia(1);background:linear-gradient(45deg,#5e4b35,#c2a683)"></button>
+                        <button onclick="editorFilter('invert(1)')" class="filter-btn bg-white flex-shrink-0" style="filter:invert(1);background:linear-gradient(45deg,#000,#fff)"></button>
+                        <button onclick="editorFilter('contrast(1.5)')" class="filter-btn bg-gray-800 flex-shrink-0" style="filter:contrast(1.5);background:linear-gradient(45deg,#222,#eee)"></button>
+                        <button onclick="editorFilter('brightness(1.2)')" class="filter-btn bg-gray-400 flex-shrink-0" style="filter:brightness(1.2);background:linear-gradient(45deg,#444,#bbb)"></button>
                     </div>
                 </div>
-                <div class="text-[10px] text-gray-500 text-center">Drag image to move</div>
-                <div class="flex gap-3 mt-4"><button onclick="saveEditor()" class="flex-1 bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 rounded transition-colors">Apply & Save</button><button onclick="closeEditor()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded transition-colors">Cancel</button></div>
+                <div class="flex gap-4 pt-2"><button onclick="closeEditor()" class="flex-1 bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition-colors">Cancel</button><button onclick="saveEditor()" class="flex-1 bg-gradient-to-r from-ruby-600 to-ruby-500 hover:from-ruby-500 hover:to-ruby-400 text-white font-bold py-3 rounded-xl transition-all shadow-lg shadow-ruby-500/20 flex items-center justify-center gap-2"><i class="fas fa-magic"></i> Apply & Save</button></div>
             </div>
         </div>
     </div>
@@ -264,7 +271,7 @@ function listenNotifs(){notifUnsub&&notifUnsub();const q=query(collection(db,"us
 function checkPunish(){if(!userData)return;const o=get('punishment-overlay'),t=get('punish-title'),m=get('punish-message'),tm=get('punish-timer'),n=Date.now();if(userData.banned){o.classList.remove('hidden');t.innerText="YOU HAVE BEEN BANNED";m.innerText=`Reason: ${userData.banReason||"Violation"}`;tm.classList.add('hidden');return}if(userData.kickedUntil){const u=userData.kickedUntil.toMillis();if(u>n){o.classList.remove('hidden');t.innerText="YOU HAVE BEEN KICKED";m.innerText=`Reason: ${userData.kickReason||"Suspension"}`;tm.classList.remove('hidden');const d=u-n,days=Math.floor(d/864e5),hrs=Math.floor((d%864e5)/36e5),mins=Math.floor((d%36e5)/6e4),secs=Math.floor((d%6e4)/1e3);tm.innerText=`${days}d ${hrs}h ${mins}m ${secs}s`;return}else{updateDoc(doc(db,"users",curUser.uid),{kickedUntil:null,kickReason:null});showToast("You're back in.")}}if(userData.mutedUntil){const u=userData.mutedUntil.toMillis();if(n>u&&!window.isUnmuting){window.isUnmuting=!0;updateDoc(doc(db,"users",curUser.uid),{mutedUntil:null,muteReason:null}).then(()=>{addDoc(collection(db,"messages"),{text:"You are unmuted.",isSystem:!0,privateTo:curUser.uid,timestamp:serverTimestamp()});showToast("Unmuted.");window.isUnmuting=!1})}}o.classList.add('hidden')}
 function listenGlobalSettings(){globalSettingsUnsub&&globalSettingsUnsub();globalSettingsUnsub=onSnapshot(doc(db,"settings","global"),s=>{if(s.exists()){globalSettings=s.data();const mo=get('maintenance-overlay');if(globalSettings.maintenance&&!getRank(userData?.rank)?.isStaff)mo.classList.remove('hidden');else mo.classList.add('hidden');const pm=globalSettings.pinnedMessage;if(pm){get('pinned-message-bar').classList.remove('hidden');get('pinned-message-text').innerText=pm}else get('pinned-message-bar').classList.add('hidden');if(globalSettings.topic)get('header-title-container').title=globalSettings.topic}})}
 window.toggleAuthMode=()=>{get('login-form').classList.toggle('hidden');get('signup-form').classList.toggle('hidden')};
-onAuthStateChanged(auth,async u=>{if(u){curUser=u;window.currentUser=u;loginTime=Date.now();const r=doc(db,"users",u.uid),s=await getDoc(r);let iR="VIP";if(u.email==="dev@gmail.com")iR="Developer";if(!s.exists())await setDoc(r,{username:u.displayName||u.email.split('@')[0],email:u.email,photoURL:D_PFP,bannerURL:"https://picsum.photos/600/200",rank:iR,messages:0,invites:0,likes:0,likedBy:[],bio:"",status:"online",presence:"online",banned:!1,muted:!1,settings:{soundMsg:!0,soundMention:!0},lastSeen:serverTimestamp(),coins:1e4,gems:1e3});else{const d=s.data();(u.email==="dev@gmail.com"&&d.rank!=="Developer")&&await updateDoc(r,{rank:"Developer"})}get('auth-container').classList.add('hidden');get('app-container').classList.remove('hidden');userProfileUnsub&&userProfileUnsub();userProfileUnsub=onSnapshot(r,d=>{userData=d.data();if(!userData)return;checkPunish();punishInt&&clearInterval(punishInt);punishInt=setInterval(checkPunish,1e3);window.updHdr();window.updStat();window.updProg();applyTheme(userData.theme||'default')},e=>console.log("User err",e));loadChat('global');initType();listenNotifs();updPres();presInt=setInterval(updPres,6e4);listenUsers();initThemes();listenGlobalSettings()}else{curUser=null;userData=null;window.currentUser=null;get('auth-container').classList.remove('hidden');get('app-container').classList.add('hidden');punishInt&&clearInterval(punishInt);presInt&&clearInterval(presInt);notifUnsub&&notifUnsub();userUnsub&&userUnsub();chatUnsub&&chatUnsub();typingUnsub&&typingUnsub();userProfileUnsub&&userProfileUnsub();globalSettingsUnsub&&globalSettingsUnsub()}});
+onAuthStateChanged(auth,async u=>{if(u){curUser=u;window.currentUser=u;loginTime=Date.now();const r=doc(db,"users",u.uid),s=await getDoc(r);let iR="VIP";if(u.email==="dev@gmail.com")iR="Developer";if(!s.exists())await setDoc(r,{username:u.displayName||u.email.split('@')[0],email:u.email,photoURL:D_PFP,bannerURL:"https://picsum.photos/600/200",rank:iR,messages:0,invites:0,likes:0,likedBy:[],bio:"",status:"online",presence:"online",banned:!1,muted:!1,settings:{soundMsg:!0,soundMention:!0},lastSeen:serverTimestamp(),coins:1000,gems:50});else{const d=s.data();(u.email==="dev@gmail.com"&&d.rank!=="Developer")&&await updateDoc(r,{rank:"Developer"})}get('auth-container').classList.add('hidden');get('app-container').classList.remove('hidden');userProfileUnsub&&userProfileUnsub();userProfileUnsub=onSnapshot(r,d=>{userData=d.data();if(!userData)return;checkPunish();punishInt&&clearInterval(punishInt);punishInt=setInterval(checkPunish,1e3);window.updHdr();window.updStat();window.updProg();applyTheme(userData.theme||'default')},e=>console.log("User err",e));loadChat('global');initType();listenNotifs();updPres();presInt=setInterval(updPres,6e4);listenUsers();initThemes();listenGlobalSettings()}else{curUser=null;userData=null;window.currentUser=null;get('auth-container').classList.remove('hidden');get('app-container').classList.add('hidden');punishInt&&clearInterval(punishInt);presInt&&clearInterval(presInt);notifUnsub&&notifUnsub();userUnsub&&userUnsub();chatUnsub&&chatUnsub();typingUnsub&&typingUnsub();userProfileUnsub&&userProfileUnsub();globalSettingsUnsub&&globalSettingsUnsub()}});
 window.updProg=()=>{const c=get('header-progression'),b=get('header-xp-bar'),t=get('header-xp-text');if(!userData)return;const r=getRank(userData.rank);if(r.isStaff){c.classList.add('hidden');return}const n=nextRankInfo(userData.messages||0,userData.rank);if(n){c.classList.remove('hidden');b.style.width=`${Math.min(100,(userData.messages/n.needed)*100)}%`;t.innerText=`${userData.messages} / ${n.needed}`}else c.classList.add('hidden')};
 window.updHdr=()=>{userData&&(get('header-avatar').src=userData.photoURL||D_PFP)};
 window.updStat=()=>{if(!userData)return;const e=get('header-status-dot');e.className="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 "+(userData.presence==='away'?'bg-yellow-500':userData.presence==='dnd'?'bg-red-500':'bg-green-500')};
@@ -303,7 +310,7 @@ async function handleCommand(txt){
     const findUid=n=>{const u=allUsers.find(x=>x.username.toLowerCase()===n.toLowerCase());return u?u.uid:null};
     const show=m=>showToast(m);
     try{switch(cmd){
-        case 'help':show("Commands: /me, /nick, /list, /clear, /away, /back, /shrug, /roll, /flip, /calc, /report, /uptime...");return!0;
+        case 'help':show("Cmds: /me, /nick, /list, /clear, /roll, /bank, /allin, /slots, /pay, /convert...");return!0;
         case 'me':await sndMsg(rest, {isAction:!0});show("Action complete");return!0;
         case 'nick':await updateDoc(doc(db,"users",curUser.uid),{username:rest});show("Nickname changed");return!0;
         case 'whois':{const t=findUid(args[0]);if(t){openProfile(t);show("Profile opened")}else show("User not found",!0);return!0}
@@ -328,7 +335,147 @@ async function handleCommand(txt){
         case 'search':show("Search not implemented in client-only mode",!0);return!0;
         case 'font':show("Font changed locally");get('chat-feed').style.fontFamily=rest;return!0;
         case 'ping':show("Pong! Latency: <10ms");return!0;
-        case 'version':show("Ruby Chat v2.0 Optimized");return!0;
+        case 'version':show("Ruby Chat v2.1 Economy");return!0;
+        case 'bank':await sndMsg(`🏦 Wallet: 🪙 ${(userData.coins||0).toLocaleString()} Gold | 💎 ${(userData.gems||0).toLocaleString()} Gems`);return!0;
+        case 'pay':{
+            const u=findUid(args[0]),am=parseInt(args[1]),c=args[2]?.toLowerCase();
+            if(!u||isNaN(am)||am<=0||!['gold','gems'].includes(c)){show("Usage: /pay [user] [amount] [gold/gems]",!0);return!0}
+            if(c==='gold'){
+                if((userData.coins||0)<am){show("Insufficient Gold",!0);return!0}
+                await updateDoc(doc(db,"users",curUser.uid),{coins:increment(-am)});
+                await updateDoc(doc(db,"users",u),{coins:increment(am)});
+            }else{
+                if((userData.gems||0)<am){show("Insufficient Gems",!0);return!0}
+                await updateDoc(doc(db,"users",curUser.uid),{gems:increment(-am)});
+                await updateDoc(doc(db,"users",u),{gems:increment(am)});
+            }
+            show(`Paid ${args[0]} ${am} ${c}`);await sndMsg(`💸 paid ${args[0]} ${am} ${c}`);return!0
+        }
+        case 'convert':{
+            const am=parseInt(args[0]),fr=args[1]?.toLowerCase();
+            if(isNaN(am)||am<=0||!['gold','gems'].includes(fr)){show("Usage: /convert [amount] [gold/gems]",!0);return!0}
+            if(fr==='gems'){
+                if((userData.gems||0)<am){show("Not enough gems",!0);return!0}
+                await updateDoc(doc(db,"users",curUser.uid),{gems:increment(-am),coins:increment(am*100)});
+                show(`Converted ${am} gems to ${am*100} gold`);
+            }else{
+                if((userData.coins||0)<am){show("Not enough gold",!0);return!0}
+                const g=Math.floor(am/100);
+                if(g<1){show("Need at least 100 gold",!0);return!0}
+                await updateDoc(doc(db,"users",curUser.uid),{coins:increment(-g*100),gems:increment(g)});
+                show(`Converted ${g*100} gold to ${g} gems`);
+            }
+            return!0
+        }
+        case 'convertall':{
+            const fr=args[0]?.toLowerCase();
+            if(!['gold','gems'].includes(fr)){show("Usage: /convertall [gold/gems]",!0);return!0}
+            if(fr==='gems'){
+                const am=userData.gems||0;
+                if(am<=0){show("No gems",!0);return!0}
+                await updateDoc(doc(db,"users",curUser.uid),{gems:0,coins:increment(am*100)});
+                show(`Converted all gems to ${am*100} gold`);
+            }else{
+                const am=userData.coins||0,g=Math.floor(am/100);
+                if(g<1){show("Not enough gold (need 100+)",!0);return!0}
+                await updateDoc(doc(db,"users",curUser.uid),{coins:increment(-g*100),gems:increment(g)});
+                show(`Converted gold to ${g} gems`);
+            }
+            return!0
+        }
+        case 'allin':{
+            const c=args[0]?.toLowerCase();
+            if(!['gold','gems'].includes(c)){show("Usage: /allin [gold/gems]",!0);return!0}
+            const bal=c==='gold'?userData.coins:userData.gems;
+            if(!bal||bal<=0){show("You're broke!",!0);return!0}
+            const r=Math.random()*100;
+            let m=0,txt="LOST everything 💀";
+            if(r>98)m=10,txt="JACKPOT! x10 🎰";
+            else if(r>90)m=5,txt="WON x5! 🔥";
+            else if(r>75)m=3,txt="WON x3! 🎉";
+            else if(r>55)m=2,txt="WON x2! 👍";
+            
+            const diff=Math.floor(bal*m)-bal;
+            if(c==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(diff)});
+            else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(diff)});
+            await sndMsg(`🎲 went ALL IN with ${bal} ${c} and ${txt}`);
+            return!0
+        }
+        case 'slots':{
+            const bet=parseInt(args[0]),c=args[1]?.toLowerCase();
+            if(isNaN(bet)||bet<=0||!['gold','gems'].includes(c)){show("Usage: /slots [bet] [gold/gems]",!0);return!0}
+            const bal=c==='gold'?userData.coins:userData.gems;
+            if((bal||0)<bet){show("Insufficient funds",!0);return!0}
+            const em=['🍒','🍋','🍇','🍉','🔔','💎','7️⃣'], r1=em[Math.floor(Math.random()*em.length)], r2=em[Math.floor(Math.random()*em.length)], r3=em[Math.floor(Math.random()*em.length)];
+            let m=0, w=false;
+            if(r1===r2&&r2===r3){w=true; m=r1==='7️⃣'?50:10}
+            else if(r1===r2||r2===r3||r1===r3){w=true; m=2}
+            
+            const ch=w?bet*m-bet:-bet;
+            if(c==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(ch)});
+            else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(ch)});
+            await sndMsg(`🎰 | ${r1} ${r2} ${r3} | ${w?`WON x${m}! +${bet*m}`:'LOST'} ${c}`);
+            return!0
+        }
+        case 'dice':{
+            const bet=parseInt(args[0]),c=args[1]?.toLowerCase();
+            if(isNaN(bet)||bet<=0||!['gold','gems'].includes(c)){show("Usage: /dice [bet] [gold/gems]",!0);return!0}
+            const bal=c==='gold'?userData.coins:userData.gems;
+            if((bal||0)<bet){show("Insufficient funds",!0);return!0}
+            const r=Math.floor(Math.random()*100)+1, w=r>55;
+            const ch=w?bet:-bet;
+            if(c==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(ch)});
+            else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(ch)});
+            await sndMsg(`🎲 rolled ${r}. ${w?`WON +${bet}`:'LOST'} ${c}`);
+            return!0
+        }
+        case 'coinflip':{
+            const bet=parseInt(args[0]),p=args[1]?.toLowerCase(),c=args[2]?.toLowerCase();
+            if(isNaN(bet)||bet<=0||!['heads','tails'].includes(p)||!['gold','gems'].includes(c)){show("Usage: /coinflip [bet] [heads/tails] [gold/gems]",!0);return!0}
+            const bal=c==='gold'?userData.coins:userData.gems;
+            if((bal||0)<bet){show("Insufficient funds",!0);return!0}
+            const res=Math.random()>.5?'heads':'tails', w=res===p;
+            const ch=w?bet:-bet;
+            if(c==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(ch)});
+            else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(ch)});
+            await sndMsg(`🪙 flipped ${res.toUpperCase()}. ${w?`WON +${bet}`:'LOST'} ${c}`);
+            return!0
+        }
+        case 'roulette':{
+            const bet=parseInt(args[0]),ch=args[1]?.toLowerCase(),cur=args[2]?.toLowerCase();
+            if(isNaN(bet)||bet<=0||!['red','black','green'].includes(ch)||!['gold','gems'].includes(cur)){show("Usage: /roulette [bet] [red/black/green] [gold/gems]",!0);return!0}
+            const bal=cur==='gold'?userData.coins:userData.gems;
+            if((bal||0)<bet){show("Insufficient funds",!0);return!0}
+            const n=Math.floor(Math.random()*37); // 0-36
+            let col='black'; if(n===0)col='green'; else if([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(n))col='red';
+            let w=col===ch, m=ch==='green'?35:1;
+            const change=w?bet*m-bet:-bet; // if win on red (1:1), profit is bet. if win on green (35:1), profit is bet*35
+            // Actually standard roulette: Red/Black pays 1:1 (return bet + bet). Green pays 35:1. 
+            // My logic: if win red, I add 'bet'. If lose, sub 'bet'. Correct.
+            // If win green, I add 'bet*35'. Correct.
+            const pf=w?bet*m:-bet; // This var is confusing. Let's send raw diff.
+            if(cur==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(w?bet*m:-bet)});
+            else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(w?bet*m:-bet)});
+            await sndMsg(`🎡 landed ${n} (${col.toUpperCase()}). ${w?`WON +${bet*m}`:'LOST'} ${cur}`);
+            return!0
+        }
+        case 'scratch':{
+            const bet=parseInt(args[0]),c=args[1]?.toLowerCase();
+            if(isNaN(bet)||bet<=0||!['gold','gems'].includes(c)){show("Usage: /scratch [bet] [gold/gems]",!0);return!0}
+            const bal=c==='gold'?userData.coins:userData.gems;
+            if((bal||0)<bet){show("Insufficient funds",!0);return!0}
+            const r=Math.random();
+            let w=0, t="Try again";
+            if(r>0.9) {w=10; t="JACKPOT x10";}
+            else if(r>0.7) {w=2; t="Win x2";}
+            else if(r>0.4) {w=0.5; t="Back 50%";}
+            else {w=0; t="Loser";}
+            const diff=Math.floor(bet*w)-bet;
+            if(c==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(diff)});
+            else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(diff)});
+            await sndMsg(`🎫 scratched: ${t} (${diff>=0?'+':''}${diff} ${c})`);
+            return!0
+        }
         case 'warn':if(!isStaff)return!1;{const t=findUid(args[0]);if(t){await addDoc(collection(db,"messages"),{text:`⚠️ WARNING: ${args.slice(1).join(' ')}`,privateTo:t,isSystem:!0,timestamp:serverTimestamp()});show("Warned user")}else show("User not found",!0);return!0}
         case 'slowmode':if(!isStaff)return!1;await setDoc(doc(db,"settings","global"),{slowmode:parseInt(args[0])||0},{merge:!0});show("Slowmode updated");return!0;
         case 'purge':if(!isStaff)return!1;show("Purging not supported in client-only mode",!0);return!0;
@@ -370,10 +517,10 @@ function rndU(u){const r=getRank(u.rank),h=r?`<img src="custom ranks/${r.img}" c
 window.openProfile=async(id,ed=!1)=>{viewId=id;const m=get('profile-modal'),eb=get('edit-profile-btn'),eo=document.querySelectorAll('.edit-overlay'),pm=get('private-msg-container'),lb=get('like-btn'),sa=get('staff-action-btn');m.classList.remove('hidden');isEditing=!1;get('profile-view-mode').classList.remove('hidden');get('profile-edit-mode').classList.add('hidden');eo.forEach(e=>e.classList.add('hidden'));let d={};if(curUser&&id===curUser.uid){d=userData;eb.classList.remove('hidden');pm.classList.add('hidden');lb.classList.add('pointer-events-none','opacity-50');sa.classList.add('hidden')}else{const s=await getDoc(doc(db,"users",id));if(s.exists())d=s.data();eb.classList.add('hidden');if(curUser)pm.classList.remove('hidden');lb.classList.remove('pointer-events-none','opacity-50');getRank(userData.rank)?.isStaff?sa.classList.remove('hidden'):sa.classList.add('hidden');sendNotif(id,`${userData.username} visited your profile.`)}viewRank=d.rank;get('profile-username').innerText=d.username||"Unknown";get('profile-stats-msgs').innerText=d.messages||0;get('profile-stats-invites').innerText=d.invites||0;get('profile-avatar-img').src=d.photoURL||D_PFP;get('profile-banner-img').src=d.bannerURL||"https://picsum.photos/600/200";get('profile-likes-count').innerText=d.likes||0;get('profile-bio-display').innerText=d.bio||"No bio.";let bg='';if(d.banned)bg+='<span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded font-bold">BANNED</span>';else if(d.kickedUntil&&d.kickedUntil.toMillis()>Date.now())bg+='<span class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded font-bold">KICKED</span>';if(d.mutedUntil&&d.mutedUntil.toMillis()>Date.now())bg+='<span class="bg-yellow-500 text-black text-xs px-2 py-0.5 rounded font-bold">MUTED</span>';get('profile-status-badges').innerHTML=bg;if(curUser&&(d.likedBy||[]).includes(curUser.uid))lb.classList.add('text-ruby-500');else lb.classList.remove('text-ruby-500');const rk=getRank(d.rank);get('profile-rank-badge').innerHTML=rk?`<div class="bg-gray-800 border border-gray-600 px-3 py-1 rounded-full flex items-center gap-2"><img src="custom ranks/${rk.img}" class="h-6" onerror="this.style.display='none'"><span class="font-bold text-sm text-gray-200">${rk.name}</span></div>`:`<span class="bg-gray-800 px-3 py-1 rounded text-sm">${d.rank}</span>`;const ni=nextRankInfo(d.messages||0,d.rank),pc=get('rank-progress-container');if(ni){pc.classList.remove('hidden');get('next-rank-name').innerText=ni.name;get('rank-progress-text').innerText=`${d.messages} / ${ni.needed}`;get('rank-progress-bar').style.width=`${Math.min(100,(d.messages/ni.needed)*100)}%`;get('msgs-needed-text').innerText=`${ni.rem} more`}else pc.classList.add('hidden');get('edit-username-input').value=d.username;get('edit-bio-input').value=d.bio||"";get('edit-status-input').value=d.presence||'online';if(d.settings){get('pref-sound-msg').checked=d.settings.soundMsg!==!1;get('pref-sound-mention').checked=d.settings.soundMention!==!1}else{get('pref-sound-msg').checked=!0;get('pref-sound-mention').checked=!0}if(ed&&curUser&&id===curUser.uid)toggleProfileEdit()};
 on(get('avatar-upload'),'change',async e=>{if(e.target.files[0]){const b=await hFU(e.target.files[0]);openEditor(b);e.target.value=''}});
 const ec=get('editor-canvas'),ex=ec.getContext('2d');
-window.openEditor=s=>{const i=new Image();i.onload=()=>{curEdImg=i;edCfg={x:0,y:0,s:Math.max(ec.width/i.width,ec.height/i.height),r:0,h:1,v:1,f:'none'};get('image-editor-modal').classList.remove('hidden');drawEd()};i.src=s};
+window.openEditor=s=>{const i=new Image();i.onload=()=>{curEdImg=i;edCfg={x:0,y:0,s:1,r:0,h:1,v:1,f:'none'};get('image-editor-modal').classList.remove('hidden');get('editor-zoom').value=1;drawEd()};i.src=s};
 window.closeEditor=()=>{get('image-editor-modal').classList.add('hidden');curEdImg=null};
-window.drawEd=()=>{if(!curEdImg)return;ex.clearRect(0,0,ec.width,ec.height);ex.save();ex.translate(ec.width/2,ec.height/2);ex.rotate(edCfg.r*Math.PI/180);ex.scale(edCfg.h,edCfg.v);ex.filter=edCfg.f;ex.drawImage(curEdImg,-curEdImg.width*edCfg.s/2+edCfg.x,-curEdImg.height*edCfg.s/2+edCfg.y,curEdImg.width*edCfg.s,curEdImg.height*edCfg.s);ex.restore()};
-window.editorRotate=()=>{edCfg.r=(edCfg.r+90)%360;drawEd()};window.editorFlip=a=>{if(a==='h')edCfg.h*=-1;if(a==='v')edCfg.v*=-1;drawEd()};window.editorFilter=f=>{edCfg.f=f;drawEd()};
+window.drawEd=()=>{if(!curEdImg)return;ex.clearRect(0,0,ec.width,ec.height);ex.save();ex.translate(ec.width/2,ec.height/2);ex.rotate(edCfg.r*Math.PI/180);ex.scale(edCfg.h,edCfg.v);ex.filter=edCfg.f;const sc=Math.max(ec.width/curEdImg.width,ec.height/curEdImg.height)*edCfg.s;ex.drawImage(curEdImg,-curEdImg.width*sc/2+edCfg.x,-curEdImg.height*sc/2+edCfg.y,curEdImg.width*sc,curEdImg.height*sc);ex.restore()};
+window.editorRotate=()=>{edCfg.r=(edCfg.r+90)%360;drawEd()};window.editorFlip=a=>{if(a==='h')edCfg.h*=-1;if(a==='v')edCfg.v*=-1;drawEd()};window.editorFilter=f=>{edCfg.f=f;drawEd()};window.editorZoom=v=>{edCfg.s=parseFloat(v);drawEd()};
 on(ec,'mousedown',e=>{isDrag=!0;dragStart={x:e.clientX,y:e.clientY}});
 window.addEventListener('mousemove',e=>{if(isDrag&&curEdImg){const dx=e.clientX-dragStart.x,dy=e.clientY-dragStart.y,r=-edCfg.r*Math.PI/180;edCfg.x+=(dx*Math.cos(r)-dy*Math.sin(r))*edCfg.h;edCfg.y+=(dx*Math.sin(r)+dy*Math.cos(r))*edCfg.v;dragStart={x:e.clientX,y:e.clientY};drawEd()}});
 window.addEventListener('mouseup',()=>isDrag=!1);
