@@ -235,7 +235,7 @@
             background-size: cover;
             background-position: center;
             cursor: pointer;
-            transition: transform 0.2s, border-color 0.2s;
+            transition: transform 0.2s; border-color: 0.2s;
         }
         .filter-btn:hover, .filter-btn.active {
             transform: scale(1.1);
@@ -452,13 +452,7 @@
                 </div>
 
             </div>
-            
-            <!-- Admin Button -->
-            <div id="admin-panel-btn-container" class="p-3 border-t border-gray-800 hidden">
-                <button onclick="openAdminPanel()" class="w-full bg-gray-800 hover:bg-gray-700 text-ruby-500 font-bold py-2 px-4 rounded border border-gray-700 transition-colors">
-                    <i class="fas fa-shield-alt mr-2"></i>Admin Panel
-                </button>
-            </div>
+            <!-- Admin Panel Button Removed -->
         </div>
     </div>
 
@@ -656,17 +650,29 @@
             </div>
             
             <div class="space-y-3">
-                <button onclick="showStaffInput('mute')" class="w-full bg-gray-800 hover:bg-yellow-900/40 text-yellow-500 border border-yellow-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
+                <!-- Mute / Unmute -->
+                <button id="btn-mute" onclick="showStaffInput('mute')" class="w-full bg-gray-800 hover:bg-yellow-900/40 text-yellow-500 border border-yellow-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
                     <i class="fas fa-microphone-slash"></i> Mute User
+                </button>
+                <button id="btn-unmute" onclick="executeStaffAction('unmute')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
+                    <i class="fas fa-microphone"></i> Unmute User
                 </button>
                 
                 <div id="admin-actions-only" class="space-y-3 hidden">
-                    <button onclick="showStaffInput('kick')" class="w-full bg-gray-800 hover:bg-orange-900/40 text-orange-500 border border-orange-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
+                    <!-- Kick / Unkick -->
+                    <button id="btn-kick" onclick="showStaffInput('kick')" class="w-full bg-gray-800 hover:bg-orange-900/40 text-orange-500 border border-orange-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
                         <i class="fas fa-sign-out-alt"></i> Kick User (Temp Ban)
                     </button>
+                    <button id="btn-unkick" onclick="executeStaffAction('unkick')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-door-open"></i> Unkick User
+                    </button>
                     
-                    <button onclick="showStaffInput('ban')" class="w-full bg-gray-800 hover:bg-red-900/40 text-red-500 border border-red-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
+                    <!-- Ban / Unban -->
+                    <button id="btn-ban" onclick="showStaffInput('ban')" class="w-full bg-gray-800 hover:bg-red-900/40 text-red-500 border border-red-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
                         <i class="fas fa-ban"></i> Ban User (Perm)
+                    </button>
+                     <button id="btn-unban" onclick="executeStaffAction('unban')" class="hidden w-full bg-gray-800 hover:bg-green-900/40 text-green-500 border border-green-500/30 p-3 rounded font-bold flex items-center justify-center gap-2">
+                        <i class="fas fa-check-circle"></i> Unban User
                     </button>
                     
                     <div class="bg-gray-800 p-3 rounded border border-gray-700">
@@ -733,7 +739,7 @@
         </div>
     </div>
 
-    <!-- Admin Modal -->
+    <!-- Admin Modal (Triggered by console or direct call only now, button removed) -->
     <div id="admin-modal" class="fixed inset-0 z-50 bg-black/95 hidden flex flex-col p-4 md:p-6">
         <div class="flex justify-between items-center mb-4">
             <h2 class="text-2xl font-bold text-ruby-500 flex items-center"><i class="fas fa-shield-alt mr-3"></i>Admin Command Center</h2>
@@ -1141,11 +1147,7 @@
                     window.updateHeaderProgression(); 
                     
                     const r = getRankData(userData.rank);
-                    if (r && r.isStaff) {
-                        document.getElementById('admin-panel-btn-container').classList.remove('hidden');
-                    } else {
-                        document.getElementById('admin-panel-btn-container').classList.add('hidden');
-                    }
+                    // Admin Panel Button Removed in logic check, logic kept simple
                 });
                 
                 loadChat('global');
@@ -2050,10 +2052,80 @@
         
         function handleFileUpload(file) { return new Promise((resolve, reject) => { const reader = new FileReader(); reader.readAsDataURL(file); reader.onload = () => resolve(reader.result); reader.onerror = error => reject(error); }); }
         
-        window.openStaffActionMenu = () => { const menu = document.getElementById('staff-action-menu'); const adminActions = document.getElementById('admin-actions-only'); const myRankIdx = getRankIndex(userData.rank); const targetRankIdx = getRankIndex(viewingUserRank); if (targetRankIdx <= myRankIdx) { alert("Action blocked: Rank too high."); return; } const modIdx = getRankIndex("Moderator"); const rankSelect = document.getElementById('staff-rank-select'); rankSelect.innerHTML = RANKS.filter((r, idx) => idx > myRankIdx).map(r => `<option value="${r.name}">${r.name}</option>`).join(''); menu.classList.remove('hidden'); if (myRankIdx < modIdx) { adminActions.classList.remove('hidden'); } else { adminActions.classList.add('hidden'); } };
+        // --- UPDATED STAFF ACTION LOGIC ---
+        
+        window.openStaffActionMenu = async () => { 
+            const menu = document.getElementById('staff-action-menu'); 
+            const adminActions = document.getElementById('admin-actions-only'); 
+            const myRankIdx = getRankIndex(userData.rank); 
+            const targetRankIdx = getRankIndex(viewingUserRank); 
+            
+            if (targetRankIdx <= myRankIdx) { 
+                alert("Action blocked: Rank too high."); 
+                return; 
+            } 
+            
+            // Need to fetch latest state to toggle unban/unkick/unmute buttons
+            const snap = await getDoc(doc(db, "users", viewingUserId));
+            if(!snap.exists()) return;
+            const tData = snap.data();
+            const now = Date.now();
+            
+            const isMuted = tData.mutedUntil && tData.mutedUntil.toMillis() > now;
+            const isKicked = tData.kickedUntil && tData.kickedUntil.toMillis() > now;
+            const isBanned = tData.banned;
+            
+            const toggle = (id, show) => {
+                const el = document.getElementById(id);
+                if(el) el.classList.toggle('hidden', !show);
+            };
+            
+            toggle('btn-mute', !isMuted);
+            toggle('btn-unmute', isMuted);
+            toggle('btn-kick', !isKicked);
+            toggle('btn-unkick', isKicked);
+            toggle('btn-ban', !isBanned);
+            toggle('btn-unban', isBanned);
+            
+            const modIdx = getRankIndex("Moderator"); 
+            const rankSelect = document.getElementById('staff-rank-select'); 
+            rankSelect.innerHTML = RANKS.filter((r, idx) => idx > myRankIdx).map(r => `<option value="${r.name}">${r.name}</option>`).join(''); 
+            
+            menu.classList.remove('hidden'); 
+            
+            if (myRankIdx < modIdx) { 
+                adminActions.classList.remove('hidden'); 
+            } else { 
+                adminActions.classList.add('hidden'); 
+            } 
+        };
+        
         window.closeStaffActionMenu = () => document.getElementById('staff-action-menu').classList.add('hidden');
         window.showStaffInput = (action) => { currentStaffAction = action; document.getElementById('staff-action-menu').classList.add('hidden'); document.getElementById('staff-input-modal').classList.remove('hidden'); document.getElementById('staff-input-title').innerText = action.toUpperCase() + " USER"; document.getElementById('staff-action-duration').value = 1; document.getElementById('staff-action-unit').value = 'days'; document.getElementById('staff-action-reason').value = ""; const durGroup = document.getElementById('staff-duration-group'); if (action === 'ban') durGroup.classList.add('hidden'); else durGroup.classList.remove('hidden'); };
         window.closeStaffInput = () => document.getElementById('staff-input-modal').classList.add('hidden');
+        
+        // Handle Un-Punish Actions
+        window.executeStaffAction = async (action) => {
+            if(!confirm(`Are you sure you want to ${action.toUpperCase()} this user?`)) return;
+            
+            const targetRef = doc(db, "users", viewingUserId);
+            try {
+                if (action === 'unmute') {
+                    await updateDoc(targetRef, { mutedUntil: null, muteReason: null });
+                } else if (action === 'unkick') {
+                    await updateDoc(targetRef, { kickedUntil: null, kickReason: null });
+                } else if (action === 'unban') {
+                    await updateDoc(targetRef, { banned: false, banReason: null });
+                }
+                closeStaffActionMenu();
+                // Refresh profile badges
+                openProfile(viewingUserId);
+                alert(`User ${action}ed successfully.`);
+            } catch(e) {
+                alert("Error: " + e.message);
+            }
+        };
+
         document.getElementById('staff-action-confirm-btn').addEventListener('click', async () => { if (!viewingUserId || !currentStaffAction) return; const durationVal = parseInt(document.getElementById('staff-action-duration').value) || 0; const unit = document.getElementById('staff-action-unit').value; const reason = document.getElementById('staff-action-reason').value || "No reason"; const targetRef = doc(db, "users", viewingUserId); if (getRankIndex(viewingUserRank) <= getRankIndex(userData.rank)) { alert("Action blocked."); return; } let multiplier = 1; if (unit === 'minutes') multiplier = 60 * 1000; else if (unit === 'hours') multiplier = 60 * 60 * 1000; else if (unit === 'days') multiplier = 24 * 60 * 60 * 1000; const durationMs = durationVal * multiplier; const now = new Date(); const until = new Date(now.getTime() + durationMs); const updates = {}; let sysMsg = ""; let privateMsg = ""; let durationStr = durationVal > 0 ? `${durationVal} ${unit}` : "Permanent"; const targetName = document.getElementById('profile-username').innerText; if (currentStaffAction === 'mute') { updates.mutedUntil = durationVal > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000); updates.muteReason = reason; sysMsg = `User ${targetName} has been muted for: ${reason}.`; privateMsg = `You have been muted. Reason: ${reason}. Duration: ${durationStr}.`; } else if (currentStaffAction === 'kick') { updates.kickedUntil = durationVal > 0 ? until : new Date(now.getTime() + 1000 * 365 * 24 * 60 * 60 * 1000); updates.kickReason = reason; sysMsg = `User ${targetName} has been kicked/suspended.`; } else if (currentStaffAction === 'ban') { updates.banned = true; updates.banReason = reason; sysMsg = `User ${targetName} has been banned.`; } try { await updateDoc(targetRef, updates); await addDoc(collection(db, "messages"), { text: sysMsg, isSystem: true, timestamp: serverTimestamp() }); if (currentStaffAction === 'mute') { await addDoc(collection(db, "messages"), { text: privateMsg, isSystem: true, privateTo: viewingUserId, timestamp: serverTimestamp() }); } closeStaffInput(); closeProfile(); alert("Action executed."); } catch(e) { alert("Error: " + e.message); } });
         window.executeRankChange = async () => { if (!viewingUserId) return; const newRank = document.getElementById('staff-rank-select').value; if(!confirm(`Change user rank to ${newRank}?`)) return; try { await updateDoc(doc(db, "users", viewingUserId), { rank: newRank }); closeStaffActionMenu(); openProfile(viewingUserId); } catch(e) { alert("Error: " + e.message); } };
         
