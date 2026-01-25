@@ -37,53 +37,26 @@
         .collapsed-sidebar {width: 0 !important; overflow: hidden; border: none !important;}
         .sidebar-transition {transition: width 0.3s ease-in-out;}
         
-        /* New Info Card Styles */
-        .info-card {
-            background: linear-gradient(135deg, var(--bg-900) 0%, var(--bg-850) 100%);
-            border: 1px solid var(--acc-500);
-            border-radius: 16px;
-            padding: 24px;
-            text-align: center;
-            width: 320px;
-            margin: 16px auto;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            position: relative;
-            overflow: hidden;
-            animation: fadeIn 0.4s ease-out;
-        }
-        .info-card::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; height: 4px;
-            background: linear-gradient(90deg, var(--acc-500), var(--acc-600));
-        }
-        .info-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin: 0 auto 12px;
-            border: 4px solid var(--bg-950);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            object-fit: cover;
-            cursor: pointer;
-            transition: transform 0.2s;
-        }
+        .info-card {background: linear-gradient(135deg, var(--bg-900) 0%, var(--bg-850) 100%);border: 1px solid var(--acc-500);border-radius: 16px;padding: 24px;text-align: center;width: 320px;margin: 16px auto;box-shadow: 0 10px 25px rgba(0,0,0,0.5);position: relative;overflow: hidden;animation: fadeIn 0.4s ease-out;}
+        .info-card::before {content: '';position: absolute;top: 0; left: 0; right: 0; height: 4px;background: linear-gradient(90deg, var(--acc-500), var(--acc-600));}
+        .info-avatar {width: 80px;height: 80px;border-radius: 50%;margin: 0 auto 12px;border: 4px solid var(--bg-950);box-shadow: 0 4px 15px rgba(0,0,0,0.3);object-fit: cover;cursor: pointer;transition: transform 0.2s;}
         .info-avatar:hover { transform: scale(1.05); }
         .info-username { font-weight: 800; color: white; font-size: 1.2rem; margin-bottom: 4px; letter-spacing: 0.5px; }
-        .info-title {
-            color: var(--acc-500);
-            font-family: 'Courier New', monospace;
-            font-weight: bold;
-            margin-bottom: 16px;
-            font-size: 0.9rem;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            opacity: 0.9;
-        }
+        .info-title {color: var(--acc-500);font-family: 'Courier New', monospace;font-weight: bold;margin-bottom: 16px;font-size: 0.9rem;letter-spacing: 1px;text-transform: uppercase;opacity: 0.9;}
         .info-content { color: #e5e7eb; font-size: 1rem; line-height: 1.6; font-weight: 500; }
         .info-content div { margin-bottom: 4px; }
         .win-text { color: #4ade80; font-weight: 900; text-shadow: 0 0 15px rgba(74,222,128,0.2); font-size: 1.1rem; }
         .loss-text { color: #f87171; font-weight: 900; font-size: 1.1rem; }
+
+        /* Specific Profile Modal Styles */
+        .profile-modal-bg { background: linear-gradient(180deg, #181825 0%, #1e1e2f 100%); }
+        .profile-tab-active { background-color: #3b3b55; color: white; border-radius: 6px; font-weight: bold; }
+        .profile-tab-inactive { color: #9ca3af; font-weight: 600; }
+        .profile-stat-row { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .profile-stat-icon { width: 24px; text-align: center; margin-right: 12px; font-size: 1.1rem; }
+        .edit-menu-btn { width: 100%; text-align: left; padding: 12px; display: flex; align-items: center; gap: 12px; border-radius: 8px; color: #d1d5db; transition: background 0.2s; }
+        .edit-menu-btn:hover { background-color: #2f2f4e; color: white; }
+        .edit-overlay-btn { background: rgba(0,0,0,0.6); border-radius: 8px; padding: 4px; color: white; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -120,63 +93,30 @@
     </div>
     <div id="app-container" class="flex h-screen hidden relative">
         <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/80 z-20 hidden md:hidden" onclick="toggleMobileMenu()"></div>
-        
-        <!-- Left Sidebar -->
         <div id="left-sidebar" class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col sidebar-transition z-30 transform -translate-x-full md:translate-x-0 absolute md:relative h-full">
-            <div class="p-4 border-b border-gray-800 font-bold text-ruby-500 flex justify-between items-center h-16">
-                <span class="sidebar-title tracking-wider">MENU</span>
-                <button onclick="toggleLeftSidebar()" class="md:hidden text-gray-400"><i class="fas fa-times"></i></button>
-            </div>
+            <div class="p-4 border-b border-gray-800 font-bold text-ruby-500 flex justify-between items-center h-16"><span class="sidebar-title tracking-wider">MENU</span><button onclick="toggleLeftSidebar()" class="md:hidden text-gray-400"><i class="fas fa-times"></i></button></div>
             <div class="flex-1 p-4 space-y-2 overflow-y-auto">
-                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('News feature coming soon!')">
-                    <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-newspaper"></i></div>
-                    <span class="sidebar-text font-medium">News</span>
-                </button>
-                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('Rules feature coming soon!')">
-                    <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-book"></i></div>
-                    <span class="sidebar-text font-medium">Rules</span>
-                </button>
-                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('Staff list feature coming soon!')">
-                    <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-user-shield"></i></div>
-                    <span class="sidebar-text font-medium">Staff</span>
-                </button>
+                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('News feature coming soon!')"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-newspaper"></i></div><span class="sidebar-text font-medium">News</span></button>
+                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('Rules feature coming soon!')"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-book"></i></div><span class="sidebar-text font-medium">Rules</span></button>
+                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('Staff list feature coming soon!')"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-user-shield"></i></div><span class="sidebar-text font-medium">Staff</span></button>
             </div>
-            <div class="p-4 text-xs text-gray-600 text-center sidebar-text">
-                RubyChat v2.4
-            </div>
+            <div class="p-4 text-xs text-gray-600 text-center sidebar-text">RubyChat v2.4</div>
         </div>
-
         <div class="flex-1 flex flex-col h-full relative z-0 min-w-0">
             <header class="h-16 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 shrink-0 relative z-30">
-                <div class="flex items-center gap-3">
-                    <button class="text-gray-400 hover:text-white" onclick="toggleLeftSidebar()"><i class="fas fa-bars text-xl" id="left-toggle-icon"></i></button>
-                    <div class="flex items-center gap-2" id="header-title-container"><h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1></div>
-                </div>
+                <div class="flex items-center gap-3"><button class="text-gray-400 hover:text-white" onclick="toggleLeftSidebar()"><i class="fas fa-bars text-xl" id="left-toggle-icon"></i></button><div class="flex items-center gap-2" id="header-title-container"><h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1></div></div>
                 <div class="flex items-center gap-6">
-                    <div id="header-progression" class="hidden md:flex flex-col w-48 group cursor-pointer mr-2">
-                        <div class="flex justify-between text-[10px] text-gray-400 mb-1"><span>Next Rank</span><span id="header-xp-text">0 / 0</span></div>
-                        <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden relative"><div id="header-xp-bar" class="h-full bg-gradient-to-r from-ruby-600 to-ruby-500 w-0 transition-all duration-500"></div></div>
-                    </div>
+                    <div id="header-progression" class="hidden md:flex flex-col w-48 group cursor-pointer mr-2"><div class="flex justify-between text-[10px] text-gray-400 mb-1"><span>Next Rank</span><span id="header-xp-text">0 / 0</span></div><div class="h-1.5 bg-gray-800 rounded-full overflow-hidden relative"><div id="header-xp-bar" class="h-full bg-gradient-to-r from-ruby-600 to-ruby-500 w-0 transition-all duration-500"></div></div></div>
                     <div class="flex items-center gap-3">
                         <button id="back-to-public-btn" onclick="returnToPublicChat()" class="hidden bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded border border-gray-700 transition-colors text-ruby-500 font-bold"><i class="fas fa-arrow-left mr-1"></i> Public Chat</button>
+                        <div class="relative"><button onclick="openThemes()" class="w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors border border-gray-700 text-gray-400 hover:text-ruby-500" title="Themes"><i class="fas fa-paint-brush text-sm"></i></button></div>
                         <div class="relative">
-                            <button onclick="openThemes()" class="w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors border border-gray-700 text-gray-400 hover:text-ruby-500" title="Themes"><i class="fas fa-paint-brush text-sm"></i></button>
-                        </div>
-                        <div class="relative">
-                            <button id="envelope-btn" onclick="togglePMDropdown(event)" class="w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors relative border border-gray-700">
-                                <i class="fas fa-envelope text-gray-400 hover:text-white text-sm"></i><span id="pm-badge" class="absolute top-0 right-0 w-2.5 h-2.5 bg-ruby-500 rounded-full border-2 border-gray-900 hidden"></span>
-                            </button>
-                            <div id="pm-dropdown" class="absolute top-12 right-0 w-64 bg-gray-900 border border-gray-800 rounded-lg shadow-xl hidden flex-col z-50">
-                                <div class="p-3 border-b border-gray-800 text-sm font-bold text-gray-300">Direct Messages</div>
-                                <div id="pm-list" class="max-h-60 overflow-y-auto"><div class="p-3 text-xs text-center text-gray-500">No recent messages</div></div>
-                            </div>
+                            <button id="envelope-btn" onclick="togglePMDropdown(event)" class="w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors relative border border-gray-700"><i class="fas fa-envelope text-gray-400 hover:text-white text-sm"></i><span id="pm-badge" class="absolute top-0 right-0 w-2.5 h-2.5 bg-ruby-500 rounded-full border-2 border-gray-900 hidden"></span></button>
+                            <div id="pm-dropdown" class="absolute top-12 right-0 w-64 bg-gray-900 border border-gray-800 rounded-lg shadow-xl hidden flex-col z-50"><div class="p-3 border-b border-gray-800 text-sm font-bold text-gray-300">Direct Messages</div><div id="pm-list" class="max-h-60 overflow-y-auto"><div class="p-3 text-xs text-center text-gray-500">No recent messages</div></div></div>
                         </div>
                         <button onclick="copyInviteLink()" class="bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded border border-gray-700 transition-colors"><i class="fas fa-link mr-1"></i> Invite</button>
                         <div class="relative">
-                            <button onclick="toggleUserMenu(event)" class="relative group cursor-pointer focus:outline-none">
-                                <img id="header-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%239ca3af' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" class="w-9 h-9 rounded-full border border-gray-600 object-cover bg-gray-800 default-pfp">
-                                <div id="header-status-dot" class="w-2.5 h-2.5 bg-green-500 rounded-full absolute bottom-0 right-0 border border-gray-900"></div>
-                            </button>
+                            <button onclick="toggleUserMenu(event)" class="relative group cursor-pointer focus:outline-none"><img id="header-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%239ca3af' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" class="w-9 h-9 rounded-full border border-gray-600 object-cover bg-gray-800 default-pfp"><div id="header-status-dot" class="w-2.5 h-2.5 bg-green-500 rounded-full absolute bottom-0 right-0 border border-gray-900"></div></button>
                             <div id="user-menu-dropdown" class="absolute top-12 right-0 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-xl hidden flex-col z-50 py-2 dropdown-enter">
                                 <button onclick="openProfile(currentUser.uid, true); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-user w-5 text-gray-400"></i> My Profile</button>
                                 <button onclick="openWallet(); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-wallet w-5 text-gray-400"></i> Wallet</button>
@@ -207,14 +147,8 @@
         <div id="right-sidebar" class="w-72 bg-gray-900 border-l border-gray-800 flex-col absolute md:relative right-0 h-full z-30 transform translate-x-full md:translate-x-0 transition-transform duration-300 flex sidebar-transition">
             <div class="p-4 border-b border-gray-800 bg-gray-850 flex justify-between items-center h-16"><h3 class="font-bold text-gray-200"><i class="fas fa-globe text-ruby-500 mr-2"></i>Community</h3><span id="online-count" class="bg-gray-800 text-xs px-2 py-1 rounded-full text-gray-400">0</span><button class="md:hidden text-gray-400" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button></div>
             <div class="flex-1 overflow-y-auto p-2 scrollbar-thin">
-                <div class="mb-4">
-                    <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2 flex justify-between items-center tracking-wider"><span>Online</span><span id="online-count-header" class="text-[10px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">0</span></h4>
-                    <div id="online-user-list" class="space-y-1"></div>
-                </div>
-                <div>
-                    <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2 flex justify-between items-center tracking-wider"><span>Offline</span><span id="offline-count-header" class="text-[10px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">0</span></h4>
-                    <div id="offline-user-list" class="space-y-1 opacity-75 grayscale-[30%]"></div>
-                </div>
+                <div class="mb-4"><h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2 flex justify-between items-center tracking-wider"><span>Online</span><span id="online-count-header" class="text-[10px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">0</span></h4><div id="online-user-list" class="space-y-1"></div></div>
+                <div><h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2 flex justify-between items-center tracking-wider"><span>Offline</span><span id="offline-count-header" class="text-[10px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">0</span></h4><div id="offline-user-list" class="space-y-1 opacity-75 grayscale-[30%]"></div></div>
             </div>
         </div>
     </div>
@@ -250,34 +184,170 @@
             </div>
         </div>
     </div>
+
+    <!-- NEW PROFILE MODAL STRUCTURE -->
     <div id="profile-modal" class="fixed inset-0 z-40 bg-black/80 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-900 rounded-xl w-full max-w-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] relative">
-            <div class="relative h-32 bg-gray-800 cursor-pointer group" onclick="triggerBannerUpload()">
-                <img id="profile-banner-img" src="" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity bg-gray-800"><div class="absolute inset-0 flex items-center justify-center bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity edit-overlay hidden"><i class="fas fa-camera text-white text-2xl drop-shadow-lg"></i></div><button onclick="closeProfile()" class="absolute top-2 right-2 bg-black/50 text-white w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-500 transition-colors z-10"><i class="fas fa-times"></i></button>
-                <button id="staff-action-btn" onclick="openStaffActionMenu()" class="hidden absolute top-2 left-2 bg-yellow-500 hover:bg-yellow-400 text-black w-8 h-8 rounded-full flex items-center justify-center transition-colors z-10 shadow-lg shadow-yellow-500/50"><i class="fas fa-bolt"></i></button>
+        <div class="profile-modal-bg rounded-2xl w-full max-w-lg border border-gray-700 shadow-2xl overflow-hidden flex flex-col relative" style="max-height: 90vh;">
+            
+            <!-- HEADER SECTION -->
+            <div class="relative h-48 bg-gray-800">
+                <img id="profile-banner-img" src="" class="w-full h-full object-cover">
+                <div class="absolute inset-0 bg-black/20"></div>
+                
+                <!-- TOP LEFT OVERLAYS -->
+                <div class="absolute top-4 left-4 flex gap-2">
+                    <div class="bg-gray-900/80 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1 border border-gray-700 text-yellow-400">
+                        <i class="fas fa-star text-sm"></i>
+                        <span id="profile-level" class="text-xs font-bold text-white">0</span>
+                    </div>
+                    <button id="like-btn" onclick="toggleLike()" class="bg-gray-900/80 backdrop-blur-sm rounded-full px-3 py-1 flex items-center gap-1 border border-gray-700 text-blue-400 hover:bg-gray-800 transition-colors cursor-pointer">
+                        <i class="fas fa-thumbs-up text-sm"></i>
+                        <span id="profile-likes-count" class="text-xs font-bold text-white">0</span>
+                    </button>
+                    <button id="staff-action-btn" onclick="openStaffActionMenu()" class="hidden bg-yellow-600/90 backdrop-blur-sm rounded-full w-8 h-8 flex items-center justify-center border border-yellow-400 text-white hover:bg-yellow-500 transition-colors shadow-lg">
+                        <i class="fas fa-bolt text-xs"></i>
+                    </button>
+                </div>
+
+                <!-- TOP RIGHT OVERLAYS -->
+                <div class="absolute top-4 right-4 flex gap-2">
+                    <button id="edit-profile-trigger" onclick="toggleProfileEdit()" class="bg-gray-900/80 backdrop-blur-sm rounded-lg p-2 text-white hover:bg-gray-800 border border-gray-700 transition-colors hidden">
+                        <i class="fas fa-pen text-sm"></i>
+                    </button>
+                    <button id="view-profile-trigger" onclick="toggleProfileEdit()" class="bg-gray-900/80 backdrop-blur-sm rounded-lg p-2 text-white hover:bg-gray-800 border border-gray-700 transition-colors hidden">
+                        <i class="fas fa-eye text-sm"></i>
+                    </button>
+                    <button onclick="closeProfile()" class="bg-gray-900/80 backdrop-blur-sm rounded-lg p-2 text-white hover:bg-red-900/80 border border-gray-700 transition-colors">
+                        <i class="fas fa-times text-sm"></i>
+                    </button>
+                </div>
+
+                <!-- PFP OVERLAY (EDIT MODE) -->
+                <button onclick="triggerBannerUpload()" id="banner-edit-overlay" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 p-3 rounded-full hidden hover:bg-black/70 transition-colors border border-white/20">
+                    <i class="fas fa-pen text-white"></i>
+                </button>
             </div>
-            <div class="px-6 pb-6 -mt-12 flex flex-col items-center relative overflow-y-auto">
-                <div class="relative mb-3 group cursor-pointer" onclick="triggerAvatarUpload()">
-                    <img id="profile-avatar-img" src="" class="w-24 h-24 rounded-full border-4 border-gray-900 object-cover bg-gray-800 default-pfp"><div class="absolute inset-0 rounded-full flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity edit-overlay hidden"><i class="fas fa-camera text-white drop-shadow-lg"></i></div>
+
+            <div class="px-6 relative pb-6 flex-1 overflow-y-auto">
+                <!-- PFP & IDENTITY -->
+                <div class="relative -mt-16 mb-4 flex flex-col items-center">
+                    <div class="relative">
+                        <img id="profile-avatar-img" src="" class="w-32 h-32 rounded-xl border-4 border-[#181825] object-cover bg-gray-800 default-pfp shadow-xl">
+                        <button onclick="triggerAvatarUpload()" id="pfp-edit-overlay" class="absolute bottom-2 right-2 bg-gray-900 p-2 rounded-lg border border-gray-600 hover:bg-gray-700 hidden shadow-lg">
+                            <i class="fas fa-pen text-xs text-white"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="mt-2 text-center">
+                        <div id="profile-rank-display" class="flex items-center justify-center gap-1 mb-1">
+                            <!-- Rank Icon/Text populated by JS -->
+                        </div>
+                        <h2 id="profile-username" class="text-3xl font-black text-white tracking-wide">User</h2>
+                        <div id="profile-mood-display" class="text-gray-400 font-bold italic text-sm mt-1"></div>
+                    </div>
                 </div>
-                <div id="profile-view-mode" class="text-center w-full">
-                    <div class="flex items-center justify-center gap-2 mb-1"><h2 id="profile-username" class="text-2xl font-bold text-white">User</h2><button id="like-btn" onclick="toggleLike()" class="text-gray-500 hover:text-ruby-500 transition-colors"><i class="fas fa-heart text-xl"></i><span id="profile-likes-count" class="text-xs font-bold ml-1">0</span></button></div>
-                    <div id="profile-status-badges" class="flex justify-center gap-2 mb-2"></div><div id="profile-rank-badge" class="mb-4 flex justify-center h-8"></div><div id="profile-bio-display" class="mb-6 text-sm text-gray-400 italic px-4 break-words">No bio set.</div>
-                    <div class="grid grid-cols-2 gap-4 w-full mb-6"><div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center"><div class="text-xs text-gray-400 uppercase tracking-wide">Messages</div><div id="profile-stats-msgs" class="text-xl font-bold text-ruby-500">0</div></div><div class="bg-gray-800 p-3 rounded-lg border border-gray-700 text-center"><div class="text-xs text-gray-400 uppercase tracking-wide">Invites</div><div id="profile-stats-invites" class="text-xl font-bold text-blue-400">0</div></div></div>
-                    <div id="rank-progress-container" class="w-full mb-6 bg-gray-800 rounded-lg p-3 border border-gray-700"><div class="flex justify-between text-xs mb-1"><span class="text-gray-400">Progress to <span id="next-rank-name" class="text-ruby-500 font-bold">Next Rank</span></span><span id="rank-progress-text" class="text-white">0 / 0</span></div><div class="w-full bg-gray-700 rounded-full h-2.5"><div id="rank-progress-bar" class="bg-ruby-500 h-2.5 rounded-full" style="width:0%"></div></div><div id="msgs-needed-text" class="text-xs text-center mt-1 text-gray-500 italic">0 more messages needed</div></div>
-                    <button id="edit-profile-btn" onclick="toggleProfileEdit()" class="hidden w-full bg-gray-800 hover:bg-gray-700 text-white font-bold py-2 rounded border border-gray-600 transition-colors">Edit Profile</button><div id="private-msg-container" class="w-full mt-2 hidden"><button onclick="initiatePrivateChat(true)" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-2 rounded transition-colors shadow-lg shadow-ruby-500/20"><i class="fas fa-envelope mr-2"></i>Send Message</button></div>
+
+                <!-- VIEW MODE CONTENT -->
+                <div id="profile-view-content">
+                    <!-- TABS -->
+                    <div class="flex bg-[#12121a] p-1 rounded-lg mb-6">
+                        <button onclick="switchProfileTab('info')" id="tab-btn-info" class="flex-1 py-2 text-sm text-center profile-tab-active transition-all">Info</button>
+                        <button onclick="switchProfileTab('about')" id="tab-btn-about" class="flex-1 py-2 text-sm text-center profile-tab-inactive transition-all">About me</button>
+                    </div>
+
+                    <!-- TAB: INFO -->
+                    <div id="tab-content-info" class="space-y-4">
+                        <div class="bg-[#2f2f4e] rounded-xl p-4 flex items-center justify-between mb-4 shadow-lg">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-gray-900 rounded-full flex items-center justify-center text-yellow-500"><i class="fas fa-crown"></i></div>
+                                <div>
+                                    <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Currently Playing</div>
+                                    <div class="text-white font-bold text-sm">Profile Music</div>
+                                </div>
+                            </div>
+                            <button class="w-8 h-8 rounded-full border border-gray-500 flex items-center justify-center text-white"><i class="fas fa-pause text-xs"></i></button>
+                        </div>
+
+                        <div class="profile-stat-row">
+                            <div class="flex items-center text-gray-300 text-sm font-bold"><div class="profile-stat-icon"><i class="fas fa-language"></i></div> Language</div>
+                            <div id="stat-language" class="text-white font-bold text-sm">English</div>
+                        </div>
+                        <div class="profile-stat-row">
+                            <div class="flex items-center text-gray-300 text-sm font-bold"><div class="profile-stat-icon"><i class="fas fa-user"></i></div> Member since</div>
+                            <div id="stat-member-since" class="text-white font-bold text-sm">...</div>
+                        </div>
+                        <div class="profile-stat-row" style="border-bottom: none;">
+                            <div class="flex items-center text-gray-300 text-sm font-bold"><div class="profile-stat-icon"><i class="fas fa-eye"></i></div> Last seen</div>
+                            <div id="stat-last-seen" class="text-white font-bold text-sm">...</div>
+                        </div>
+
+                        <!-- BADGES/STATS -->
+                        <div class="flex gap-2 mt-6 justify-center">
+                            <div class="relative group">
+                                <div class="w-10 h-10 bg-[#2f2f4e] rounded border border-gray-600 flex items-center justify-center text-ruby-500 text-lg"><i class="fas fa-bolt"></i></div>
+                                <div id="stat-msgs-badge" class="absolute -bottom-1 -right-1 bg-gray-700 text-[9px] px-1 rounded text-white font-bold border border-gray-500">0</div>
+                            </div>
+                            <div class="relative group">
+                                <div class="w-10 h-10 bg-[#2f2f4e] rounded border border-gray-600 flex items-center justify-center text-blue-400 text-lg"><i class="fas fa-user-plus"></i></div>
+                                <div id="stat-invites-badge" class="absolute -bottom-1 -right-1 bg-gray-700 text-[9px] px-1 rounded text-white font-bold border border-gray-500">0</div>
+                            </div>
+                             <div class="relative group">
+                                <div class="w-10 h-10 bg-[#2f2f4e] rounded border border-gray-600 flex items-center justify-center text-yellow-400 text-lg"><i class="fas fa-coins"></i></div>
+                            </div>
+                             <div class="relative group">
+                                <div class="w-10 h-10 bg-[#2f2f4e] rounded border border-gray-600 flex items-center justify-center text-ruby-500 text-lg"><i class="fas fa-gem"></i></div>
+                            </div>
+                        </div>
+                         <div id="private-msg-container" class="w-full mt-6 hidden"><button onclick="initiatePrivateChat(true)" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold py-3 rounded-xl transition-colors shadow-lg shadow-ruby-500/20"><i class="fas fa-envelope mr-2"></i>Send Message</button></div>
+                    </div>
+
+                    <!-- TAB: ABOUT ME -->
+                    <div id="tab-content-about" class="hidden">
+                        <div class="bg-[#12121a] p-4 rounded-xl min-h-[150px]">
+                            <p id="profile-bio-text" class="text-gray-300 text-sm leading-relaxed whitespace-pre-wrap">No bio set.</p>
+                        </div>
+                    </div>
                 </div>
-                <div id="profile-edit-mode" class="w-full hidden space-y-4">
-                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Username</label><input type="text" id="edit-username-input" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"></div>
-                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Bio / About Me (Your Mood)</label><textarea id="edit-bio-input" rows="3" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none resize-none" placeholder="Set your mood..."></textarea></div>
-                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-1">Status</label><select id="edit-status-input" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white focus:border-ruby-500 focus:outline-none"><option value="online">Online</option><option value="away">Away</option><option value="dnd">Do Not Disturb</option></select></div>
-                    <div><label class="text-xs text-gray-400 uppercase font-bold block mb-2">Notifications</label><div class="space-y-2"><label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="pref-sound-msg" class="form-checkbox text-ruby-500 bg-gray-950 border-gray-700 rounded"><span class="text-sm text-gray-300">Play sound on new messages</span></label><label class="flex items-center space-x-2 cursor-pointer"><input type="checkbox" id="pref-sound-mention" class="form-checkbox text-ruby-500 bg-gray-950 border-gray-700 rounded"><span class="text-sm text-gray-300">Play sound on mentions (@)</span></label></div></div>
-                    <div class="flex gap-2 mt-4"><button onclick="saveProfileChanges()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded">Save</button><button onclick="toggleProfileEdit()" class="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 rounded">Cancel</button></div>
+
+                <!-- EDIT MODE CONTENT -->
+                <div id="profile-edit-content" class="hidden">
+                    <h3 class="text-gray-500 uppercase text-xs font-bold mb-4 tracking-widest pl-2">Account</h3>
+                    <div class="space-y-2">
+                        <button onclick="openSubEditor('info')" class="edit-menu-btn">
+                            <i class="fas fa-address-card w-6"></i> <span class="font-bold text-sm">Edit info</span> <i class="fas fa-chevron-right ml-auto text-xs opacity-50"></i>
+                        </button>
+                        <button onclick="openSubEditor('username')" class="edit-menu-btn">
+                            <i class="fas fa-user-tag w-6"></i> <span class="font-bold text-sm">Edit username</span> <i class="fas fa-chevron-right ml-auto text-xs opacity-50"></i>
+                        </button>
+                        <button onclick="openSubEditor('mood')" class="edit-menu-btn">
+                            <i class="fas fa-smile w-6"></i> <span class="font-bold text-sm">Edit mood</span> <i class="fas fa-chevron-right ml-auto text-xs opacity-50"></i>
+                        </button>
+                         <button onclick="openSubEditor('bio')" class="edit-menu-btn">
+                            <i class="fas fa-align-left w-6"></i> <span class="font-bold text-sm">Edit bio</span> <i class="fas fa-chevron-right ml-auto text-xs opacity-50"></i>
+                        </button>
+                        <div class="h-px bg-gray-700 my-2"></div>
+                         <button class="edit-menu-btn opacity-50 cursor-not-allowed" title="Coming Soon">
+                            <i class="fas fa-music w-6"></i> <span class="font-bold text-sm">Profile Music</span>
+                        </button>
+                    </div>
                 </div>
-                <input type="file" id="avatar-upload" accept="image/*" class="hidden"><input type="file" id="banner-upload" accept="image/*" class="hidden">
+                
+                <!-- SUB EDITOR OVERLAY (Inside Modal) -->
+                <div id="sub-editor-overlay" class="absolute inset-0 bg-[#181825] z-10 hidden flex flex-col p-6 slide-in-right">
+                    <div class="flex items-center gap-3 mb-6">
+                        <button onclick="closeSubEditor()" class="text-gray-400 hover:text-white"><i class="fas fa-arrow-left"></i></button>
+                        <h3 id="sub-editor-title" class="text-xl font-bold text-white">Edit</h3>
+                    </div>
+                    <div id="sub-editor-body" class="flex-1 space-y-4">
+                        <!-- Content injected by JS -->
+                    </div>
+                    <button onclick="saveSubEditor()" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl mt-4">Save</button>
+                </div>
             </div>
+            <input type="file" id="avatar-upload" accept="image/*" class="hidden"><input type="file" id="banner-upload" accept="image/*" class="hidden">
         </div>
     </div>
+
     <div id="staff-action-menu" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
         <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-sm">
             <div class="flex justify-between items-center mb-4"><h3 class="text-xl font-bold text-yellow-500"><i class="fas fa-bolt mr-2"></i>Staff Actions</h3><button onclick="closeStaffActionMenu()" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button></div>
@@ -336,7 +406,7 @@ const RANKS=[
 {name:"Developer",img:"developer.gif",invites:50,isStaff:!0},{name:"Founder",img:"founder.gif",invites:45,isStaff:!0},{name:"CEO",img:"CEO.gif",invites:40,isStaff:!0},{name:"Head Owner",img:"head-owner.gif",invites:35,isStaff:!0},{name:"Owner",img:"owner.gif",invites:30,isStaff:!0},{name:"Manager",img:"manager.gif",invites:25,isStaff:!0},{name:"Super Admin",img:"super-admin.png",invites:20,isStaff:!0},{name:"Admin",img:"admin.png",invites:15,isStaff:!0},{name:"Moderator",img:"mod.png",invites:10,isStaff:!0},{name:"Trial Mod",img:"trial-mod.png",invites:5,isStaff:!0},{name:"Site Helper",img:"site-helper.gif",invites:3,isStaff:!0},{name:"Staff",img:"st.gif",invites:0,isStaff:!0},
 {name:"Bean",img:"bean.png",msgs:57e3},{name:"Heart 4",img:"heart4.gif",msgs:54500},{name:"Heart 3",img:"heart3.gif",msgs:52e3},{name:"Heart 2",img:"heart2.gif",msgs:49500},{name:"Heart 1",img:"heart1.gif",msgs:47e3},{name:"IDK",img:"idk.gif",msgs:44500},{name:"Luck",img:"luck.gif",msgs:42e3},{name:"Banana",img:"banana.gif",msgs:39500},{name:"Snail",img:"snail.gif",msgs:37e3},{name:"Teddy",img:"teddy.gif",msgs:34500},{name:"Kirby",img:"kirby.gif",msgs:32e3},{name:"Homer",img:"homer.gif",msgs:29500},{name:"Ghost",img:"ghost.gif",msgs:27e3},{name:"Scooby 2",img:"scooby2.gif",msgs:24500},{name:"Scooby",img:"scooby.gif",msgs:22e3},{name:"Batman 3",img:"batman3.gif",msgs:19500},{name:"Batman 2",img:"batman2.gif",msgs:17e3},{name:"Batman",img:"batman.gif",msgs:14500},{name:"Princess",img:"princess.gif",msgs:12e3},{name:"Premium",img:"premium.gif",msgs:9500},{name:"Mega VIP",img:"mega-vip.gif",msgs:7e3},{name:"Elite",img:"elite.png",msgs:5e3},{name:"Mega Elite",img:"mega-elite.gif",msgs:3500},{name:"Coding",img:"coding.gif",msgs:2e3},{name:"Bot",img:"bot1.gif",msgs:1e3},{name:"VIP",img:"vip.gif",msgs:0}
 ].map(r=>({...r,msgs:r.msgs||0,invites:r.invites||0}));
-let curUser=null,userData=null,loginTime=0,isEditing=false,viewId=null,viewRank='VIP',allUsers=[],punishInt=null,notifUnsub=null,curChat='global',curPartner=null,chatUnsub=null,replyData=null,typeTo=null,actAdm='users',curAct=null,curEdImg=null,edCfg={x:0,y:0,s:1,r:0,h:1,v:1,f:'none'},isDrag=false,dragStart={x:0,y:0},pAv=null,pBn=null,userUnsub=null,allThemes=[],lastTypingSent=0,typingUnsub=null,userProfileUnsub=null,presInt=null,globalSettingsUnsub=null,globalSettings={};
+let curUser=null,userData=null,loginTime=0,isEditing=false,viewId=null,viewRank='VIP',allUsers=[],punishInt=null,notifUnsub=null,curChat='global',curPartner=null,chatUnsub=null,replyData=null,typeTo=null,actAdm='users',curAct=null,curEdImg=null,edCfg={x:0,y:0,s:1,r:0,h:1,v:1,f:'none'},isDrag=false,dragStart={x:0,y:0},pAv=null,pBn=null,userUnsub=null,allThemes=[],lastTypingSent=0,typingUnsub=null,userProfileUnsub=null,presInt=null,globalSettingsUnsub=null,globalSettings={}, currentProfileTab='info', currentSubEditor=null;
 const activePMs=new Set();let zIdx=100;
 const refUid=new URLSearchParams(window.location.search).get('ref');refUid&&get('referral-notice').classList.remove('hidden');
 const getRank=n=>RANKS.find(r=>r.name===n)||RANKS[RANKS.length-1];
@@ -650,7 +720,39 @@ function rndU(u){
         </div>
     </div>`;
 }
-window.openProfile=async(id,ed=!1)=>{viewId=id;const m=get('profile-modal'),eb=get('edit-profile-btn'),eo=document.querySelectorAll('.edit-overlay'),pm=get('private-msg-container'),lb=get('like-btn'),sa=get('staff-action-btn');m.classList.remove('hidden');isEditing=!1;get('profile-view-mode').classList.remove('hidden');get('profile-edit-mode').classList.add('hidden');eo.forEach(e=>e.classList.add('hidden'));let d={};if(curUser&&id===curUser.uid){d=userData;eb.classList.remove('hidden');pm.classList.add('hidden');lb.classList.add('pointer-events-none','opacity-50');sa.classList.add('hidden')}else{const s=await getDoc(doc(db,"users",id));if(s.exists())d=s.data();eb.classList.add('hidden');if(curUser)pm.classList.remove('hidden');lb.classList.remove('pointer-events-none','opacity-50');getRank(userData.rank)?.isStaff?sa.classList.remove('hidden'):sa.classList.add('hidden');sendNotif(id,`${userData.username} visited your profile.`)}viewRank=d.rank;get('profile-username').innerText=d.username||"Unknown";get('profile-stats-msgs').innerText=d.messages||0;get('profile-stats-invites').innerText=d.invites||0;get('profile-avatar-img').src=d.photoURL||D_PFP;get('profile-banner-img').src=d.bannerURL||"https://picsum.photos/600/200";get('profile-likes-count').innerText=d.likes||0;get('profile-bio-display').innerText=d.bio||"No bio.";let bg='';if(d.banned)bg+='<span class="bg-red-600 text-white text-xs px-2 py-0.5 rounded font-bold">BANNED</span>';else if(d.kickedUntil&&d.kickedUntil.toMillis()>Date.now())bg+='<span class="bg-orange-500 text-white text-xs px-2 py-0.5 rounded font-bold">KICKED</span>';if(d.mutedUntil&&d.mutedUntil.toMillis()>Date.now())bg+='<span class="bg-yellow-500 text-black text-xs px-2 py-0.5 rounded font-bold">MUTED</span>';get('profile-status-badges').innerHTML=bg;if(curUser&&(d.likedBy||[]).includes(curUser.uid))lb.classList.add('text-ruby-500');else lb.classList.remove('text-ruby-500');const rk=getRank(d.rank);get('profile-rank-badge').innerHTML=rk?`<div class="bg-gray-800 border border-gray-600 px-3 py-1 rounded-full flex items-center gap-2"><img src="custom ranks/${rk.img}" class="h-6" onerror="this.style.display='none'"><span class="font-bold text-sm text-gray-200">${rk.name}</span></div>`:`<span class="bg-gray-800 px-3 py-1 rounded text-sm">${d.rank}</span>`;const ni=nextRankInfo(d.messages||0,d.rank),pc=get('rank-progress-container');if(ni){pc.classList.remove('hidden');get('next-rank-name').innerText=ni.name;get('rank-progress-text').innerText=`${d.messages} / ${ni.needed}`;get('rank-progress-bar').style.width=`${Math.min(100,(d.messages/ni.needed)*100)}%`;get('msgs-needed-text').innerText=`${ni.rem} more`}else pc.classList.add('hidden');get('edit-username-input').value=d.username;get('edit-bio-input').value=d.bio||"";get('edit-status-input').value=d.presence||'online';if(d.settings){get('pref-sound-msg').checked=d.settings.soundMsg!==!1;get('pref-sound-mention').checked=d.settings.soundMention!==!1}else{get('pref-sound-msg').checked=!0;get('pref-sound-mention').checked=!0}if(ed&&curUser&&id===curUser.uid)toggleProfileEdit()};
+// PROFILE LOGIC
+window.openProfile=async(id,ed=!1)=>{viewId=id;const m=get('profile-modal'),pm=get('private-msg-container'),sa=get('staff-action-btn'),ep=get('edit-profile-trigger'),vp=get('view-profile-trigger');m.classList.remove('hidden');closeSubEditor();switchProfileTab('info');let d={};if(curUser&&id===curUser.uid){d=userData;ep.classList.remove('hidden');vp.classList.add('hidden');pm.classList.add('hidden');sa.classList.add('hidden')}else{const s=await getDoc(doc(db,"users",id));if(s.exists())d=s.data();ep.classList.add('hidden');vp.classList.add('hidden');if(curUser)pm.classList.remove('hidden');getRank(userData.rank)?.isStaff?sa.classList.remove('hidden'):sa.classList.add('hidden');sendNotif(id,`${userData.username} visited your profile.`)}viewRank=d.rank;get('profile-username').innerText=d.username||"Unknown";get('profile-banner-img').src=d.bannerURL||"https://picsum.photos/600/200";get('profile-avatar-img').src=d.photoURL||D_PFP;const rk=getRank(d.rank);get('profile-rank-display').innerHTML=rk?`<img src="custom ranks/${rk.img}" class="h-5" onerror="this.style.display='none'"><span class="text-xs font-bold text-gray-300 uppercase tracking-widest">${rk.name}</span>`:`<span class="text-xs font-bold text-gray-300 uppercase tracking-widest">${d.rank}</span>`;get('profile-mood-display').innerText=d.mood||d.presence||"Online";get('profile-bio-text').innerText=d.bio||"No bio set.";get('profile-likes-count').innerText=d.likes||0;get('profile-level').innerText=Math.floor((d.messages||0)/100);get('stat-msgs-badge').innerText=d.messages||0;get('stat-invites-badge').innerText=d.invites||0;try{get('stat-language').innerText=Intl.DateTimeFormat().resolvedOptions().timeZone.split('/')[1].replace(/_/g,' ') || 'Unknown'}catch(e){get('stat-language').innerText='Universal'}get('stat-member-since').innerText=d.memberSince?new Date(d.memberSince.toDate()).toLocaleDateString():"Unknown";get('stat-last-seen').innerText=d.lastSeen?new Date(d.lastSeen.toDate()).toLocaleString():"Unknown";if(curUser&&(d.likedBy||[]).includes(curUser.uid))get('like-btn').classList.replace('text-blue-400','text-ruby-500');else get('like-btn').classList.replace('text-ruby-500','text-blue-400');if(ed&&curUser&&id===curUser.uid)toggleProfileEdit()};
+window.switchProfileTab=t=>{currentProfileTab=t;const i=get('tab-content-info'),a=get('tab-content-about'),bi=get('tab-btn-info'),ba=get('tab-btn-about');if(t==='info'){i.classList.remove('hidden');a.classList.add('hidden');bi.className='flex-1 py-2 text-sm text-center profile-tab-active transition-all';ba.className='flex-1 py-2 text-sm text-center profile-tab-inactive transition-all'}else{i.classList.add('hidden');a.classList.remove('hidden');bi.className='flex-1 py-2 text-sm text-center profile-tab-inactive transition-all';ba.className='flex-1 py-2 text-sm text-center profile-tab-active transition-all'}};
+window.toggleProfileEdit=()=>{isEditing=!isEditing;const v=get('profile-view-content'),e=get('profile-edit-content'),t=get('edit-profile-trigger'),vp=get('view-profile-trigger'),bo=get('banner-edit-overlay'),po=get('pfp-edit-overlay');if(isEditing){v.classList.add('hidden');e.classList.remove('hidden');t.classList.add('hidden');vp.classList.remove('hidden');bo.classList.remove('hidden');po.classList.remove('hidden')}else{v.classList.remove('hidden');e.classList.add('hidden');t.classList.remove('hidden');vp.classList.add('hidden');bo.classList.add('hidden');po.classList.add('hidden');closeSubEditor()}};
+window.closeProfile=()=>get('profile-modal').classList.add('hidden');
+window.openSubEditor=type=>{currentSubEditor=type;const o=get('sub-editor-overlay'),t=get('sub-editor-title'),b=get('sub-editor-body');o.classList.remove('hidden');
+    let h='';
+    if(type==='info'){
+        t.innerText="Edit Info";
+        h=`<div><label class="block text-xs text-gray-400 font-bold mb-1">Gender</label><select id="sub-input-gender" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg text-white"><option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option><option value="Hidden">Hidden</option></select></div>
+           <div><label class="block text-xs text-gray-400 font-bold mb-1">Age</label><input type="number" id="sub-input-age" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg text-white" placeholder="Age"></div>`;
+    } else if(type==='username'){
+        t.innerText="Edit Username";
+        h=`<div><label class="block text-xs text-gray-400 font-bold mb-1">New Username</label><input type="text" id="sub-input-username" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg text-white" value="${userData.username}"></div>`;
+    } else if(type==='mood'){
+        t.innerText="Edit Mood";
+        h=`<div><label class="block text-xs text-gray-400 font-bold mb-1">Status / Mood</label><input type="text" id="sub-input-mood" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg text-white" value="${userData.mood||''}" placeholder="How are you feeling?"></div>`;
+    } else if(type==='bio'){
+        t.innerText="Edit Bio";
+        h=`<div><label class="block text-xs text-gray-400 font-bold mb-1">About Me</label><textarea id="sub-input-bio" rows="6" class="w-full bg-gray-900 border border-gray-700 p-3 rounded-lg text-white resize-none">${userData.bio||''}</textarea></div>`;
+    }
+    b.innerHTML=h;
+    if(type==='info'){get('sub-input-gender').value=userData.gender||'Hidden';get('sub-input-age').value=userData.age||''}
+};
+window.closeSubEditor=()=>{get('sub-editor-overlay').classList.add('hidden');currentSubEditor=null};
+window.saveSubEditor=async()=>{if(!curUser||!currentSubEditor)return;const u={};
+    if(currentSubEditor==='info'){u.gender=get('sub-input-gender').value;u.age=get('sub-input-age').value}
+    else if(currentSubEditor==='username'){u.username=get('sub-input-username').value}
+    else if(currentSubEditor==='mood'){u.mood=get('sub-input-mood').value}
+    else if(currentSubEditor==='bio'){u.bio=get('sub-input-bio').value}
+    try{await updateDoc(doc(db,"users",curUser.uid),u);showToast("Saved!");closeSubEditor();openProfile(curUser.uid,true)}catch(e){showToast("Error saving",!0)}
+};
+window.triggerAvatarUpload=()=>{isEditing&&get('avatar-upload').click()};window.triggerBannerUpload=()=>{isEditing&&get('banner-upload').click()};
 on(get('avatar-upload'),'change',async e=>{if(e.target.files[0]){const b=await hFU(e.target.files[0]);openEditor(b);e.target.value=''}});
 const ec=get('editor-canvas');
 let ex=null;
@@ -691,12 +793,12 @@ window.editorRotate=()=>{edCfg.r=(edCfg.r+90)%360;drawEd()};window.editorFlip=a=
 if(ec) on(ec,'mousedown',e=>{isDrag=!0;dragStart={x:e.clientX,y:e.clientY}});
 window.addEventListener('mousemove',e=>{if(isDrag&&curEdImg){const dx=e.clientX-dragStart.x,dy=e.clientY-dragStart.y,r=-edCfg.r*Math.PI/180;edCfg.x+=(dx*Math.cos(r)-dy*Math.sin(r))*edCfg.h;edCfg.y+=(dx*Math.sin(r)+dy*Math.cos(r))*edCfg.v;dragStart={x:e.clientX,y:e.clientY};drawEd()}});
 window.addEventListener('mouseup',()=>isDrag=!1);
-window.saveEditor=()=>{if(!ec)return;pAv=ec.toDataURL('image/jpeg',.9);get('profile-avatar-img').src=pAv;closeEditor()};
-window.saveProfileChanges=async()=>{if(!curUser)return;const p={username:get('edit-username-input').value,bio:get('edit-bio-input').value,presence:get('edit-status-input').value,settings:{soundMsg:get('pref-sound-msg').checked,soundMention:get('pref-sound-mention').checked}};if(pAv)p.photoURL=pAv;if(pBn)p.bannerURL=pBn;try{await updateDoc(doc(db,"users",curUser.uid),p);pAv=null;pBn=null;toggleProfileEdit()}catch(e){alert("Error")}};
-window.toggleProfileEdit=()=>{isEditing=!isEditing;const v=get('profile-view-mode'),e=get('profile-edit-mode'),o=document.querySelectorAll('.edit-overlay');if(isEditing){v.classList.add('hidden');e.classList.remove('hidden');o.forEach(x=>x.classList.remove('hidden'))}else{v.classList.remove('hidden');e.classList.add('hidden');o.forEach(x=>x.classList.add('hidden'))}};
+window.saveEditor=()=>{if(!ec)return;pAv=ec.toDataURL('image/jpeg',.9);get('profile-avatar-img').src=pAv;closeEditor();saveProfileChanges()};
+window.saveProfileChanges=async()=>{if(!curUser)return;const p={};if(pAv)p.photoURL=pAv;if(pBn)p.bannerURL=pBn;try{await updateDoc(doc(db,"users",curUser.uid),p);pAv=null;pBn=null;}catch(e){alert("Error")}};
+window.toggleProfileEdit=()=>{isEditing=!isEditing;const v=get('profile-view-content'),e=get('profile-edit-content'),t=get('edit-profile-trigger'),vp=get('view-profile-trigger'),bo=get('banner-edit-overlay'),po=get('pfp-edit-overlay');if(isEditing){v.classList.add('hidden');e.classList.remove('hidden');t.classList.add('hidden');vp.classList.remove('hidden');bo.classList.remove('hidden');po.classList.remove('hidden')}else{v.classList.remove('hidden');e.classList.add('hidden');t.classList.remove('hidden');vp.classList.add('hidden');bo.classList.add('hidden');po.classList.add('hidden');closeSubEditor()}};
 window.closeProfile=()=>get('profile-modal').classList.add('hidden');
 window.triggerAvatarUpload=()=>{isEditing&&get('avatar-upload').click()};window.triggerBannerUpload=()=>{isEditing&&get('banner-upload').click()};
-on(get('banner-upload'),'change',async e=>{if(e.target.files[0]){const b=await hFU(e.target.files[0]);get('profile-banner-img').src=b;pBn=b}});
+on(get('banner-upload'),'change',async e=>{if(e.target.files[0]){const b=await hFU(e.target.files[0]);get('profile-banner-img').src=b;pBn=b;saveProfileChanges()}});
 function hFU(f){return new Promise((r,j)=>{const x=new FileReader();x.readAsDataURL(f);x.onload=()=>r(x.result);x.onerror=e=>j(e)})}
 window.openStaffActionMenu=async()=>{const m=get('staff-action-menu'),aa=get('admin-actions-only'),mr=getRankIdx(userData.rank),tr=getRankIdx(viewRank);if(tr<=mr){alert("Blocked");return}const s=await getDoc(doc(db,"users",viewId));if(!s.exists())return;const d=s.data(),n=Date.now(),im=d.mutedUntil&&d.mutedUntil.toMillis()>n,ik=d.kickedUntil&&d.kickedUntil.toMillis()>n,ib=d.banned;const t=(i,v)=>get(i).classList.toggle('hidden',!v);t('btn-mute',!im);t('btn-unmute',im);t('btn-kick',!ik);t('btn-unkick',ik);t('btn-ban',!ib);t('btn-unban',ib);get('staff-rank-select').innerHTML=RANKS.filter((r,i)=>i>mr).map(r=>`<option value="${r.name}">${r.name}</option>`).join('');m.classList.remove('hidden');aa.classList.toggle('hidden',mr>=getRankIdx("Moderator"))};
 window.closeStaffActionMenu=()=>get('staff-action-menu').classList.add('hidden');
@@ -714,7 +816,7 @@ window.sendBroadcast=async()=>{const t=get('broadcast-input').value;if(!t.trim()
 function esc(t){const m={'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'};return t.replace(/[&<>"']/g,x=>m[x])}
 window.toggleMobileMenu=()=>{const s=get('right-sidebar'),o=get('mobile-menu-overlay');s.classList.toggle('transform');s.classList.toggle('translate-x-full');o.classList.toggle('hidden',s.classList.contains('translate-x-full'))};
 window.copyInviteLink=()=>{if(!curUser)return;navigator.clipboard.writeText(`${window.location.origin}${window.location.pathname}?ref=${curUser.uid}`);alert("Copied")};
-window.toggleLike=async()=>{if(!curUser||!viewId||viewId===curUser.uid)return;const r=doc(db,"users",viewId),b=get('like-btn'),c=get('profile-likes-count'),l=b.classList.contains('text-ruby-500');let n=parseInt(c.innerText)||0;if(l){b.classList.remove('text-ruby-500');b.classList.add('text-gray-500');c.innerText=Math.max(0,n-1);await updateDoc(r,{likes:Math.max(0,n-1),likedBy:arrayRemove(curUser.uid)})}else{b.classList.add('text-ruby-500');b.classList.remove('text-gray-500');c.innerText=n+1;await updateDoc(r,{likes:n+1,likedBy:arrayUnion(curUser.uid)});sendNotif(viewId,`${userData.username} liked your profile.`)}};
+window.toggleLike=async()=>{if(!curUser||!viewId||viewId===curUser.uid)return;const r=doc(db,"users",viewId),b=get('like-btn'),c=get('profile-likes-count'),l=b.classList.contains('text-ruby-500');let n=parseInt(c.innerText)||0;if(l){b.classList.remove('text-ruby-500');b.classList.add('text-blue-400');c.innerText=Math.max(0,n-1);await updateDoc(r,{likes:Math.max(0,n-1),likedBy:arrayRemove(curUser.uid)})}else{b.classList.add('text-ruby-500');b.classList.remove('text-blue-400');c.innerText=n+1;await updateDoc(r,{likes:n+1,likedBy:arrayUnion(curUser.uid)});sendNotif(viewId,`${userData.username} liked your profile.`)}};
 window.initiatePrivateChat=async(fl=!1)=>{if(!curUser||!viewId)return;const s=await getDoc(doc(db,"users",viewId)),p=s.exists()?s.data():{username:"User",photoURL:D_PFP};closeProfile();if(fl)openFloatingChat(viewId,p.username,p.photoURL||D_PFP);else{const cid=curUser.uid<viewId?`${curUser.uid}_${viewId}`:`${viewId}_${curUser.uid}`;loadChat(cid,{...p,uid:viewId})}};
 window.openWallet=()=>{if(!userData)return;get('wallet-coins').innerText=(userData.coins||0).toLocaleString();get('wallet-gems').innerText=(userData.gems||0).toLocaleString();get('wallet-modal').classList.remove('hidden')};
 window.closeWallet=()=>get('wallet-modal').classList.add('hidden');
