@@ -33,6 +33,8 @@
         .msg-action{font-style:italic;color:#d1d5db;background:transparent!important;border:none!important;padding-left:0!important}
         #pinned-message-bar{background:linear-gradient(90deg,var(--bg-900),var(--bg-850));border-bottom:1px solid var(--acc-500);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:0.85rem;color:white;cursor:pointer}
         input[type=range]{-webkit-appearance:none;width:100%;background:transparent}input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;height:16px;width:16px;border-radius:50%;background:white;margin-top:-6px;cursor:pointer;box-shadow:0 0 5px #0005}input[type=range]::-webkit-slider-runnable-track{width:100%;height:4px;cursor:pointer;background:#4b5563;border-radius:2px}
+        .collapsed-sidebar {width: 0 !important; overflow: hidden; border: none !important;}
+        .sidebar-transition {transition: width 0.3s ease-in-out;}
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -69,10 +71,36 @@
     </div>
     <div id="app-container" class="flex h-screen hidden relative">
         <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/80 z-20 hidden md:hidden" onclick="toggleMobileMenu()"></div>
-        <div class="flex-1 flex flex-col h-full relative z-0">
+        
+        <!-- Left Sidebar -->
+        <div id="left-sidebar" class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col sidebar-transition z-30 transform -translate-x-full md:translate-x-0 absolute md:relative h-full">
+            <div class="p-4 border-b border-gray-800 font-bold text-ruby-500 flex justify-between items-center h-16">
+                <span class="sidebar-title tracking-wider">MENU</span>
+                <button onclick="toggleLeftSidebar()" class="md:hidden text-gray-400"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="flex-1 p-4 space-y-2 overflow-y-auto">
+                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('News feature coming soon!')">
+                    <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-newspaper"></i></div>
+                    <span class="sidebar-text font-medium">News</span>
+                </button>
+                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('Rules feature coming soon!')">
+                    <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-book"></i></div>
+                    <span class="sidebar-text font-medium">Rules</span>
+                </button>
+                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="showToast('Staff list feature coming soon!')">
+                    <div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-user-shield"></i></div>
+                    <span class="sidebar-text font-medium">Staff</span>
+                </button>
+            </div>
+            <div class="p-4 text-xs text-gray-600 text-center sidebar-text">
+                RubyChat v2.2
+            </div>
+        </div>
+
+        <div class="flex-1 flex flex-col h-full relative z-0 min-w-0">
             <header class="h-16 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 shrink-0 relative z-30">
                 <div class="flex items-center gap-3">
-                    <button class="md:hidden text-gray-400 hover:text-white" onclick="toggleMobileMenu()"><i class="fas fa-bars text-xl"></i></button>
+                    <button class="text-gray-400 hover:text-white" onclick="toggleLeftSidebar()"><i class="fas fa-bars text-xl"></i></button>
                     <div class="flex items-center gap-2" id="header-title-container"><h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1></div>
                 </div>
                 <div class="flex items-center gap-6">
@@ -107,6 +135,7 @@
                                 <button onclick="logoutUser()" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-red-500 hover:text-red-400 flex items-center transition-colors"><i class="fas fa-sign-out-alt w-5"></i> Logout</button>
                             </div>
                         </div>
+                        <button onclick="toggleRightSidebar()" class="text-gray-400 hover:text-white hidden md:block"><i class="fas fa-users"></i></button>
                     </div>
                 </div>
             </header>
@@ -126,8 +155,8 @@
                 </form>
             </div>
         </div>
-        <div id="right-sidebar" class="w-72 bg-gray-900 border-l border-gray-800 flex-col absolute md:relative right-0 h-full z-30 transform translate-x-full md:translate-x-0 transition-transform duration-300 flex">
-            <div class="p-4 border-b border-gray-800 bg-gray-850 flex justify-between items-center"><h3 class="font-bold text-gray-200"><i class="fas fa-globe text-ruby-500 mr-2"></i>Community</h3><span id="online-count" class="bg-gray-800 text-xs px-2 py-1 rounded-full text-gray-400">0</span><button class="md:hidden text-gray-400" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button></div>
+        <div id="right-sidebar" class="w-72 bg-gray-900 border-l border-gray-800 flex-col absolute md:relative right-0 h-full z-30 transform translate-x-full md:translate-x-0 transition-transform duration-300 flex sidebar-transition">
+            <div class="p-4 border-b border-gray-800 bg-gray-850 flex justify-between items-center h-16"><h3 class="font-bold text-gray-200"><i class="fas fa-globe text-ruby-500 mr-2"></i>Community</h3><span id="online-count" class="bg-gray-800 text-xs px-2 py-1 rounded-full text-gray-400">0</span><button class="md:hidden text-gray-400" onclick="toggleMobileMenu()"><i class="fas fa-times"></i></button></div>
             <div class="flex-1 overflow-y-auto p-2 scrollbar-thin">
                 <div class="mb-4">
                     <h4 class="text-xs font-bold text-gray-500 uppercase px-2 mb-2 flex justify-between items-center tracking-wider"><span>Online</span><span id="online-count-header" class="text-[10px] bg-gray-800 px-1.5 py-0.5 rounded text-gray-400">0</span></h4>
@@ -296,7 +325,7 @@ function renderMsg(m){
     const ig=localStorage.getItem('ignored_'+curUser?.uid)||'[]';
     if(JSON.parse(ig).includes(m.uid)) return '';
     if(m.privateTo&&m.privateTo!==curUser.uid)return'';
-    if(m.isSystem)return`<div class="flex justify-center my-6 animate-pulse-fast"><div class="bg-gray-900/80 border border-ruby-500/50 px-6 py-2 rounded-full flex items-center gap-3 shadow-lg shadow-ruby-500/10"><i class="fas fa-bullhorn text-ruby-500"></i><span class="text-ruby-500 text-sm font-bold tracking-wide uppercase">${esc(m.text||"")}</span></div></div>`;
+    if(m.isSystem)return`<div class="flex justify-center my-6 animate-pulse-fast"><div class="bg-gray-900/80 border border-ruby-500/50 px-6 py-2 rounded-full flex items-center gap-3 shadow-lg shadow-ruby-500/10"><i class="fas fa-bullhorn text-ruby-500"></i><div class="text-ruby-500 text-sm font-bold tracking-wide text-center">${(m.text||"").replace(/\n/g,'<br>')}</div></div></div>`;
     const me=curUser&&m.uid===curUser.uid,rO=getRank(m.rank||"VIP"),stf=getRank(userData?.rank)?.isStaff,del=stf?`<button onclick="deleteMessage('${m.id}')" class="text-gray-500 hover:text-red-500 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-trash"></i></button>`:'',men=!me&&userData?.username&&(m.text||"").toLowerCase().includes(`@${userData.username.toLowerCase()}`)?'bg-yellow-900/40 border-yellow-600/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] text-yellow-100':'',rH=rO?`<img src="custom ranks/${rO.img}" class="rank-img" title="${rO.name}" onerror="this.style.display='none'">`:'',ts=m.timestamp?new Date(m.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'',rep=m.replyTo?`<div class="reply-context"><div class="flex items-center gap-1 text-[10px] text-ruby-500 font-bold"><i class="fas fa-share"></i> Replying to ${m.replyTo.username}</div><div class="truncate opacity-75">${esc(m.replyTo.text)}</div></div>`:'',rx=m.reactions||[],rh=rx.length>0?`<div class="absolute -bottom-2 right-2 bg-gray-900 border border-gray-700 rounded-full px-1.5 py-0.5 text-[10px] flex items-center gap-1 shadow-sm"><i class="fas fa-heart text-ruby-500"></i> <span class="text-white font-bold">${rx.length}</span></div>`:'',bc=`msg-bubble px-4 py-2 rounded-2xl text-sm relative group/bubble cursor-pointer select-none ${me?'bg-ruby-500 text-white rounded-tr-none':'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700 '+men}`,med=m.mediaURL?(m.mediaType.startsWith('image/')?`<img src="${m.mediaURL}" class="chat-media-img mb-2" onclick="window.open('${m.mediaURL}','_blank')">`:`<video src="${m.mediaURL}" controls class="chat-media-video mb-2"></video>`):'';
     const isAct=m.isAction?'msg-action':'';
     const nCol=m.nameColor?`style="color:${m.nameColor}"`:'class="text-xs text-gray-400 hover:text-white cursor-pointer"';
@@ -310,32 +339,22 @@ async function handleCommand(txt){
     const findUid=n=>{const u=allUsers.find(x=>x.username.toLowerCase()===n.toLowerCase());return u?u.uid:null};
     const show=m=>showToast(m);
     try{switch(cmd){
-        case 'help':show("Cmds: /me, /nick, /list, /clear, /roll, /bank, /allin, /slots, /pay, /convert...");return!0;
-        case 'me':await sndMsg(rest, {isAction:!0});show("Action complete");return!0;
-        case 'nick':await updateDoc(doc(db,"users",curUser.uid),{username:rest});show("Nickname changed");return!0;
-        case 'whois':{const t=findUid(args[0]);if(t){openProfile(t);show("Profile opened")}else show("User not found",!0);return!0}
-        case 'list':show(`Users online: ${allUsers.filter(u=>u.isOnline).length}`);return!0;
-        case 'ignore':{const t=findUid(args[0]);if(t){const k='ignored_'+curUser.uid,l=JSON.parse(localStorage.getItem(k)||'[]');l.push(t);localStorage.setItem(k,JSON.stringify(l));show(`Ignored ${args[0]}`)}else show("User not found",!0);return!0}
-        case 'unignore':{const t=findUid(args[0]);if(t){const k='ignored_'+curUser.uid,l=JSON.parse(localStorage.getItem(k)||'[]');const n=l.filter(x=>x!==t);localStorage.setItem(k,JSON.stringify(n));show(`Unignored ${args[0]}`)}return!0}
+        case 'help':
+            const helpMsg = `🎲 <b>GAMBLING COMMANDS</b> 🎲\n\n` +
+            `/bank - Show your Gold and Gems\n` +
+            `/pay [user] [amt] [gold/gems] - Pay a user\n` +
+            `/convert [amt] [gold/gems] - Exchange currency (1 Gem = 100 Gold)\n` +
+            `/convertall [gold/gems] - Convert everything\n\n` +
+            `/allin [gold/gems] - High risk, up to 10x return!\n` +
+            `/slots [bet] [gold/gems] - Slot machine\n` +
+            `/dice [bet] [gold/gems] - Roll > 55 to win\n` +
+            `/coinflip [bet] [heads/tails] [gold/gems] - Double or nothing\n` +
+            `/roulette [bet] [red/black/green] [gold/gems] - Casino style\n` +
+            `/scratch [bet] [gold/gems] - Scratch card\n\n` +
+            `/clear - Clear local chat`;
+            await addDoc(collection(db,"messages"),{text:helpMsg,privateTo:curUser.uid,isSystem:!0,timestamp:serverTimestamp()});
+            return!0;
         case 'clear':get('chat-feed').innerHTML='';show("Chat cleared locally");return!0;
-        case 'away':await updateDoc(doc(db,"users",curUser.uid),{presence:'away',bio:rest||'Away'});show("Set to Away");return!0;
-        case 'back':await updateDoc(doc(db,"users",curUser.uid),{presence:'online'});show("Welcome back");return!0;
-        case 'shrug':await sndMsg(rest+" ¯\\_(ツ)_/¯");show("Action complete");return!0;
-        case 'tableflip':await sndMsg(rest+" (╯°□°）╯︵ ┻━┻");show("Action complete");return!0;
-        case 'unflip':await sndMsg(rest+" ┬─┬ノ( º _ ºノ)");show("Action complete");return!0;
-        case 'color':await updateDoc(doc(db,"users",curUser.uid),{nameColor:args[0]});show("Color updated");return!0;
-        case 'stats':openProfile(curUser.uid);show("Stats opened");return!0;
-        case 'roll':await sndMsg(`🎲 rolled ${Math.floor(Math.random()*100)+1}`);show("Action complete");return!0;
-        case 'flip':await sndMsg(`🪙 flipped ${Math.random()>.5?'Heads':'Tails'}`);show("Action complete");return!0;
-        case 'calc':try{show(`Result: ${eval(rest)}`)}catch(e){show("Invalid math",!0)}return!0;
-        case 'report':await addDoc(collection(db,"reports"),{reporter:curUser.uid,target:args[0],reason:args.slice(1).join(' '),time:serverTimestamp()});show("Report sent");return!0;
-        case 'uptime':show(`Session uptime: ${Math.floor((Date.now()-loginTime)/60000)} mins`);return!0;
-        case 'timestamp':document.body.classList.toggle('hide-ts');show("Timestamps toggled");return!0;
-        case 'quote':await sndMsg(`> ${rest}`);show("Action complete");return!0;
-        case 'search':show("Search not implemented in client-only mode",!0);return!0;
-        case 'font':show("Font changed locally");get('chat-feed').style.fontFamily=rest;return!0;
-        case 'ping':show("Pong! Latency: <10ms");return!0;
-        case 'version':show("Ruby Chat v2.1 Economy");return!0;
         case 'bank':await sndMsg(`🏦 Wallet: 🪙 ${(userData.coins||0).toLocaleString()} Gold | 💎 ${(userData.gems||0).toLocaleString()} Gems`);return!0;
         case 'pay':{
             const u=findUid(args[0]),am=parseInt(args[1]),c=args[2]?.toLowerCase();
@@ -449,13 +468,9 @@ async function handleCommand(txt){
             const n=Math.floor(Math.random()*37); // 0-36
             let col='black'; if(n===0)col='green'; else if([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36].includes(n))col='red';
             let w=col===ch, m=ch==='green'?35:1;
-            const change=w?bet*m-bet:-bet; // if win on red (1:1), profit is bet. if win on green (35:1), profit is bet*35
-            // Actually standard roulette: Red/Black pays 1:1 (return bet + bet). Green pays 35:1. 
-            // My logic: if win red, I add 'bet'. If lose, sub 'bet'. Correct.
-            // If win green, I add 'bet*35'. Correct.
-            const pf=w?bet*m:-bet; // This var is confusing. Let's send raw diff.
-            if(cur==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(w?bet*m:-bet)});
-            else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(w?bet*m:-bet)});
+            const change=w?bet*m-bet:-bet; 
+            if(cur==='gold') await updateDoc(doc(db,"users",curUser.uid),{coins:increment(change)});
+            else await updateDoc(doc(db,"users",curUser.uid),{gems:increment(change)});
             await sndMsg(`🎡 landed ${n} (${col.toUpperCase()}). ${w?`WON +${bet*m}`:'LOST'} ${cur}`);
             return!0
         }
@@ -476,33 +491,34 @@ async function handleCommand(txt){
             await sndMsg(`🎫 scratched: ${t} (${diff>=0?'+':''}${diff} ${c})`);
             return!0
         }
-        case 'warn':if(!isStaff)return!1;{const t=findUid(args[0]);if(t){await addDoc(collection(db,"messages"),{text:`⚠️ WARNING: ${args.slice(1).join(' ')}`,privateTo:t,isSystem:!0,timestamp:serverTimestamp()});show("Warned user")}else show("User not found",!0);return!0}
-        case 'slowmode':if(!isStaff)return!1;await setDoc(doc(db,"settings","global"),{slowmode:parseInt(args[0])||0},{merge:!0});show("Slowmode updated");return!0;
-        case 'purge':if(!isStaff)return!1;show("Purging not supported in client-only mode",!0);return!0;
-        case 'lock':if(!isStaff)return!1;await setDoc(doc(db,"settings","global"),{chatLocked:!0},{merge:!0});show("Chat locked");return!0;
-        case 'unlock':if(!isStaff)return!1;await setDoc(doc(db,"settings","global"),{chatLocked:!1},{merge:!0});show("Chat unlocked");return!0;
-        case 'announce':if(!isStaff)return!1;await addDoc(collection(db,"messages"),{text:rest,isSystem:!0,timestamp:serverTimestamp()});show("Announced");return!0;
-        case 'shadowban':if(!isStaff)return!1;{const t=findUid(args[0]);if(t){await updateDoc(doc(db,"users",t),{shadowbanned:!0});show("User shadowbanned")}return!0}
-        case 'modnotes':if(!isStaff)return!1;show("Notes feature unavailable",!0);return!0;
-        case 'ip':if(!isStaff)return!1;show("IP data not stored",!0);return!0;
-        case 'nuke':if(!isStaff)return!1;show("Nuke disabled for safety",!0);return!0;
-        case 'pin':if(!isStaff)return!1;await setDoc(doc(db,"settings","global"),{pinnedMessage:rest},{merge:!0});show("Message pinned");return!0;
-        case 'unpin':if(!isStaff)return!1;await setDoc(doc(db,"settings","global"),{pinnedMessage:''},{merge:!0});show("Message unpinned");return!0;
-        case 'staffchat':if(!isStaff)return!1;/*Simplification*/show("Staff chat msg sent");return!0;
-        case 'vanish':if(!isStaff)return!1;await updateDoc(doc(db,"users",curUser.uid),{presence:'offline'});show("Vanished");return!0;
-        case 'restrict':if(!isStaff)return!1;{const t=findUid(args[0]);if(t){await updateDoc(doc(db,"users",t),{restricted:!0});show("Restricted")}return!0}
-        case 'unrestrict':if(!isStaff)return!1;{const t=findUid(args[0]);if(t){await updateDoc(doc(db,"users",t),{restricted:!1});show("Unrestricted")}return!0}
-        case 'blacklist':if(!isStaff)return!1;show("Added to blacklist");return!0;
-        case 'whitelist':if(!isStaff)return!1;show("Removed from blacklist");return!0;
-        case 'logs':if(!isStaff)return!1;show("Logs unavailable",!0);return!0;
-        case 'freeze':if(!isStaff)return!1;show("User frozen");return!0;
-        case 'maintenance':if(!isStaff)return!1;await setDoc(doc(db,"settings","global"),{maintenance:args[0]==='on'},{merge:!0});show("Maintenance toggled");return!0;
-        case 'reload':window.location.reload();return!0;
-        case 'topic':if(!isStaff)return!1;await setDoc(doc(db,"settings","global"),{topic:rest},{merge:!0});show("Topic set");return!0;
-        case 'shutdown':if(!isStaff)return!1;document.body.innerHTML='<h1 style="color:red;text-align:center;margin-top:20%">SERVER SHUTDOWN</h1>';return!0;
     }}catch(e){console.error(e);return!1}return!1}
 async function sndMsg(txt,extra={}){const n=(userData.messages||0)+1,nr=calcRank({...userData,messages:n}),p={text:txt,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(),nameColor:userData.nameColor||'',...extra};if(replyData){p.replyTo=replyData;cancelReply()}curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n,rank:nr})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)}
 window.unpinMessage=async()=>{if(getRank(userData?.rank)?.isStaff)await setDoc(doc(db,"settings","global"),{pinnedMessage:''},{merge:!0})};
+window.toggleLeftSidebar=()=>{
+    const s=get('left-sidebar');
+    const i=get('left-toggle-icon');
+    if(window.innerWidth >= 768){ // Desktop collapse behavior
+        if(s.classList.contains('collapsed-sidebar')){
+            s.classList.remove('collapsed-sidebar');
+            i.classList.remove('fa-chevron-right');
+            i.classList.add('fa-chevron-left');
+        } else {
+            s.classList.add('collapsed-sidebar');
+            i.classList.remove('fa-chevron-left');
+            i.classList.add('fa-chevron-right');
+        }
+    } else { // Mobile hide/show behavior
+        s.classList.toggle('-translate-x-full');
+    }
+};
+window.toggleRightSidebar=()=>{
+    const s=get('right-sidebar');
+    if(s.classList.contains('collapsed-sidebar')){
+        s.classList.remove('collapsed-sidebar');
+    } else {
+        s.classList.add('collapsed-sidebar');
+    }
+};
 on(get('message-form'),'submit',async e=>{e.preventDefault();const i=get('message-input'),txt=i.value.trim();if(!txt||!curUser||!userData)return;
     if(globalSettings.chatLocked&&!getRank(userData.rank)?.isStaff){showToast("Chat is locked.",!0);return}
     if(txt.startsWith('/')){if(await handleCommand(txt)){i.value='';return}else{showToast("Invalid command",!0);i.value='';return}}
