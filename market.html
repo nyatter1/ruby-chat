@@ -279,23 +279,37 @@
 
             try {
                 await runTransaction(db, async (transaction) => {
-                    // 1. Read fresh User Data
+                    // REFACTOR: All Reads MUST happen before any Writes in a transaction
                     const userRef = doc(db, "users", currentUser.uid);
-                    const userDoc = await transaction.get(userRef);
-                    if (!userDoc.exists()) throw "User error";
-                    const currentCoins = userDoc.data().coins || 0;
-
-                    if (currentCoins < price) throw "Not enough coins!";
-
-                    // 2. Read Seller Data (to pay them)
                     const sellerRef = doc(db, "users", sellerUid);
-                    
-                    // 3. Read Item Data (to add buyer)
                     const itemRef = doc(db, "market_items", itemId);
+
+                    // 1. PERFORM ALL READS
+                    const userDoc = await transaction.get(userRef);
+                    const sellerDoc = await transaction.get(sellerRef);
+                    const itemDoc = await transaction.get(itemRef);
+
+                    if (!userDoc.exists()) throw "User error";
+                    if (!sellerDoc.exists()) throw "Seller not found";
+                    if (!itemDoc.exists()) throw "Item no longer exists";
+
+                    const userData = userDoc.data();
+                    const sellerData = sellerDoc.data();
+                    const itemData = itemDoc.data();
+
+                    // Logic Checks
+                    const currentCoins = userData.coins !== undefined ? userData.coins : 0;
+                    if (currentCoins < price) throw "Not enough coins!";
                     
-                    // Writes
+                    if (itemData.buyers && itemData.buyers.includes(currentUser.uid)) {
+                        throw "Already owned";
+                    }
+
+                    const sellerCoins = sellerData.coins !== undefined ? sellerData.coins : 0;
+
+                    // 2. PERFORM ALL WRITES
                     transaction.update(userRef, { coins: currentCoins - price });
-                    transaction.update(sellerRef, { coins: (await transaction.get(sellerRef)).data().coins + price });
+                    transaction.update(sellerRef, { coins: sellerCoins + price });
                     transaction.update(itemRef, { buyers: arrayUnion(currentUser.uid) });
                 });
 
@@ -303,7 +317,7 @@
                 // The onSnapshot will update the UI automatically
             } catch (e) {
                 console.error(e);
-                showToast(e === "Not enough coins!" ? e : "Transaction failed", true);
+                showToast(e === "Not enough coins!" || e === "Already owned" ? e : "Transaction failed", true);
                 btn.innerHTML = originalBtn;
                 btn.disabled = false;
             }
