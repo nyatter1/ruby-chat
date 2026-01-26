@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Ruby Chat</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{gray:{850:'var(--bg-850)',900:'var(--bg-900)',950:'var(--bg-950)'},ruby:{500:'var(--acc-500)',600:'var(--acc-600)'},pm:{header:'#321fdb',bg:'#1e1e2f'}},animation:{'pulse-fast':'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'}}}}</script>
+    <script>tailwind.config={darkMode:'class',theme:{extend:{colors:{gray:{850:'#1f2937',900:'#111827',950:'#030712'},ruby:{500:'#e0115f',600:'#c20e50'}},animation:{'pulse-fast':'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite'}}}}</script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Massive Font Import -->
-    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Alfa+Slab+One&family=Amatic+SC&family=Annie+Use+Your+Telescope&family=Anton&family=Architects+Daughter&family=Audiowide&family=Bangers&family=Barrio&family=Bebas+Neue&family=Berkshire+Swash&family=Bitter&family=Black+Ops+One&family=Boogaloo&family=Bowlby+One+SC&family=Bungee&family=Bungee+Inline&family=Bungee+Shade&family=Butcherman&family=Cabin+Sketch&family=Caveat&family=Changa+One&family=Chewy&family=Cinzel&family=Comfortaa&family=Comic+Neue&family=Coming+Soon&family=Concert+One&family=Cookie&family=Courgette&family=Covered+By+Your+Grace&family=Creepster&family=Dancing+Script&family=Didact+Gothic&family=Diplomata&family=Dosis&family=Eater&family=Electrolize&family=Emilys+Candy&family=Ewert&family=Exo+2&family=Faster+One&family=Fjalla+One&family=Fredoka+One&family=Frijole&family=Gloria+Hallelujah&family=Gochi+Hand&family=Grand+Hotel&family=Great+Vibes&family=Grenze+Gotisch&family=Hammersmith+One&family=Hanalei&family=Handlee&family=Homemade+Apple&family=Inconsolata&family=Indie+Flower&family=Jolly+Lodger&family=Josefin+Sans&family=Jura&family=Just+Another+Hand&family=Kalam&family=Kaushan+Script&family=Kelly+Slab&family=Knewave&family=Lato&family=League+Script&family=Lemon&family=Lobster&family=Lobster+Two&family=Love+Ya+Like+A+Sister&family=Luckiest+Guy&family=Major+Mono+Display&family=Marck+Script&family=MedievalSharp&family=Megrim&family=Merienda&family=Merriweather&family=Metal+Mania&family=Metamorphous&family=Michroma&family=Monofett&family=Monoton&family=Montserrat&family=Mountains+of+Christmas&family=Mrs+Sheppards&family=Neucha&family=Neuton&family=New+Rocker&family=Niconne&family=Nosifer&family=Nothing+You+Could+Do&family=Nova+Cut&family=Nova+Flat&family=Nova+Mono&family=Nova+Oval&family=Nova+Round&family=Nova+Script&family=Nova+Slim&family=Nova+Square&family=Nunito&family=Old+Standard+TT&family=Open+Sans&family=Orbitron&family=Oswald&family=Pacifico&family=Patrick+Hand&family=Permanent+Marker&family=Philosopher&family=Play&family=Playball&family=Playfair+Display&family=Poiret+One&family=Poller+One&family=Poppins&family=Press+Start+2P&family=Prosto+One&family=Quatruota&family=Quicksand&family=Racing+Sans+One&family=Raleway&family=Rammetto+One&family=Ranchers&family=Revalia&family=Righteous&family=Roboto&family=Roboto+Mono&family=Roboto+Slab&family=Rock+Salt&family=Rubik+Glitch&family=Rubik+Iso&family=Rubik+Marker+Hatch&family=Rubik+Wet+Paint&family=Russo+One&family=Rye&family=Sacramento&family=Sancreek&family=Satisfy&family=Schoolbell&family=Shadows+Into+Light&family=Shojumaru&family=Short+Stack&family=Sigmar+One&family=Skranji&family=Slackey&family=Smokum&family=Sniglet&family=Special+Elite&family=Spicy+Rice&family=Squada+One&family=Staatliches&family=Stardos+Stencil&family=Sue+Ellen+Francisco&family=Sunshiney&family=Syncopate&family=Tangerine&family=Tasty+Birds&family=Teko&family=Titan+One&family=Trade+Winds&family=Ubuntu&family=Ultra&family=Uncursal&family=UnifrakturCook&family=UnifrakturMaguntia&family=Unkempt&family=Unlock&family=Unna&family=VT323&family=Vampiro+One&family=Varela+Round&family=Vast+Shadow&family=Voces&family=Voltaire&family=Waiting+for+the+Sunrise&family=Wallpoet&family=Walter+Turncoat&family=Warnes&family=Wire+One&family=Work+Sans&family=Yanone+Kaffeesatz&family=Yellowtail&family=Yeseva+One&family=Zeyada&display=swap" rel="stylesheet">
     <style>
         :root{--bg-950:#030712;--bg-900:#111827;--bg-850:#1f2937;--acc-500:#e0115f;--acc-600:#c20e50}
         ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:var(--bg-900)}::-webkit-scrollbar-thumb{background:var(--bg-850);border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#4b5563}
@@ -16,13 +14,6 @@
         .reply-context{border-left:3px solid var(--acc-500);background:rgba(255,255,255,.05);padding:4px 8px;border-radius:0 8px 8px 0;margin-bottom:4px;font-size:.75rem;color:#d1d5db;cursor:pointer}.reply-context:hover{background:rgba(255,255,255,.1)}
         .typing-dots{display:inline-flex;align-items:center;gap:2px}.typing-dot{width:4px;height:4px;border-radius:50%;background-color:#9ca3af;animation:typing 1.4s infinite ease-in-out both}.typing-dot:nth-child(1){animation-delay:-.32s}.typing-dot:nth-child(2){animation-delay:-.16s}
         @keyframes typing{0%,100%,80%{transform:scale(0);opacity:.5}40%{transform:scale(1);opacity:1}}.admin-tab-active{border-bottom:2px solid var(--acc-500);color:var(--acc-500)}
-        .pm-box{position:absolute;min-width:320px;min-height:400px;width:350px;height:450px;display:flex;flex-direction:column;background-color:var(--bg-900);border:1px solid var(--bg-850);border-radius:12px;box-shadow:0 20px 25px -5px #0009,0 10px 10px -5px #0006;z-index:50;overflow:hidden;pointer-events:auto;backdrop-filter:blur(10px)}
-        .pm-header{background:linear-gradient(90deg,var(--bg-850),var(--bg-900));border-bottom:1px solid var(--bg-850);color:#fff;padding:.75rem 1rem;cursor:grab;display:flex;justify-content:space-between;align-items:center;user-select:none}.pm-header:active{cursor:grabbing}
-        .pm-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem;background-image:radial-gradient(var(--bg-850) 1px,transparent 1px);background-size:20px 20px;background-color:var(--bg-950)}
-        .pm-footer{padding:.75rem;background-color:var(--bg-850);border-top:1px solid var(--bg-850)}
-        .pm-bubble-me{background:linear-gradient(135deg,var(--acc-500) 0,var(--acc-600) 100%);color:#fff;border-radius:18px 18px 0 18px;padding:8px 14px;font-size:.9rem;box-shadow:0 2px 4px #0003;position:relative}
-        .pm-bubble-them{background-color:var(--bg-850);color:#e5e7eb;border-radius:18px 18px 18px 0;padding:8px 14px;font-size:.9rem;box-shadow:0 2px 4px #0003;position:relative}
-        .resize-handle{position:absolute;bottom:0;right:0;width:15px;height:15px;cursor:nwse-resize;background:linear-gradient(135deg,transparent 50%,#6b7280 50%);z-index:51}
         .dropdown-enter{animation:fadeIn .1s ease-out forwards}
         @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
         #editor-canvas{background-color:#000;cursor:move;border-radius:8px;box-shadow:0 0 20px #0008}
@@ -31,7 +22,6 @@
         #toast-container{position:fixed;bottom:20px;right:20px;z-index:100;display:flex;flex-direction:column;gap:10px;pointer-events:none}
         .toast{background:#111827f2;border-left:4px solid var(--acc-500);color:#fff;padding:12px 16px;border-radius:4px;box-shadow:0 4px 6px #0005;font-size:.9rem;animation:slideIn .3s ease-out forwards;pointer-events:auto;max-width:320px;display:flex;align-items:center;gap:12px;backdrop-filter:blur(5px)}
         @keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}.toast-close{animation:fadeOut .3s ease-in forwards}@keyframes fadeOut{to{transform:translateX(100%);opacity:0}}
-        .theme-card{cursor:pointer;transition:transform .2s,border-color .2s;border:2px solid transparent}.theme-card:hover{transform:scale(1.05);border-color:var(--acc-500)}.theme-preview{height:40px;border-radius:8px;display:flex;overflow:hidden}.theme-p-col{flex:1;height:100%}
         .maintenance-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;color:white;text-align:center}.hidden-msg{display:none!important}
         .msg-action{font-style:italic;color:#d1d5db;background:transparent!important;border:none!important;padding-left:0!important}
         #pinned-message-bar{background:linear-gradient(90deg,var(--bg-900),var(--bg-850));border-bottom:1px solid var(--acc-500);padding:8px 16px;display:flex;align-items:center;gap:10px;font-size:0.85rem;color:white;cursor:pointer}
@@ -50,7 +40,6 @@
         .win-text { color: #4ade80; font-weight: 900; text-shadow: 0 0 15px rgba(74,222,128,0.2); font-size: 1.1rem; }
         .loss-text { color: #f87171; font-weight: 900; font-size: 1.1rem; }
 
-        /* Specific Profile Modal Styles */
         .profile-modal-bg { background: linear-gradient(180deg, #181825 0%, #1e1e2f 100%); }
         .profile-tab-active { background-color: #3b3b55; color: white; border-radius: 6px; font-weight: bold; }
         .profile-tab-inactive { color: #9ca3af; font-weight: 600; }
@@ -69,6 +58,9 @@
         .news-btn.active { color: var(--acc-500); }
         .news-comments { background-color: #0005; padding: 12px; display: none; }
         .news-comment { margin-bottom: 8px; font-size: 0.9rem; padding-bottom: 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        
+        .dm-active { background-color: #374151; color: white; border-left: 4px solid var(--acc-500); }
+        .dm-item:hover { background-color: #1f2937; }
     </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -129,10 +121,19 @@
         <div id="mobile-menu-overlay" class="fixed inset-0 bg-black/80 z-20 hidden md:hidden" onclick="toggleMobileMenu()"></div>
         <div id="left-sidebar" class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col sidebar-transition z-30 transform -translate-x-full md:translate-x-0 absolute md:relative h-full">
             <div class="p-4 border-b border-gray-800 font-bold text-ruby-500 flex justify-between items-center h-16"><span class="sidebar-title tracking-wider">MENU</span><button onclick="toggleLeftSidebar()" class="md:hidden text-gray-400"><i class="fas fa-times"></i></button></div>
-            <div class="flex-1 p-4 space-y-2 overflow-y-auto">
-                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openNews()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-newspaper"></i></div><span class="sidebar-text font-medium">News</span></button>
-                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openRules()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-book"></i></div><span class="sidebar-text font-medium">Rules</span></button>
-                <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openStaffModal()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-user-shield"></i></div><span class="sidebar-text font-medium">Staff</span></button>
+            <div class="flex-1 overflow-y-auto scrollbar-thin">
+                <div class="p-4 space-y-2">
+                    <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openNews()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-newspaper"></i></div><span class="sidebar-text font-medium">News</span></button>
+                    <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openRules()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-book"></i></div><span class="sidebar-text font-medium">Rules</span></button>
+                    <button class="w-full text-left p-3 rounded hover:bg-gray-800 text-gray-300 hover:text-white transition-colors flex items-center gap-3 group" onclick="openStaffModal()"><div class="w-8 h-8 rounded bg-gray-800 flex items-center justify-center group-hover:bg-ruby-500 group-hover:text-white transition-colors"><i class="fas fa-user-shield"></i></div><span class="sidebar-text font-medium">Staff</span></button>
+                </div>
+                
+                <div class="mt-2 pt-4 border-t border-gray-800">
+                    <div class="px-6 pb-2 text-xs font-bold text-gray-500 uppercase tracking-widest sidebar-text">Direct Messages</div>
+                    <div id="dm-list" class="space-y-1 p-2">
+                        <!-- DMs injected here -->
+                    </div>
+                </div>
             </div>
             <div class="p-4 text-xs text-gray-600 text-center sidebar-text">RubyChat v2.5</div>
         </div>
@@ -145,14 +146,9 @@
                         <button id="back-to-public-btn" onclick="returnToPublicChat()" class="hidden bg-gray-800 hover:bg-gray-700 text-xs px-3 py-1.5 rounded border border-gray-700 transition-colors text-ruby-500 font-bold"><i class="fas fa-arrow-left mr-1"></i> Public Chat</button>
                         <div class="relative"><button onclick="openThemes()" class="w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors border border-gray-700 text-gray-400 hover:text-ruby-500" title="Themes"><i class="fas fa-paint-brush text-sm"></i></button></div>
                         <div class="relative">
-                            <button id="envelope-btn" onclick="togglePMDropdown(event)" class="w-9 h-9 rounded-full bg-gray-800 hover:bg-gray-700 flex items-center justify-center transition-colors relative border border-gray-700"><i class="fas fa-envelope text-gray-400 hover:text-white text-sm"></i><span id="pm-badge" class="absolute top-0 right-0 w-2.5 h-2.5 bg-ruby-500 rounded-full border-2 border-gray-900 hidden"></span></button>
-                            <div id="pm-dropdown" class="absolute top-12 right-0 w-72 bg-gray-900 border border-gray-800 rounded-lg shadow-xl hidden flex-col z-50"><div class="p-3 border-b border-gray-800 text-sm font-bold text-gray-300">Inbox</div><div id="pm-list" class="max-h-60 overflow-y-auto"><div class="p-3 text-xs text-center text-gray-500">No active conversations</div></div></div>
-                        </div>
-                        <div class="relative">
                             <button onclick="toggleUserMenu(event)" class="relative group cursor-pointer focus:outline-none"><img id="header-avatar" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' fill='%239ca3af' viewBox='0 0 24 24'><path d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/></svg>" class="w-9 h-9 rounded-full border border-gray-600 object-cover bg-gray-800 default-pfp"><div id="header-status-dot" class="w-2.5 h-2.5 bg-green-500 rounded-full absolute bottom-0 right-0 border border-gray-900"></div></button>
                             <div id="user-menu-dropdown" class="absolute top-12 right-0 w-48 bg-gray-900 border border-gray-800 rounded-lg shadow-xl hidden flex-col z-50 py-2 dropdown-enter">
                                 <button onclick="openProfile(currentUser.uid, true); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-user w-5 text-gray-400"></i> My Profile</button>
-                                <a href="customise.html" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-yellow-500 hover:text-yellow-400 flex items-center transition-colors"><i class="fas fa-magic w-5"></i> Customize Profile</a>
                                 <button onclick="openWallet(); toggleUserMenu(event)" class="text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-wallet w-5 text-gray-400"></i> Wallet</button>
                                 <button id="btn-invisible" onclick="toggleInvisible(); toggleUserMenu(event)" class="hidden text-left px-4 py-2 hover:bg-gray-800 text-sm text-gray-300 hover:text-white flex items-center transition-colors"><i class="fas fa-ghost w-5 text-gray-400"></i> <span id="btn-invisible-text">Go Invisible</span></button>
                                 <a id="btn-admin-panel" href="admin.html" class="hidden text-left px-4 py-2 hover:bg-gray-800 text-sm text-ruby-500 hover:text-ruby-400 flex items-center transition-colors font-bold"><i class="fas fa-shield-alt w-5"></i> Admin Panel</a>
@@ -263,7 +259,6 @@
         </div>
     </div>
 
-    <div id="pm-layer" class="absolute inset-0 pointer-events-none overflow-hidden z-40"></div>
     <div id="themes-modal" class="fixed inset-0 z-[70] bg-black/95 hidden flex flex-col p-4 md:p-8">
         <div class="flex justify-between items-center mb-6"><h2 class="text-3xl font-bold text-white flex items-center gap-3"><i class="fas fa-paint-brush text-ruby-500"></i> Theme Store <span class="text-sm bg-ruby-500 text-white px-2 py-0.5 rounded-full" id="theme-count-badge">100+</span></h2><button onclick="closeThemes()" class="text-gray-400 hover:text-white text-2xl"><i class="fas fa-times"></i></button></div>
         <div class="flex gap-4 mb-6"><input type="text" id="theme-search" placeholder="Search themes (e.g., 'Matrix', 'Pink', 'Funny')..." class="flex-1 bg-gray-900 border border-gray-800 rounded-lg px-4 py-3 text-white focus:border-ruby-500 focus:outline-none text-lg"></div>
@@ -296,7 +291,7 @@
         </div>
     </div>
 
-    <!-- NEW COMPACT PROFILE MODAL STRUCTURE (FIXED LAYER ORDER) -->
+    <!-- NEW COMPACT PROFILE MODAL STRUCTURE -->
     <div id="profile-modal" class="fixed inset-0 z-40 bg-black/80 hidden flex items-center justify-center p-4">
         <div id="profile-modal-container" class="profile-modal-bg rounded-2xl w-full max-w-md border border-gray-700 shadow-2xl overflow-hidden flex flex-col relative" style="max-height: 95vh; height: auto;">
             
@@ -340,9 +335,9 @@
                     </div>
                 </div>
 
-                <!-- CONTENT WRAPPER (NO OVERFLOW HIDDEN) -->
+                <!-- CONTENT WRAPPER -->
                 <div class="px-6 pb-4 relative z-10">
-                    <!-- PFP (NEGATIVE MARGIN, HIGH Z-INDEX) -->
+                    <!-- PFP -->
                     <div class="relative -mt-10 mb-2 flex flex-col items-center z-50 pointer-events-auto">
                         <div class="relative group">
                             <img id="profile-avatar-img" src="" class="w-20 h-20 rounded-xl border-4 border-[#181825] object-cover bg-gray-800 default-pfp shadow-xl relative z-50">
@@ -664,8 +659,7 @@ window.closeThemes=()=>{playSound('close');const m=get('themes-modal');if(m)m.cl
 window.toggleUserMenu=e=>{
     e.stopPropagation();
     const t=e.target.closest('.relative');
-    const d=get('user-menu-dropdown'),p=get('pm-dropdown');
-    if(p)p.classList.add('hidden');
+    const d=get('user-menu-dropdown');
     if(d){
         d.classList.toggle('hidden');
         const btn = get('btn-invisible');
@@ -731,9 +725,16 @@ function loadChat(id,p=null){
     if(id==='global'){
         t.innerHTML='<h1 class="text-xl font-bold tracking-tight"><span class="text-ruby-500">Ruby</span>Chat</h1>';
         b.classList.add('hidden');
+        // Update active class in sidebar
+        document.querySelectorAll('.dm-item').forEach(el=>el.classList.remove('dm-active'));
+        if(curUser) setDoc(doc(db,"users",curUser.uid),{lastActiveChat:'global'},{merge:true});
     }else{
         t.innerHTML=`<h1 class="text-xl font-bold tracking-tight text-white"><i class="fas fa-lock text-xs mr-2 text-ruby-500"></i>${p?p.username:"Private"}</h1>`;
         b.classList.remove('hidden');
+        // Mark as read immediately
+        if(curUser) {
+            setDoc(doc(db, "users", curUser.uid, "chats", p.uid), { read: true }, { merge: true });
+        }
     }
     chatUnsub&&chatUnsub();
     const f=get('chat-feed');
@@ -751,9 +752,11 @@ function loadChat(id,p=null){
                     const n=userData?.username?.toLowerCase();
                     userData?.settings?.soundMention&&n&&t.includes(`@${n}`)?playSound('mention'):userData?.settings?.soundMsg&&playSound('msg')
                 }
-                // Mark as read immediately if chat is open
+                // Mark as read if chat is open
                 if(curUser && id!=='global' && d.uid !== curUser.uid && !d.read){
-                    updateDoc(c.doc.ref, { read: true }).catch(err=>console.log("Read receipt fail", err));
+                    updateDoc(c.doc.ref, { read: true }).catch(err=>{});
+                    // Update inbox metadata
+                    if(curPartner) setDoc(doc(db, "users", curUser.uid, "chats", curPartner.uid), { read: true }, { merge: true });
                 }
             }
         });
@@ -786,21 +789,9 @@ function renderMsg(m){
     const me=curUser&&m.uid===curUser.uid,rO=getRank(m.rank||"VIP"),stf=getRank(userData?.rank)?.isStaff,del=stf?`<button onclick="deleteMessage('${m.id}')" class="text-gray-500 hover:text-red-500 ml-2 opacity-0 group-hover:opacity-100 transition-opacity"><i class="fas fa-trash"></i></button>`:'',men=!me&&userData?.username&&(m.text||"").toLowerCase().includes(`@${userData.username.toLowerCase()}`)?'bg-yellow-900/40 border-yellow-600/50 shadow-[0_0_10px_rgba(234,179,8,0.2)] text-yellow-100':'',rH=rO?`<img src="custom ranks/${rO.img}" class="rank-img" title="${rO.name}" onerror="this.style.display='none'">`:'',ts=m.timestamp?new Date(m.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'',rep=m.replyTo?`<div class="reply-context"><div class="flex items-center gap-1 text-[10px] text-ruby-500 font-bold"><i class="fas fa-share"></i> Replying to ${m.replyTo.username}</div><div class="truncate opacity-75">${esc(m.replyTo.text)}</div></div>`:'',rx=m.reactions||[],rh=rx.length>0?`<div class="absolute -bottom-2 right-2 bg-gray-900 border border-gray-700 rounded-full px-1.5 py-0.5 text-[10px] flex items-center gap-1 shadow-sm"><i class="fas fa-heart text-ruby-500"></i> <span class="text-white font-bold">${rx.length}</span></div>`:'',bc=`msg-bubble px-4 py-2 rounded-2xl text-sm relative group/bubble cursor-pointer select-none ${me?'bg-ruby-500 text-white rounded-tr-none':'bg-gray-800 text-gray-200 rounded-tl-none border border-gray-700 '+men}`,med=m.mediaURL?(m.mediaType.startsWith('image/')?`<img src="${m.mediaURL}" class="chat-media-img mb-2" onclick="window.open('${m.mediaURL}','_blank')">`:`<video src="${m.mediaURL}" controls class="chat-media-video mb-2"></video>`):'';
     const isAct=m.isAction?'msg-action':'';
     
-    // CUSTOM USERNAME STYLING LOGIC
-    let nCol = '';
-    const uConfig = m.customization?.identity;
-    if(uConfig) {
-        let style = `color:${uConfig.color};`;
-        if(uConfig.glowBlur > 0) style += `text-shadow:0 0 ${uConfig.glowBlur}px ${uConfig.glowColor || uConfig.color};`;
-        style += `font-family:${uConfig.fontFamily};`;
-        style += `font-weight:${uConfig.fontWeight};`;
-        style += `letter-spacing:${uConfig.letterSpacing}px;`;
-        if(uConfig.uppercase) style += `text-transform:uppercase;`;
-        if(uConfig.italic) style += `font-style:italic;`;
-        nCol = `style="${style}"`;
-    } else {
-        nCol = m.nameColor?`style="color:${m.nameColor}"`:'class="text-xs text-gray-400 hover:text-white cursor-pointer"';
-    }
+    let nameStyle = '';
+    let nameClass = 'text-xs cursor-pointer hover:underline text-gray-300 font-bold'; 
+    if(m.nameColor) nameStyle = `color:${m.nameColor}`;
 
     // Read Receipt Logic
     let rr = '';
@@ -809,7 +800,7 @@ function renderMsg(m){
         rr = `<i class="fas fa-check-double ${rc} text-[10px] ml-1"></i>`;
     }
 
-    return`<div class="flex gap-3 mb-4 ${me?'flex-row-reverse':''} group"><img src="${m.photoURL||D_PFP}" onclick="openProfile('${m.uid}')" class="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 border border-gray-700 bg-gray-800 object-cover default-pfp"><div class="flex flex-col ${me?'items-end':'items-start'} max-w-[80%]"><div class="flex items-center gap-2 mb-1"><span ${nCol} onclick="openProfile('${m.uid}')" class="cursor-pointer hover:underline text-xs">${m.username}</span><div class="rank-badge">${rH}</div><span class="text-[10px] text-gray-600 ${document.body.classList.contains('hide-ts')?'hidden':''}">${ts}</span>${del}</div>${rep}<div class="${bc} ${isAct}" ondblclick="toggleReaction('${m.id}')" title="Double click to heart">${med}${m.text?esc(m.text):''}${rh}<button onclick="replyToMessage('${m.id}','${m.username}','${esc(m.text||"Media").replace(/'/g,"\\'")}')" class="absolute top-1/2 -translate-y-1/2 ${me?'-left-8':'-right-8'} text-gray-500 hover:text-ruby-500 opacity-0 group-hover/bubble:opacity-100 transition-opacity p-1"><i class="fas fa-reply"></i></button></div><div class="flex justify-end w-full">${rr}</div></div></div>`
+    return`<div class="flex gap-3 mb-4 ${me?'flex-row-reverse':''} group"><img src="${m.photoURL||D_PFP}" onclick="openProfile('${m.uid}')" class="w-10 h-10 rounded-full cursor-pointer hover:opacity-80 border border-gray-700 bg-gray-800 object-cover default-pfp"><div class="flex flex-col ${me?'items-end':'items-start'} max-w-[80%]"><div class="flex items-center gap-2 mb-1"><span style="${nameStyle}" class="${nameClass}" onclick="openProfile('${m.uid}')">${m.username}</span><div class="rank-badge">${rH}</div><span class="text-[10px] text-gray-600 ${document.body.classList.contains('hide-ts')?'hidden':''}">${ts}</span>${del}</div>${rep}<div class="${bc} ${isAct}" ondblclick="toggleReaction('${m.id}')" title="Double click to heart">${med}${m.text?esc(m.text):''}${rh}<button onclick="replyToMessage('${m.id}','${m.username}','${esc(m.text||"Media").replace(/'/g,"\\'")}')" class="absolute top-1/2 -translate-y-1/2 ${me?'-left-8':'-right-8'} text-gray-500 hover:text-ruby-500 opacity-0 group-hover/bubble:opacity-100 transition-opacity p-1"><i class="fas fa-reply"></i></button></div><div class="flex justify-end w-full">${rr}</div></div></div>`
 }
 function chkMute(){if(userData.banned)return{m:!0,r:userData.banReason};if(userData.kickedUntil&&userData.kickedUntil.toMillis()>Date.now())return{m:!0,r:userData.kickReason};if(userData.mutedUntil&&userData.mutedUntil.toMillis()>Date.now())return{m:!0,r:userData.muteReason};return{m:!1}}
 
@@ -854,19 +845,12 @@ async function compressImage(file) {
 
 window.handleChatMediaUpload=(f)=>{
     if(!f.length)return;
-    // Check size before compression (rough check), but proceed to compress anyway
-    // If raw file > 10MB, maybe reject. Here we just try to compress.
     const file = f[0];
-    
-    // Compress logic
     compressImage(file).then(async (result) => {
-        // result is either DataURL string or original file if not image
         let finalData = result;
         let type = file.type;
-        
-        // If video, read as DataURL directly (no compression implemented for video here)
         if(file.type.startsWith('video/')) {
-             if(file.size > 5e6){showAlert("Video > 5MB", "Error");return} // Lower video limit for base64 storage safety
+             if(file.size > 5e6){showAlert("Video > 5MB", "Error");return} 
              finalData = await hFU(file);
         }
 
@@ -874,13 +858,26 @@ window.handleChatMediaUpload=(f)=>{
         try{
             const n=(userData.messages||0)+1,nr=userData.rank,p={text:"",mediaURL:finalData,mediaType:type,uid:curUser.uid,username:userData.username,photoURL:userData.photoURL||D_PFP,rank:nr,timestamp:serverTimestamp(), read:false};
             
-            // Attach Customization Data
-            if(userData.customization) p.customization = userData.customization;
-
-            curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)
+            curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p);
+            
+            // If private, update inbox
+            if(curChat!=='global' && curPartner) {
+                await setDoc(doc(db, "users", curPartner.uid, "chats", curUser.uid), {
+                    lastMessage: "Media File",
+                    timestamp: serverTimestamp(),
+                    read: false,
+                    sender: curUser.uid
+                }, { merge: true });
+                await setDoc(doc(db, "users", curUser.uid, "chats", curPartner.uid), {
+                    lastMessage: "Media File",
+                    timestamp: serverTimestamp(),
+                    read: true,
+                    sender: curUser.uid
+                }, { merge: true });
+            }
         }catch(x){
             console.error(x);
-            showAlert("Upload Failed. Image might be too large even after compression.", "Error");
+            showAlert("Upload Failed. Image might be too large.", "Error");
         }
     });
     get('chat-file-input').value='';
@@ -1087,8 +1084,6 @@ async function sndMsg(txt,extra={}){playSound('swoosh');const n=(userData.messag
     // AUTOMOD CHECK
     if(automodConfig && curChat === 'global') {
         const lower = txt.toLowerCase();
-        
-        // 1. Check Banned Words
         const words = automodConfig.bannedWords || [];
         for(let w of words) {
             if(lower.includes(w.toLowerCase())) {
@@ -1096,8 +1091,6 @@ async function sndMsg(txt,extra={}){playSound('swoosh');const n=(userData.messag
                 return;
             }
         }
-        
-        // 2. Check Banned Links
         const links = automodConfig.bannedLinks || [];
         for(let l of links) {
             if(lower.includes(l.toLowerCase())) {
@@ -1107,10 +1100,23 @@ async function sndMsg(txt,extra={}){playSound('swoosh');const n=(userData.messag
         }
     }
     
-    // Attach Customization Data
-    if(userData.customization) p.customization = userData.customization;
+curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p);
 
-curChat==='global'?(await addDoc(collection(db,"messages"),p),await updateDoc(doc(db,"users",curUser.uid),{messages:n})):await addDoc(collection(db,"direct_messages",curChat,"messages"),p)}
+// Update inbox if private
+if(curChat!=='global' && curPartner){
+    await setDoc(doc(db, "users", curPartner.uid, "chats", curUser.uid), {
+        lastMessage: txt,
+        timestamp: serverTimestamp(),
+        read: false,
+        sender: curUser.uid
+    }, { merge: true });
+    await setDoc(doc(db, "users", curUser.uid, "chats", curPartner.uid), {
+        lastMessage: txt,
+        timestamp: serverTimestamp(),
+        read: true,
+        sender: curUser.uid
+    }, { merge: true });
+}}
 
 async function executeAutoMod(action, duration, reason) {
     if(!action || action === 'none') {
@@ -1120,7 +1126,7 @@ async function executeAutoMod(action, duration, reason) {
     
     const now = Date.now();
     const update = {};
-    const durMs = duration * 60000; // Minutes to ms
+    const durMs = duration * 60000; 
     const expiry = new Date(now + durMs);
     let msgText = "";
 
@@ -1138,16 +1144,8 @@ async function executeAutoMod(action, duration, reason) {
         msgText = `System has banned ${userData.username}. Reason: ${reason}`;
     }
 
-    // Apply punishment
     await updateDoc(doc(db, "users", curUser.uid), update);
-    
-    // Announce punishment
-    await addDoc(collection(db, "messages"), {
-        text: msgText,
-        isSystem: true,
-        timestamp: serverTimestamp()
-    });
-    
+    await addDoc(collection(db, "messages"), { text: msgText, isSystem: true, timestamp: serverTimestamp() });
     showToast(`You have been ${action}ed by AutoMod.`, true);
 }
 
@@ -1180,64 +1178,39 @@ on(get('message-form'),'submit',async e=>{e.preventDefault();const i=get('messag
     if(globalSettings.chatLocked&&!getRank(userData.rank)?.isStaff){showToast("Chat is locked.",!0);return}
     if(txt.startsWith('/')){if(await handleCommand(txt)){i.value='';return}else{showToast("Invalid command",!0);i.value='';return}}
     const ms=chkMute();if(ms.m){showAlert(`Muted: ${ms.r}`, "Access Denied");return}i.value='';deleteDoc(doc(db,"typing",curUser.uid));try{await sndMsg(txt)}catch(x){console.error(x)}});
-window.togglePMDropdown=e=>{
-    e.stopPropagation();
-    const el=get('pm-dropdown');
-    if(el.classList.contains('hidden')){
-        el.classList.remove('hidden');
-        el.classList.add('dropdown-enter');
-        // List is now populated by listenInbox
-    } else {
-        el.classList.add('hidden');
-    }
-    const cf=v=>{if(!get('envelope-btn').contains(v.target)&&!el.contains(v.target)){el.classList.add('hidden');document.removeEventListener('click',cf)}};
-    document.addEventListener('click',cf)
-};
 
-// LISTEN INBOX FUNCTIONALITY
+// LISTEN INBOX FUNCTIONALITY (UPDATED FOR SIDEBAR)
 function listenInbox() {
     if(!curUser) return;
     inboxUnsub = onSnapshot(collection(db, "users", curUser.uid, "chats"), (snapshot) => {
-        const inboxList = get('pm-list');
-        const badge = get('pm-badge');
-        let unreadCount = 0;
+        const inboxList = get('dm-list');
         let chats = [];
 
         snapshot.forEach(doc => {
             const data = doc.data();
-            if(!data.read && data.sender !== curUser.uid) unreadCount++;
             chats.push({ uid: doc.id, ...data });
         });
 
         // Sort by timestamp
         chats.sort((a,b) => (b.timestamp?.toMillis() || 0) - (a.timestamp?.toMillis() || 0));
 
-        if(unreadCount > 0) {
-            badge.classList.remove('hidden');
-        } else {
-            badge.classList.add('hidden');
-        }
-
         if(chats.length === 0) {
-            inboxList.innerHTML = '<div class="p-3 text-center text-xs text-gray-500">No active conversations</div>';
+            inboxList.innerHTML = '<div class="p-2 text-center text-xs text-gray-500 italic">No messages</div>';
         } else {
             inboxList.innerHTML = chats.map(c => {
                 const u = allUsers.find(x => x.uid === c.uid) || { username: "Unknown", photoURL: D_PFP, isOnline: false };
                 const isUnread = !c.read && c.sender !== curUser.uid;
-                const bg = isUnread ? 'bg-gray-800 border-l-2 border-ruby-500' : 'hover:bg-gray-800 border-l-2 border-transparent';
+                const activeClass = curChat === c.uid ? 'dm-active' : '';
                 
-                return `<div class="flex items-center gap-3 p-3 cursor-pointer border-b border-gray-800 last:border-0 ${bg}" onclick="openFloatingChat('${c.uid}','${u.username}','${u.photoURL||D_PFP}')">
-                    <div class="relative">
-                        <img src="${u.photoURL||D_PFP}" class="w-10 h-10 rounded-full bg-gray-700 object-cover">
+                return `<div class="dm-item flex items-center gap-3 p-2 rounded cursor-pointer transition-colors ${activeClass}" onclick="loadChat('${c.uid}', {username: '${u.username.replace(/'/g,"\\'")}', photoURL: '${u.photoURL}', uid: '${c.uid}'})">
+                    <div class="relative flex-shrink-0">
+                        <img src="${u.photoURL||D_PFP}" class="w-8 h-8 rounded-full bg-gray-700 object-cover">
                         <div class="w-2.5 h-2.5 rounded-full absolute bottom-0 right-0 border border-gray-900 ${u.isOnline?'bg-green-500':'bg-gray-500'}"></div>
                     </div>
-                    <div class="flex-1 overflow-hidden">
+                    <div class="flex-1 overflow-hidden min-w-0">
                         <div class="flex justify-between items-center">
-                            <div class="text-sm font-bold text-gray-200 truncate">${u.username}</div>
-                            ${isUnread ? '<div class="w-2 h-2 bg-ruby-500 rounded-full"></div>' : ''}
-                        </div>
-                        <div class="text-xs text-gray-500 truncate flex items-center gap-1">
-                            ${c.sender===curUser.uid ? '<i class="fas fa-reply"></i>' : ''} ${esc(c.lastMessage || 'Media')}
+                            <div class="text-sm font-bold text-gray-300 truncate">${u.username}</div>
+                            ${isUnread ? '<div class="w-2 h-2 bg-ruby-500 rounded-full flex-shrink-0 ml-1"></div>' : ''}
                         </div>
                     </div>
                 </div>`;
@@ -1245,142 +1218,6 @@ function listenInbox() {
         }
     });
 }
-
-window.openFloatingChat=(tid,un,av)=>{
-    get('pm-dropdown').classList.add('hidden');
-    if(activePMs.has(tid)){const e=get(`pm-box-${tid}`);e&&toFront(e);return}
-    const b=document.createElement('div');
-    b.id=`pm-box-${tid}`;
-    b.className='pm-box';
-    b.style.top=`${activePMs.size*30+100}px`;
-    b.style.left=`${activePMs.size*30+100}px`;
-    b.style.zIndex=++zIdx;
-    
-    // Mark as read when opening
-    if(curUser) {
-        setDoc(doc(db, "users", curUser.uid, "chats", tid), { read: true }, { merge: true });
-    }
-
-    b.innerHTML=`<div class="pm-header"><div class="flex items-center gap-3"><img src="${av}" class="w-8 h-8 rounded-full border border-gray-500"><div><span class="font-bold text-sm block leading-tight">${un}</span></div></div><div class="flex items-center gap-2"><button class="text-gray-400 hover:text-white transition-colors c-pm"><i class="fas fa-times"></i></button></div></div><div class="pm-messages scrollbar-thin" id="pm-msgs-${tid}"><div class="text-center text-gray-500 text-xs mt-4">Loading...</div></div><div class="pm-footer"><form onsubmit="sendFMsg(event,'${tid}')" class="flex gap-2 items-center"><button type="button" onclick="document.getElementById('pm-file-${tid}').click()" class="text-gray-400 hover:text-white"><i class="fas fa-paperclip"></i></button><input type="file" id="pm-file-${tid}" hidden onchange="handlePMMediaUpload(this.files, '${tid}')"><input type="text" id="pm-input-${tid}" placeholder="Message..." class="flex-1 bg-gray-900 text-white text-sm rounded-full px-4 py-2 border border-gray-700 focus:outline-none focus:border-ruby-500 transition-colors"><button type="submit" class="text-ruby-500 hover:text-white"><i class="fas fa-paper-plane"></i></button></form></div><div class="resize-handle"></div>`;
-    get('pm-layer').appendChild(b);
-    activePMs.add(tid);
-    initDrag(b);
-    
-    // Focus event listener to mark as read
-    b.addEventListener('mousedown', () => {
-        if(curUser) setDoc(doc(db, "users", curUser.uid, "chats", tid), { read: true }, { merge: true });
-    });
-
-    const cid=curUser.uid<tid?`${curUser.uid}_${tid}`:`${tid}_${curUser.uid}`;
-    const u=onSnapshot(query(collection(db,"direct_messages",cid,"messages"),orderBy("timestamp","desc"),limit(50)),s=>{
-        const c=get(`pm-msgs-${tid}`);
-        if(!c)return;
-        if(s.empty){c.innerHTML='<div class="flex flex-col items-center justify-center h-full text-gray-500 opacity-50"><i class="fas fa-comment-dots text-4xl mb-2"></i></div>';return}
-        const m=[];
-        s.forEach(d=>m.push(d.data()));
-        
-        // Mark messages as read if I am the receiver and window is active
-        s.docChanges().forEach(change => {
-            if (change.type === "added") {
-                const d = change.doc.data();
-                if (d.uid !== curUser.uid && !d.read) {
-                    updateDoc(change.doc.ref, { read: true });
-                    // Also update inbox metadata
-                    setDoc(doc(db, "users", curUser.uid, "chats", tid), { read: true }, { merge: true });
-                }
-            }
-        });
-
-        m.reverse();
-        c.innerHTML=m.map((msg,i)=>{
-            const me=msg.uid===curUser.uid;
-            const pm=m[i-1];
-            const sa=!me&&(!pm||pm.uid!==msg.uid);
-            const sp=(!pm||pm.uid!==msg.uid)?'mt-2':'mt-0.5';
-            
-            // Read receipt in PM
-            let rr = '';
-            if(me) {
-                const rc = msg.read ? 'text-blue-400' : 'text-gray-500';
-                rr = `<i class="fas fa-check-double ${rc} text-[9px] ml-1 self-end mb-1"></i>`;
-            }
-            const med=msg.mediaURL?(msg.mediaType.startsWith('image/')?`<img src="${msg.mediaURL}" class="chat-media-img mb-2 max-w-[200px]" onclick="window.open('${msg.mediaURL}','_blank')">`:`<video src="${msg.mediaURL}" controls class="chat-media-video mb-2 max-w-[200px]"></video>`):'';
-
-            return`<div class="flex ${me?'justify-end':'justify-start'} ${sp} items-end gap-2 group w-full">${!me?`<div class="w-6 h-6 flex-shrink-0">${sa?`<img src="${av}" class="w-6 h-6 rounded-full">`:''}</div>`:''}<div class="flex flex-col ${me?'items-end':''} max-w-[75%]"><div class="${me?'pm-bubble-me':'pm-bubble-them'} break-words">${med}${esc(msg.text)}</div>${rr}</div></div>`
-        }).join('');
-        c.scrollTop=c.scrollHeight
-    },e=>{});
-    b.querySelector('.c-pm').addEventListener('click',()=>{u();b.remove();activePMs.delete(tid)})
-};
-
-window.sendFMsg=async(e,tid)=>{
-    e.preventDefault();
-    const i=get(`pm-input-${tid}`),tx=i.value.trim();
-    if(!tx)return;
-    if(chkMute().m)return;
-    i.value='';
-    const cid=curUser.uid<tid?`${curUser.uid}_${tid}`:`${tid}_${curUser.uid}`;
-    try{
-        await addDoc(collection(db,"direct_messages",cid,"messages"),{
-            text:tx,
-            uid:curUser.uid,
-            username:userData.username,
-            photoURL:userData.photoURL||D_PFP,
-            rank:userData.rank,
-            timestamp:serverTimestamp(),
-            read: false
-        });
-        
-        // Update Recipient Inbox -> Shows Red Dot for them
-        await setDoc(doc(db, "users", tid, "chats", curUser.uid), {
-            lastMessage: tx,
-            timestamp: serverTimestamp(),
-            read: false,
-            sender: curUser.uid
-        }, { merge: true });
-    }catch(x){}
-};
-
-window.handlePMMediaUpload=(f, tid)=>{
-    if(!f.length)return;
-    const file = f[0];
-    
-    compressImage(file).then(async (result) => {
-        let finalData = result;
-        let type = file.type;
-        if(file.type.startsWith('video/')) {
-             if(file.size > 5e6){showAlert("Video > 5MB", "Error");return}
-             finalData = await hFU(file);
-        }
-
-        if(!await showConfirm("Send?", "Send Media"))return;
-        try{
-            const cid=curUser.uid<tid?`${curUser.uid}_${tid}`:`${tid}_${curUser.uid}`;
-            await addDoc(collection(db,"direct_messages",cid,"messages"),{
-                text:"",
-                mediaURL:finalData,
-                mediaType:type,
-                uid:curUser.uid,
-                username:userData.username,
-                photoURL:userData.photoURL||D_PFP,
-                rank:userData.rank,
-                timestamp:serverTimestamp(),
-                read: false
-            });
-            // Update Recipient Inbox
-            await setDoc(doc(db, "users", tid, "chats", curUser.uid), {
-                lastMessage: "Media File",
-                timestamp: serverTimestamp(),
-                read: false,
-                sender: curUser.uid
-            }, { merge: true });
-        }catch(x){
-            console.error(x);
-            showAlert("Upload Failed", "Error");
-        }
-    });
-    get(`pm-file-${tid}`).value='';
-};
 
 function initDrag(b){const h=b.querySelector('.pm-header'),rh=b.querySelector('.resize-handle');b.addEventListener('mousedown',()=>toFront(b));let iD=!1,sx,sy,il,it;h.addEventListener('mousedown',e=>{if(e.target.closest('button'))return;iD=!0;sx=e.clientX;sy=e.clientY;il=b.offsetLeft;it=b.offsetTop;b.style.cursor='grabbing';e.preventDefault()});let iR=!1,rsx,rsy,iw,ih;rh.addEventListener('mousedown',e=>{e.stopPropagation();iR=!0;rsx=e.clientX;rsy=e.clientY;iw=b.offsetWidth;ih=b.offsetHeight;document.body.style.cursor='nwse-resize';e.preventDefault()});window.addEventListener('mousemove',e=>{if(iD){b.style.left=`${il+e.clientX-sx}px`;b.style.top=`${it+e.clientY-sy}px`}if(iR){b.style.width=`${Math.max(300,iw+e.clientX-rsx)}px`;b.style.height=`${Math.max(300,ih+e.clientY-rsy)}px`}});window.addEventListener('mouseup',()=>{iD=!1;iR=!1;if(b){b.style.cursor='';h.style.cursor='grab'}document.body.style.cursor=''})}
 function toFront(e){e.style.zIndex=++zIdx}
@@ -1392,7 +1229,10 @@ function listenUsers(){userUnsub=onSnapshot(query(collection(db,"users"),orderBy
         const u={uid:d.id,...x,isOnline:io};
         io?on.push(u):off.push(u)
     });
-    const srt=l=>l.sort((a,b)=>{const ra=getRankIdx(a.rank),rb=getRankIdx(b.rank);return ra!==rb?ra-rb:a.username.localeCompare(b.username)});srt(on);srt(off);allUsers=[...on,...off];get('online-count').innerText=on.length;get('online-count-header').innerText=on.length;get('offline-count-header').innerText=off.length;get('online-user-list').innerHTML=on.map(rndU).join('');get('offline-user-list').innerHTML=off.map(rndU).join('');if(!get('admin-modal').classList.contains('hidden')){get('admin-stat-users').innerText=allUsers.length;get('admin-stat-online').innerText=on.length;rndAdmTbl()}},e=>console.log("User listen err",e))}
+    const srt=l=>l.sort((a,b)=>{const ra=getRankIdx(a.rank),rb=getRankIdx(b.rank);return ra!==rb?ra-rb:a.username.localeCompare(b.username)});srt(on);srt(off);allUsers=[...on,...off];get('online-count').innerText=on.length;get('online-count-header').innerText=on.length;get('offline-count-header').innerText=off.length;get('online-user-list').innerHTML=on.map(rndU).join('');get('offline-user-list').innerHTML=off.map(rndU).join('');if(!get('admin-modal').classList.contains('hidden')){get('admin-stat-users').innerText=allUsers.length;get('admin-stat-online').innerText=on.length;rndAdmTbl()}
+    // Refresh inbox UI to update statuses
+    if(inboxUnsub) { /* Trigger logic if needed, but snapshot listener handles data */ }
+    },e=>console.log("User listen err",e))}
 
 function rndU(u){
     const r=getRank(u.rank);
@@ -1402,23 +1242,7 @@ function rndU(u){
     const mood = u.bio ? esc(u.bio).substring(0, 20) : (u.presence || 'Online');
     const isStaff = r ? r.isStaff : false;
     const inv = (u.isInvisible && u.isOnline) ? '<i class="fas fa-ghost text-gray-500 text-[10px] ml-1" title="Invisible Mode"></i>' : '';
-    
-    // CUSTOM USERNAME STYLE
-    let nCol = '';
-    const uConfig = u.customization?.identity;
-    if(uConfig) {
-        let style = `color:${uConfig.color};`;
-        if(uConfig.glowBlur > 0) style += `text-shadow:0 0 ${uConfig.glowBlur}px ${uConfig.glowColor || uConfig.color};`;
-        style += `font-family:${uConfig.fontFamily};`;
-        if(uConfig.uppercase) style += `text-transform:uppercase;`;
-        if(uConfig.italic) style += `font-style:italic;`;
-        nCol = `style="${style}"`;
-    } else {
-        nCol = isStaff ? 'class="text-xs font-bold truncate text-ruby-500"' : 'class="text-xs font-bold truncate text-gray-200"';
-    }
-    
-    // If nCol is style attribute, we need to add base classes manually since we replaced them
-    if(nCol.startsWith('style')) nCol = `class="text-xs font-bold truncate" ${nCol}`;
+    let nCol = isStaff ? 'class="text-xs font-bold truncate text-ruby-500"' : 'class="text-xs font-bold truncate text-gray-200"';
 
     return `
     <div class="flex items-center gap-2 p-1.5 hover:bg-gray-800 rounded cursor-pointer transition-colors group" onclick="openProfile('${u.uid}')">
@@ -1440,7 +1264,8 @@ function rndU(u){
 }
 // PROFILE LOGIC
 window.openProfile=async(id,ed=!1)=>{playSound('open');viewId=id;const m=get('profile-modal'),pm=get('private-msg-container'),sa=get('staff-action-btn'),ep=get('edit-profile-trigger'),vp=get('view-profile-trigger'),be=get('banner-edit-btn');m.classList.remove('hidden');closeSubEditor();switchProfileTab('info');let d={};if(curUser&&id===curUser.uid){d=userData;ep.classList.remove('hidden');vp.classList.add('hidden');pm.classList.add('hidden');sa.classList.add('hidden')}else{const s=await getDoc(doc(db,"users",id));if(s.exists())d=s.data();ep.classList.add('hidden');vp.classList.add('hidden');if(curUser)pm.classList.remove('hidden');getRank(userData.rank)?.isStaff?sa.classList.remove('hidden'):sa.classList.add('hidden');sendNotif(id,`${userData.username} visited your profile.`)}viewRank=d.rank;get('profile-username').innerText=d.username||"Unknown";
-    // Apply Dynamic Styles
+    
+    // Reset styles to default
     const modalContainer = get('profile-modal-container');
     const bannerContainer = get('profile-banner-container');
     const bannerImg = get('profile-banner-img');
@@ -1448,80 +1273,15 @@ window.openProfile=async(id,ed=!1)=>{playSound('open');viewId=id;const m=get('pr
     const avatar = get('profile-avatar-img');
     const username = get('profile-username');
     
-    // Reset styles first
     modalContainer.style = "max-height: 95vh; height: auto;";
     bannerContainer.style = "";
     avatar.style = "";
     username.style = "";
     bannerImg.style.backgroundImage = "";
     bannerOverlay.style = "";
-
-    if(d.customization) {
-        const card = d.customization.card;
-        if(card) {
-            // Hex to RGBA helper
-            const hexToRgb = (hex) => {
-                const r = parseInt(hex.slice(1, 3), 16);
-                const g = parseInt(hex.slice(3, 5), 16);
-                const b = parseInt(hex.slice(5, 7), 16);
-                return `${r}, ${g}, ${b}`;
-            }
-            const alpha = (card.bgOpacity || 100) / 100;
-            
-            if(card.bgColor.startsWith('#')) {
-                modalContainer.style.background = `rgba(${hexToRgb(card.bgColor)}, ${alpha})`;
-            } else if(card.bgColor.startsWith('hsl')) {
-                // Handle HSL by replacing alpha if possible or just setting it (opacity handled by container for simplicity in this case)
-                modalContainer.style.background = card.bgColor.replace(')', `, ${alpha})`).replace('hsl', 'hsla');
-            } else {
-                modalContainer.style.background = card.bgColor;
-            }
-
-            modalContainer.style.backdropFilter = card.backdropBlur > 0 ? `blur(${card.backdropBlur}px)` : 'none';
-            modalContainer.style.borderColor = card.borderColor || '#374151';
-            modalContainer.style.borderWidth = (card.borderWidth || 1) + 'px';
-            modalContainer.style.borderRadius = (card.borderRadius || 16) + 'px';
-        }
-        
-        const ban = d.customization.banner;
-        if(ban) {
-            bannerContainer.style.height = (ban.height || 120) + 'px';
-            bannerImg.style.filter = `blur(${ban.blur || 0}px) grayscale(${ban.grayscale || 0}%)`;
-            
-            // Overlay logic
-            if(ban.overlayOpacity > 0) {
-                // Simple hex to rgba for overlay
-                const rgb = ban.overlayColor.startsWith('#') ? hexToRgb(ban.overlayColor) : '0,0,0';
-                const alpha = ban.overlayOpacity / 100;
-                // If the color isn't hex (rare in this app), fallback black
-                const colorStr = ban.overlayColor.startsWith('#') ? `rgba(${rgb}, ${alpha})` : `rgba(0,0,0, ${alpha})`;
-                bannerOverlay.style.backgroundColor = colorStr;
-            }
-        }
-
-        const av = d.customization.avatar;
-        if(av) {
-            avatar.style.borderRadius = (av.radius || 50) + '%';
-            avatar.style.border = `${av.borderWidth || 4}px ${av.borderStyle || 'solid'} ${av.borderColor || '#111827'}`;
-            avatar.style.boxShadow = `0 0 ${av.shadowBlur || 10}px ${av.shadowColor || '#000000'}`;
-            avatar.style.transform = `rotate(${av.rotate || 0}deg)`;
-            avatar.style.filter = `grayscale(${av.grayscale || 0}%) sepia(${av.sepia || 0}%)`;
-        }
-
-        const iden = d.customization.identity;
-        if(iden) {
-            username.style.color = iden.color;
-            username.style.textShadow = iden.glowBlur > 0 ? `0 0 ${iden.glowBlur}px ${iden.glowColor || iden.color}` : 'none';
-            username.style.fontFamily = iden.fontFamily;
-            username.style.fontWeight = iden.fontWeight;
-            username.style.letterSpacing = iden.letterSpacing + 'px';
-            username.style.textTransform = iden.uppercase ? 'uppercase' : 'none';
-            username.style.fontStyle = iden.italic ? 'italic' : 'normal';
-        }
-    } else {
-        // Fallback default
-        modalContainer.className = "profile-modal-bg rounded-2xl w-full max-w-md border border-gray-700 shadow-2xl overflow-hidden flex flex-col relative";
-    }
+    
+    // Default Styling Classes
+    modalContainer.className = "profile-modal-bg rounded-2xl w-full max-w-md border border-gray-700 shadow-2xl overflow-hidden flex flex-col relative";
 
     if(d.bannerURL) {
         bannerImg.style.backgroundImage = `url('${d.bannerURL}')`;
