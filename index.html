@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" class="dark">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"><title>Ruby Chat</title>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"><title>Ruby Chat</title>
 <script>
 if(window.location.pathname.endsWith("index.html")){window.history.replaceState({},"",window.location.pathname.replace("index.html","index"))}
 </script>
@@ -15,6 +15,7 @@ body.mode-mobile #right-sidebar {position: fixed !important; top: 0; right: 0; h
 body.mode-mobile #right-sidebar.sidebar-open {transform: translateX(0) !important;}
 body.mode-mobile #mobile-menu-overlay.overlay-active {display: block !important;}
 body.mode-mobile .mobile-only-btn {display: block !important;}
+body.mode-mobile {overflow: hidden !important;}
 </style>
 </head>
 <body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden selection:bg-ruby-500 selection:text-white">
@@ -47,7 +48,7 @@ body.mode-mobile .mobile-only-btn {display: block !important;}
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";import{getAnalytics}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-analytics.js";import{getAuth,signInWithEmailAndPassword,createUserWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";import{getFirestore,collection,doc,addDoc,getDoc,getDocs,updateDoc,deleteDoc,onSnapshot,query,where,orderBy,limit,serverTimestamp,increment,arrayUnion,arrayRemove,setDoc}from"https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 const config={apiKey:"AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",authDomain:"cartoony-chat.firebaseapp.com",databaseURL:"https://cartoony-chat-default-rtdb.europe-west1.firebasedatabase.app",projectId:"cartoony-chat",storageBucket:"cartoony-chat.firebasestorage.app",messagingSenderId:"827018960215",appId:"1:827018960215:web:0e0c2436c9c4e1dceb7212",measurementId:"G-HF16NJSQ16"};
 const app=initializeApp(config),analytics=getAnalytics(app),auth=getAuth(app),db=getFirestore(app);
-const get=id=>document.getElementById(id),on=(el,ev,fn)=>{if(el)el.addEventListener(ev,fn)};
+window.get=id=>document.getElementById(id);window.on=(el,ev,fn)=>{if(el)el.addEventListener(ev,fn)};
 window.selectDevice=type=>{localStorage.setItem('chat_device_pref',type);localStorage.setItem('chat_last_ua',navigator.userAgent);if(type==='mobile')document.body.classList.add('mode-mobile');else document.body.classList.remove('mode-mobile');get('device-selector').classList.add('hidden')};
 window.checkDevice=()=>{const p=localStorage.getItem('chat_device_pref'),ua=localStorage.getItem('chat_last_ua');if(!p||ua!==navigator.userAgent){get('device-selector').classList.remove('hidden')}else{if(p==='mobile')document.body.classList.add('mode-mobile');else document.body.classList.remove('mode-mobile')}};window.addEventListener('DOMContentLoaded',window.checkDevice);
 window.closeSidebars=()=>{get('left-sidebar').classList.remove('sidebar-open');get('right-sidebar').classList.remove('sidebar-open');get('mobile-menu-overlay').classList.remove('overlay-active')};
