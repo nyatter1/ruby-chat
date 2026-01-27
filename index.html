@@ -40,6 +40,7 @@
                         'flash': 'flash 2s ease-out forwards',
                         'implode': 'implode 1.5s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards',
                         'reveal': 'reveal 3s ease-out forwards',
+                        'shake-hard': 'shake-hard 0.1s ease-in-out infinite',
                     },
                     keyframes: {
                         float: {
@@ -63,6 +64,12 @@
                         reveal: {
                             '0%': { opacity: '0', transform: 'translateY(20px) scale(0.9)' },
                             '100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
+                        },
+                        'shake-hard': {
+                            '0%, 100%': { transform: 'translate(0, 0) rotate(0deg)' },
+                            '25%': { transform: 'translate(-5px, 5px) rotate(-1deg)' },
+                            '50%': { transform: 'translate(5px, -5px) rotate(1deg)' },
+                            '75%': { transform: 'translate(-5px, -5px) rotate(0deg)' }
                         }
                     }
                 }
@@ -365,7 +372,7 @@
     <div id="loading-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center hidden opacity-0 transition-all duration-700 ease-in-out bg-[#050505] overflow-hidden">
         
         <!-- Terminal Layer (New) -->
-        <div id="terminal-layer" class="absolute inset-0 p-8 font-mono text-xs text-green-500/30 overflow-hidden leading-tight pointer-events-none hidden">
+        <div id="terminal-layer" class="absolute inset-0 p-8 font-mono text-xs text-ruby-400/50 overflow-hidden leading-tight pointer-events-none hidden">
         </div>
 
         <!-- Alarm Overlay (New) -->
@@ -433,6 +440,131 @@
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
 
+        // --- AUDIO ENGINE ---
+        // We use a singleton helper to manage Web Audio Context
+        const AudioHelper = (() => {
+            let ctx = null;
+
+            const init = () => {
+                if (!ctx) {
+                    ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+            };
+
+            // Generic Oscillator Tone
+            const playTone = (freq, type, duration, vol = 0.1, fadeOut = true) => {
+                if (!ctx) return;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                gain.gain.setValueAtTime(vol, ctx.currentTime);
+                if (fadeOut) {
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                } else {
+                     gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+                }
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            };
+
+            // Alarm Loop (Siren)
+            const playAlarm = (duration) => {
+                if (!ctx) return;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(440, ctx.currentTime);
+                
+                // Modulate frequency
+                const now = ctx.currentTime;
+                // create a simple siren sweep loop manually for the duration
+                for (let i = 0; i < duration; i += 0.5) {
+                    osc.frequency.linearRampToValueAtTime(880, now + i + 0.25);
+                    osc.frequency.linearRampToValueAtTime(440, now + i + 0.5);
+                }
+
+                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, ctx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + duration);
+            };
+
+            // White/Pink Noise for Explosions/Rumble
+            const playNoise = (duration, type = 'explosion') => {
+                if (!ctx) return;
+                const bufferSize = ctx.sampleRate * duration;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+                const noise = ctx.createBufferSource();
+                noise.buffer = buffer;
+                
+                const gain = ctx.createGain();
+                const filter = ctx.createBiquadFilter();
+
+                if (type === 'explosion') {
+                    filter.type = 'lowpass';
+                    filter.frequency.setValueAtTime(100, ctx.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(3000, ctx.currentTime + 0.1); // Attack
+                    filter.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + duration); // Decay
+                    gain.gain.setValueAtTime(1.0, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                } else if (type === 'rumble') {
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 150;
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.3, ctx.currentTime + duration); // intensify
+                } else if (type === 'implode') {
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(1000, ctx.currentTime);
+                    filter.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + duration);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+                }
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(ctx.destination);
+                noise.start();
+                if (type === 'rumble') noise.stop(ctx.currentTime + duration);
+            };
+
+            // Ethereal Chords for Rebirth
+            const playRebirth = () => {
+                if (!ctx) return;
+                const now = ctx.currentTime;
+                // Cm9 chord frequencies roughly
+                const freqs = [130.81, 196.00, 261.63, 311.13, 392.00, 523.25]; 
+                freqs.forEach((f, i) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = f;
+                    gain.gain.setValueAtTime(0, now);
+                    gain.gain.linearRampToValueAtTime(0.05, now + 2);
+                    gain.gain.linearRampToValueAtTime(0, now + 8);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start();
+                    osc.stop(now + 8);
+                });
+            };
+
+            return { init, playTone, playAlarm, playNoise, playRebirth };
+        })();
+
+
         function toggleForms(target) {
             if (target === 'signup') {
                 // Hide Login
@@ -480,6 +612,10 @@
 
         function handleSignup(e) {
             e.preventDefault();
+            
+            // --- INIT AUDIO ---
+            AudioHelper.init();
+            
             const btn = e.target.querySelector('button[type="submit"]');
             btn.disabled = true;
             
@@ -522,16 +658,22 @@
                         terminalLayer.appendChild(div);
                         terminalLayer.scrollTop = terminalLayer.scrollHeight;
                         
+                        // SFX: Light typing
+                        AudioHelper.playTone(800 + Math.random()*200, 'square', 0.05, 0.02);
+                        
                         // Keep DOM light
                         if(terminalLayer.children.length > 20) terminalLayer.removeChild(terminalLayer.firstChild);
                     }
-                }, 200);
+                }, 150);
 
 
                 // --- PHASE 1: INSTABILITY (4s) ---
                 setTimeout(() => {
                     clearInterval(terminalInterval);
                     
+                    // SFX: Low Rumble Start
+                    AudioHelper.playNoise(7, 'rumble');
+
                     // Ramp up terminal speed and error rate
                     const chaosInterval = setInterval(() => {
                         const div = document.createElement('div');
@@ -539,6 +681,10 @@
                         div.style.color = 'red';
                         terminalLayer.appendChild(div);
                         terminalLayer.scrollTop = terminalLayer.scrollHeight;
+                        
+                        // SFX: Error Glitches
+                        if(Math.random() > 0.5) AudioHelper.playTone(100 + Math.random()*100, 'sawtooth', 0.1, 0.05);
+
                     }, 50);
 
                     // Visuals
@@ -551,18 +697,28 @@
 
                     // --- PHASE 2: CRITICAL FAILURE (7s) ---
                     setTimeout(() => {
-                         // Alarm
+                         // Alarm Visuals
                          alarmOverlay.classList.remove('hidden');
                          alarmOverlay.classList.add('alarm-pulse');
                          loadingText.textContent = "CONTAINMENT BREACH DETECTED";
                          loadingText.classList.add('text-4xl', 'font-bold');
+                         
+                         // SFX: Alarm
+                         AudioHelper.playAlarm(3.5);
 
                          // --- PHASE 3: CRACKS (9s) ---
                          setTimeout(() => {
+                            // Visuals
                             cracksOverlay.classList.remove('hidden');
+                            loadingScreen.classList.add('animate-shake-hard'); // Shake it
                             loadingSpinner.style.animationDuration = '0.1s'; // Super fast
                             loadingText.textContent = "SYSTEM INTEGRITY: 0%";
                             
+                            // SFX: Glass Cracks
+                            AudioHelper.playTone(2000, 'square', 0.1, 0.1);
+                            setTimeout(() => AudioHelper.playTone(1800, 'square', 0.1, 0.1), 200);
+                            setTimeout(() => AudioHelper.playTone(2200, 'square', 0.1, 0.1), 500);
+
                             // --- PHASE 4: IMPLOSION (11s) ---
                             setTimeout(() => {
                                 clearInterval(chaosInterval);
@@ -570,17 +726,27 @@
                                 terminalLayer.classList.add('animate-implode');
                                 cracksOverlay.classList.add('animate-implode');
                                 
+                                // SFX: Implosion sweep
+                                AudioHelper.playNoise(1.5, 'implode');
+
                                 // --- PHASE 5: EXPLOSION (12.5s) ---
                                 setTimeout(() => {
                                     explosionOverlay.classList.remove('hidden');
                                     explosionOverlay.classList.add('animate-flash');
                                     loadingScreen.classList.add('hidden'); // Hide mess behind flash
+                                    loadingScreen.classList.remove('animate-shake-hard');
+                                    
+                                    // SFX: Boom
+                                    AudioHelper.playNoise(2.5, 'explosion');
 
                                     // --- PHASE 6: BLACKOUT & REBIRTH (13.5s) ---
                                     setTimeout(() => {
                                         explosionOverlay.classList.add('hidden');
                                         finalStage.classList.remove('hidden');
                                         
+                                        // SFX: Peaceful Music/Chime
+                                        setTimeout(() => AudioHelper.playRebirth(), 1000);
+
                                         // Typewriter Sequence
                                         const sequence = [
                                             { text: "System rebooting...", delay: 1000 },
@@ -599,6 +765,9 @@
                                                 function typeChar() {
                                                     if (charIdx < currentText.length) {
                                                         typewriterText.textContent += currentText.charAt(charIdx);
+                                                        // SFX: Tiny blips for typing
+                                                        AudioHelper.playTone(600, 'sine', 0.03, 0.02, false);
+                                                        
                                                         charIdx++;
                                                         setTimeout(typeChar, 50);
                                                     } else {
