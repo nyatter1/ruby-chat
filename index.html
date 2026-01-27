@@ -37,7 +37,9 @@
                         'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'shimmer': 'shimmer 3s linear infinite',
                         'spin-slow': 'spin 3s linear infinite',
-                        'flash': 'flash 0.5s ease-out forwards',
+                        'flash': 'flash 2s ease-out forwards',
+                        'implode': 'implode 1.5s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards',
+                        'reveal': 'reveal 3s ease-out forwards',
                     },
                     keyframes: {
                         float: {
@@ -49,9 +51,18 @@
                             '100%': { backgroundPosition: '-200% 0' }
                         },
                         flash: {
-                            '0%': { opacity: '0', transform: 'scale(0.5)' },
-                            '50%': { opacity: '1', transform: 'scale(1.5)' },
-                            '100%': { opacity: '1', transform: 'scale(2)' }
+                            '0%': { opacity: '1', transform: 'scale(1)' },
+                            '10%': { opacity: '1', transform: 'scale(1.5)', filter: 'brightness(5)' },
+                            '100%': { opacity: '0', transform: 'scale(3)', filter: 'brightness(10)' }
+                        },
+                        implode: {
+                            '0%': { transform: 'scale(1) rotate(0deg)', filter: 'blur(0px)' },
+                            '50%': { transform: 'scale(0.8) rotate(10deg)', filter: 'blur(2px)' },
+                            '100%': { transform: 'scale(0) rotate(720deg)', filter: 'blur(20px)', opacity: '0' }
+                        },
+                        reveal: {
+                            '0%': { opacity: '0', transform: 'translateY(20px) scale(0.9)' },
+                            '100%': { opacity: '1', transform: 'translateY(0) scale(1)' }
                         }
                     }
                 }
@@ -175,6 +186,15 @@
             animation: violent-shake 0.3s infinite cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
         }
 
+        .alarm-pulse {
+            animation: alarm 1s ease-in-out infinite;
+        }
+
+        @keyframes alarm {
+            0%, 100% { background-color: transparent; }
+            50% { background-color: rgba(255, 0, 0, 0.2); }
+        }
+
         .cursor::after {
             content: '_';
             animation: blink 1s step-end infinite;
@@ -182,6 +202,20 @@
 
         @keyframes blink {
             50% { opacity: 0; }
+        }
+
+        .crack-line {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: dash 0.5s linear forwards;
+        }
+
+        @keyframes dash {
+            to { stroke-dashoffset: 0; }
+        }
+
+        .god-ray-text {
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.8), 0 0 20px rgba(255, 51, 102, 0.5), 0 0 40px rgba(255, 51, 102, 0.3);
         }
     </style>
 </head>
@@ -328,14 +362,32 @@
     </div>
 
     <!-- Loading Screen (Fixed Full Screen) -->
-    <div id="loading-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center hidden opacity-0 transition-all duration-700 ease-in-out bg-[#050505]">
-        <!-- Background Gradients for Loading Screen -->
+    <div id="loading-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center hidden opacity-0 transition-all duration-700 ease-in-out bg-[#050505] overflow-hidden">
+        
+        <!-- Terminal Layer (New) -->
+        <div id="terminal-layer" class="absolute inset-0 p-8 font-mono text-xs text-green-500/30 overflow-hidden leading-tight pointer-events-none hidden">
+        </div>
+
+        <!-- Alarm Overlay (New) -->
+        <div id="alarm-overlay" class="absolute inset-0 pointer-events-none hidden z-[105]"></div>
+
+        <!-- Cracks Overlay (New) -->
+        <div id="cracks-overlay" class="absolute inset-0 pointer-events-none hidden z-[110]">
+           <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+               <path d="M0 0 L30 30 L10 50 L40 60 L0 100" stroke="rgba(255,255,255,0.4)" stroke-width="0.2" fill="none" class="crack-line"></path>
+               <path d="M100 0 L70 20 L90 50 L60 80 L100 100" stroke="rgba(255,255,255,0.4)" stroke-width="0.2" fill="none" class="crack-line"></path>
+               <path d="M50 0 L40 40 L60 60 L50 100" stroke="rgba(255,255,255,0.4)" stroke-width="0.2" fill="none" class="crack-line"></path>
+               <path d="M20 0 L30 10 L80 10 L90 0" stroke="rgba(255,255,255,0.4)" stroke-width="0.2" fill="none" class="crack-line"></path>
+           </svg>
+        </div>
+
+        <!-- Background Gradients -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
              <div class="glow-orb w-[50vw] h-[50vw] bg-ruby-800/20 top-[-10%] left-[-10%] animate-pulse-slow"></div>
              <div class="glow-orb w-[40vw] h-[40vw] bg-indigo-900/20 bottom-[-10%] right-[-10%] animate-pulse-slow" style="animation-delay: 1s"></div>
         </div>
 
-        <div class="relative z-10 flex flex-col items-center">
+        <div id="loading-content" class="relative z-10 flex flex-col items-center transition-all duration-300">
             <div class="relative">
                 <div class="absolute inset-0 bg-ruby-500/30 blur-3xl rounded-full animate-pulse-slow"></div>
                 <!-- Spinning Ruby -->
@@ -353,9 +405,19 @@
     <div id="explosion-overlay" class="fixed inset-0 z-[150] bg-white hidden pointer-events-none"></div>
 
     <!-- Final Blackout / Typewriter -->
-    <div id="final-stage" class="fixed inset-0 z-[200] bg-black hidden flex items-center justify-center">
+    <div id="final-stage" class="fixed inset-0 z-[200] bg-black hidden flex flex-col items-center justify-center">
          <div class="text-center">
-             <h1 id="typewriter-text" class="text-2xl md:text-4xl text-ruby-500 font-mono tracking-widest leading-relaxed cursor"></h1>
+             <h1 id="typewriter-text" class="text-xl md:text-2xl text-ruby-500/80 font-mono tracking-widest leading-relaxed cursor mb-8 h-10"></h1>
+             
+             <!-- Final Logo Reveal -->
+             <div id="final-logo" class="opacity-0 hidden transform translate-y-10 scale-90">
+                <div class="relative flex flex-col items-center justify-center">
+                    <div class="absolute inset-0 bg-ruby-500/40 blur-[100px] animate-pulse"></div>
+                    <i class="fa-regular fa-gem text-9xl text-white drop-shadow-[0_0_50px_rgba(255,51,102,1)] mb-6 animate-float"></i>
+                    <h1 class="text-5xl md:text-7xl font-bold text-white god-ray-text tracking-tighter">RUBYCHAT <span class="text-ruby-500">2.0</span></h1>
+                    <p class="mt-4 text-ruby-200 tracking-[0.5em] text-sm uppercase">The Future is Here</p>
+                </div>
+             </div>
          </div>
     </div>
 
@@ -423,108 +485,153 @@
             
             const panelContent = document.getElementById('panel-content');
             const loadingScreen = document.getElementById('loading-screen');
+            const loadingContent = document.getElementById('loading-content');
             const loadingText = document.getElementById('loading-text');
+            const loadingSpinner = document.getElementById('loading-spinner');
             const explosionOverlay = document.getElementById('explosion-overlay');
             const finalStage = document.getElementById('final-stage');
             const typewriterText = document.getElementById('typewriter-text');
+            const terminalLayer = document.getElementById('terminal-layer');
+            const alarmOverlay = document.getElementById('alarm-overlay');
+            const cracksOverlay = document.getElementById('cracks-overlay');
+            const finalLogo = document.getElementById('final-logo');
 
-            // 1. Fade out content
+            // --- PHASE 0: START ---
             panelContent.classList.add('opacity-0', 'scale-95', 'blur-sm');
 
-            // 2. Show loading screen
             setTimeout(() => {
                 loadingScreen.classList.remove('hidden');
                 void loadingScreen.offsetWidth;
                 loadingScreen.classList.remove('opacity-0');
+                
+                // Start Terminal Log
+                terminalLayer.classList.remove('hidden');
+                let terminalLines = [];
+                const commands = [
+                    "Loading core modules...", "Mounting volumes...", "Check integrity...", "Encrypting stream...", 
+                    "Allocating memory...", "Connecting to swarm...", "Handshake verified...", "Pinging nodes...",
+                    "Optimizing assets...", "Compiling shaders..."
+                ];
+                
+                const terminalInterval = setInterval(() => {
+                    if (Math.random() > 0.3) {
+                        const cmd = commands[Math.floor(Math.random() * commands.length)];
+                        const id = Math.floor(Math.random() * 9999);
+                        const div = document.createElement('div');
+                        div.textContent = `[SUCCESS] ${cmd} (PID: ${id})`;
+                        terminalLayer.appendChild(div);
+                        terminalLayer.scrollTop = terminalLayer.scrollHeight;
+                        
+                        // Keep DOM light
+                        if(terminalLayer.children.length > 20) terminalLayer.removeChild(terminalLayer.firstChild);
+                    }
+                }, 200);
 
-                // Normal loading text cycle
-                const messages = ["Polishing the gems...", "Calibrating lasers...", "Spinning up the servers...", "Refracting light..."];
-                let msgIndex = 0;
-                const textInterval = setInterval(() => {
-                    msgIndex = (msgIndex + 1) % messages.length;
-                    loadingText.style.opacity = 0;
-                    setTimeout(() => {
-                        loadingText.textContent = messages[msgIndex];
-                        loadingText.style.opacity = 1;
-                    }, 300);
-                }, 1500);
 
-                // 3. THE MELTDOWN (At 6 seconds)
+                // --- PHASE 1: INSTABILITY (4s) ---
                 setTimeout(() => {
-                    clearInterval(textInterval);
+                    clearInterval(terminalInterval);
                     
-                    // Trigger glitch/meltdown animations on loading screen
-                    loadingScreen.classList.add('meltdown-active');
-                    
-                    // Change text to something alarming
-                    loadingText.style.color = '#ff0000';
-                    loadingText.style.fontWeight = 'bold';
-                    loadingText.textContent = "SYSTEM INSTABILITY DETECTED...";
-                    
-                    // Random text glitches
-                    let chaos = 0;
+                    // Ramp up terminal speed and error rate
                     const chaosInterval = setInterval(() => {
-                        chaos++;
-                        document.body.style.filter = `hue-rotate(${Math.random() * 360}deg) contrast(${100 + chaos * 10}%)`;
-                        if(chaos % 2 === 0) loadingText.textContent = "CRITICAL ERROR: " + Math.random().toString(36).substring(7);
-                    }, 100);
+                        const div = document.createElement('div');
+                        div.textContent = `[ERROR] SEGMENTATION FAULT AT ADDRESS 0x${Math.floor(Math.random()*999999).toString(16)}`;
+                        div.style.color = 'red';
+                        terminalLayer.appendChild(div);
+                        terminalLayer.scrollTop = terminalLayer.scrollHeight;
+                    }, 50);
 
-                    // 4. THE EXPLOSION (At 9 seconds)
+                    // Visuals
+                    loadingScreen.classList.add('meltdown-active');
+                    loadingText.style.color = '#ff0000';
+                    loadingText.textContent = "WARNING: UNSTABLE ENERGY SIGNATURE";
+                    loadingSpinner.classList.remove('animate-spin-slow');
+                    loadingSpinner.classList.add('animate-spin'); // Faster spin
+                    loadingSpinner.style.animationDuration = '0.5s';
+
+                    // --- PHASE 2: CRITICAL FAILURE (7s) ---
                     setTimeout(() => {
-                        clearInterval(chaosInterval);
-                        document.body.style.filter = 'none'; // Reset body filter
-                        
-                        // Show explosion
-                        explosionOverlay.classList.remove('hidden');
-                        explosionOverlay.classList.add('animate-flash');
-                        
-                        // Hide chaos
-                        loadingScreen.classList.add('hidden');
-                        
-                        // 5. THE BLACKOUT (At 9.8 seconds - shortly after explosion peak)
-                        setTimeout(() => {
-                            explosionOverlay.classList.add('hidden'); // Remove flash
-                            finalStage.classList.remove('hidden'); // Show black screen
+                         // Alarm
+                         alarmOverlay.classList.remove('hidden');
+                         alarmOverlay.classList.add('alarm-pulse');
+                         loadingText.textContent = "CONTAINMENT BREACH DETECTED";
+                         loadingText.classList.add('text-4xl', 'font-bold');
+
+                         // --- PHASE 3: CRACKS (9s) ---
+                         setTimeout(() => {
+                            cracksOverlay.classList.remove('hidden');
+                            loadingSpinner.style.animationDuration = '0.1s'; // Super fast
+                            loadingText.textContent = "SYSTEM INTEGRITY: 0%";
                             
-                            // 6. TYPEWRITER EFFECT (At 11 seconds)
+                            // --- PHASE 4: IMPLOSION (11s) ---
                             setTimeout(() => {
-                                const line1 = "are you ready...";
-                                const line2 = "for rubychat 2.0";
-                                let i = 0;
+                                clearInterval(chaosInterval);
+                                loadingContent.classList.add('animate-implode'); // Suck in
+                                terminalLayer.classList.add('animate-implode');
+                                cracksOverlay.classList.add('animate-implode');
                                 
-                                function typeWriter() {
-                                    if (i < line1.length) {
-                                        typewriterText.innerHTML += line1.charAt(i);
-                                        i++;
-                                        setTimeout(typeWriter, 100);
-                                    } else {
-                                        // Line 1 done, wait then clear/break line
-                                        setTimeout(() => {
-                                            typewriterText.innerHTML = ""; // Clear for dramatic effect
-                                            i = 0;
-                                            
-                                            function typeWriter2() {
-                                                if (i < line2.length) {
-                                                    typewriterText.innerHTML += line2.charAt(i);
-                                                    i++;
-                                                    setTimeout(typeWriter2, 100); // Faster for second line?
+                                // --- PHASE 5: EXPLOSION (12.5s) ---
+                                setTimeout(() => {
+                                    explosionOverlay.classList.remove('hidden');
+                                    explosionOverlay.classList.add('animate-flash');
+                                    loadingScreen.classList.add('hidden'); // Hide mess behind flash
+
+                                    // --- PHASE 6: BLACKOUT & REBIRTH (13.5s) ---
+                                    setTimeout(() => {
+                                        explosionOverlay.classList.add('hidden');
+                                        finalStage.classList.remove('hidden');
+                                        
+                                        // Typewriter Sequence
+                                        const sequence = [
+                                            { text: "System rebooting...", delay: 1000 },
+                                            { text: "Restoring core files...", delay: 1000 },
+                                            { text: "Optimizing brilliance...", delay: 1000 },
+                                            { text: "Welcome...", delay: 1000 }
+                                        ];
+
+                                        let step = 0;
+                                        function playSequence() {
+                                            if (step < sequence.length) {
+                                                typewriterText.textContent = "";
+                                                let charIdx = 0;
+                                                const currentText = sequence[step].text;
+                                                
+                                                function typeChar() {
+                                                    if (charIdx < currentText.length) {
+                                                        typewriterText.textContent += currentText.charAt(charIdx);
+                                                        charIdx++;
+                                                        setTimeout(typeChar, 50);
+                                                    } else {
+                                                        setTimeout(() => {
+                                                            step++;
+                                                            playSequence();
+                                                        }, sequence[step].delay);
+                                                    }
                                                 }
+                                                typeChar();
+                                            } else {
+                                                // --- PHASE 7: FINALE REVEAL (Approx 18s) ---
+                                                typewriterText.textContent = ""; // Clear text
+                                                typewriterText.classList.add('hidden');
+                                                finalLogo.classList.remove('hidden');
+                                                finalLogo.classList.add('animate-reveal');
                                             }
-                                            typeWriter2();
-                                        }, 1000);
-                                    }
-                                }
-                                typeWriter();
+                                        }
+                                        playSequence();
 
-                            }, 1200); // Wait a bit in darkness
+                                    }, 1000); // Wait for flash to peak
 
-                        }, 800); // Duration of explosion flash before black
+                                }, 1500); // Implosion duration
 
-                    }, 3000); // Duration of meltdown
+                            }, 2000); // Time with cracks
 
-                }, 6000); // Start meltdown after 6s
+                         }, 2000); // Time with alarm
 
-            }, 500);
+                    }, 3000); // Time with instability
+
+                }, 4000); // Initial load time
+
+            }, 500); // Form fade out
         }
     </script>
 </body>
