@@ -1,446 +1,57 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RubyDB - Console</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        gray: { 850: '#1f2937', 900: '#111827', 950: '#030712' },
-                        ruby: { 500: '#e0115f', 600: '#c20e50' }
-                    }
-                }
-            }
-        }
-    </script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Under Maintenance</title>
     <style>
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #111827; }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
-        .col-item:hover { background-color: #1f2937; }
-        .col-item.active { background-color: rgba(224, 17, 95, 0.15); border-left: 3px solid #e0115f; color: #e0115f; }
-        .field-row { border-bottom: 1px solid #1f2937; }
-        .field-row:last-child { border-bottom: none; }
-        .type-badge { font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; font-weight: bold; opacity: 0.7; }
-        .type-string { background: #065f46; color: #34d399; }
-        .type-number { background: #1e3a8a; color: #60a5fa; }
-        .type-boolean { background: #7f1d1d; color: #f87171; }
-        .type-timestamp { background: #713f12; color: #facc15; }
-        .type-map { background: #4c1d95; color: #a78bfa; }
-        .type-array { background: #4c1d95; color: #a78bfa; }
-        .type-null { background: #374151; color: #9ca3af; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 600px;
+            padding: 20px;
+        }
+        .icon {
+            font-size: 50px;
+            margin-bottom: 20px;
+            animation: pulse 2s infinite;
+        }
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        p {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #7f8c8d;
+        }
+        .strawberry-accent {
+            color: #ff4d6d; /* A little strawberry pink to match your vibe! */
+            font-weight: bold;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
-<body class="bg-gray-950 text-gray-100 font-sans h-screen overflow-hidden flex flex-col">
-
-    <!-- LOGIN OVERLAY -->
-    <div id="auth-overlay" class="fixed inset-0 z-50 bg-gray-950 flex flex-col items-center justify-center p-4">
-        <div class="w-full max-w-md bg-gray-900 border border-gray-800 p-8 rounded-xl shadow-2xl text-center">
-            <h1 class="text-3xl font-bold text-ruby-500 mb-2"><i class="fas fa-database"></i> RubyDB</h1>
-            <p class="text-gray-400 mb-6 text-sm">Restricted Access Area</p>
-            <form id="login-form" class="space-y-4">
-                <input type="email" id="email" placeholder="Email" class="w-full bg-gray-950 border border-gray-700 p-3 rounded text-white focus:border-ruby-500 focus:outline-none" required>
-                <input type="password" id="password" placeholder="Password" class="w-full bg-gray-950 border border-gray-700 p-3 rounded text-white focus:border-ruby-500 focus:outline-none" required>
-                <button type="submit" class="w-full bg-ruby-500 hover:bg-ruby-600 text-white font-bold p-3 rounded transition-colors">AUTHENTICATE</button>
-            </form>
-            <p id="auth-error" class="text-red-500 mt-4 text-sm hidden"></p>
-        </div>
+<body>
+    <div class="container">
+        <div class="icon">🛠️</div>
+        <h1>We’ll be right back!</h1>
+        <p>Our site is currently undergoing <span class="strawberry-accent">scheduled maintenance</span> to make things even better. We should be back online shortly.</p>
+        <p>Thanks for your patience!</p>
     </div>
-
-    <!-- MAIN APP -->
-    <div id="app-ui" class="flex-1 flex flex-col hidden h-full">
-        <!-- HEADER -->
-        <header class="h-14 bg-gray-900 border-b border-gray-800 flex items-center justify-between px-4 shrink-0">
-            <div class="flex items-center gap-3">
-                <div class="w-8 h-8 bg-ruby-500 rounded flex items-center justify-center font-bold text-lg"><i class="fas fa-database"></i></div>
-                <h1 class="font-bold text-lg tracking-wide">Ruby<span class="text-ruby-500">DB</span></h1>
-                <span class="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded border border-gray-700">dev@gmail.com</span>
-            </div>
-            <button onclick="logout()" class="text-xs bg-gray-800 hover:bg-red-900/50 text-red-400 border border-gray-700 px-3 py-1.5 rounded transition-colors">LOGOUT</button>
-        </header>
-
-        <!-- 3 PANE LAYOUT -->
-        <div class="flex-1 flex overflow-hidden">
-            
-            <!-- COL 1: COLLECTIONS -->
-            <div class="w-64 bg-gray-900 border-r border-gray-800 flex flex-col">
-                <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-850/50">
-                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Collections</span>
-                    <button onclick="addCollectionPrompt()" class="text-gray-400 hover:text-white"><i class="fas fa-plus"></i></button>
-                </div>
-                <div id="collections-list" class="flex-1 overflow-y-auto">
-                    <!-- Injected JS -->
-                </div>
-            </div>
-
-            <!-- COL 2: DOCUMENTS -->
-            <div class="w-72 bg-gray-900/50 border-r border-gray-800 flex flex-col">
-                <div class="p-3 border-b border-gray-800 flex flex-col gap-2 bg-gray-850/50">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold text-gray-400 uppercase tracking-wider" id="col-header">Documents</span>
-                        <button onclick="addDocPrompt()" class="text-gray-400 hover:text-white" title="Add Document"><i class="fas fa-plus"></i></button>
-                    </div>
-                    <input type="text" id="doc-search" placeholder="Filter ID..." class="bg-gray-950 text-xs text-white border border-gray-800 rounded px-2 py-1 focus:border-ruby-500 focus:outline-none w-full">
-                </div>
-                <div id="documents-list" class="flex-1 overflow-y-auto">
-                    <div class="text-center text-gray-600 text-xs mt-10 italic">Select a collection</div>
-                </div>
-            </div>
-
-            <!-- COL 3: FIELDS -->
-            <div class="flex-1 bg-gray-950 flex flex-col">
-                <div class="p-3 border-b border-gray-800 flex justify-between items-center bg-gray-900 h-[57px]">
-                    <div class="flex items-center gap-2 overflow-hidden">
-                        <span class="text-ruby-500 text-lg"><i class="fas fa-file-alt"></i></span>
-                        <span class="text-sm font-mono font-bold text-gray-200 truncate" id="doc-id-display">No document selected</span>
-                    </div>
-                    <div class="flex gap-2" id="doc-actions" style="display:none;">
-                        <button id="btn-reset-password" onclick="sendResetEmail()" class="text-xs bg-gray-800 hover:bg-blue-900/50 text-blue-400 px-3 py-1.5 rounded border border-gray-700 hidden"><i class="fas fa-key mr-1"></i> Reset Pass</button>
-                        <button onclick="addFieldPrompt()" class="text-xs bg-gray-800 hover:bg-gray-700 text-gray-200 px-3 py-1.5 rounded border border-gray-700"><i class="fas fa-plus mr-1"></i> Add Field</button>
-                        <button onclick="deleteCurrentDoc()" class="text-xs bg-gray-800 hover:bg-red-900/50 text-red-500 px-3 py-1.5 rounded border border-gray-700"><i class="fas fa-trash"></i></button>
-                    </div>
-                </div>
-                <div id="fields-container" class="flex-1 overflow-y-auto p-4 space-y-1">
-                    <div class="flex flex-col items-center justify-center h-full text-gray-600 gap-2">
-                        <i class="fas fa-database text-4xl opacity-20"></i>
-                        <span class="text-sm">Select a document to view data</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL -->
-    <div id="modal" class="fixed inset-0 z-50 bg-black/80 hidden flex items-center justify-center p-4">
-        <div class="bg-gray-900 border border-gray-700 p-6 rounded-lg w-full max-w-sm shadow-2xl">
-            <h3 id="modal-title" class="text-xl font-bold text-white mb-4">Title</h3>
-            <div id="modal-content" class="space-y-4"></div>
-            <div class="flex justify-end gap-3 mt-6">
-                <button onclick="closeModal()" class="px-4 py-2 rounded text-gray-400 hover:text-white hover:bg-gray-800">Cancel</button>
-                <button id="modal-confirm" class="px-4 py-2 rounded bg-ruby-500 hover:bg-ruby-600 text-white font-bold">Save</button>
-            </div>
-        </div>
-    </div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-auth.js";
-import { getFirestore, collection, doc, getDoc, getDocs, onSnapshot, updateDoc, setDoc, deleteDoc, addDoc, query, limit, orderBy, deleteField } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-
-const config = {apiKey:"AIzaSyC-Ti6kJB_bgdeC0I_1Pt9Bl3XZp7pTjoU",authDomain:"cartoony-chat.firebaseapp.com",databaseURL:"https://cartoony-chat-default-rtdb.europe-west1.firebasedatabase.app",projectId:"cartoony-chat",storageBucket:"cartoony-chat.firebasestorage.app",messagingSenderId:"827018960215",appId:"1:827018960215:web:0e0c2436c9c4e1dceb7212",measurementId:"G-HF16NJSQ16"};
-const app = initializeApp(config);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// STATE
-let currentUser = null;
-let collections = ['users', 'market_items', 'messages', 'direct_messages', 'settings', 'typing', 'audit_logs']; 
-let currentCol = null;
-let currentDocId = null;
-let colUnsub = null;
-let docUnsub = null;
-let currentDocData = null;
-
-const get = id => document.getElementById(id);
-const modal = get('modal');
-
-onAuthStateChanged(auth, user => {
-    if (user) {
-        if(user.email !== 'dev@gmail.com') {
-            get('auth-error').innerText = "Access Denied: dev@gmail.com only";
-            get('auth-error').classList.remove('hidden');
-            signOut(auth);
-            return;
-        }
-        currentUser = user;
-        get('auth-overlay').classList.add('hidden');
-        get('app-ui').classList.remove('hidden');
-        renderCollections();
-    } else {
-        currentUser = null;
-        get('auth-overlay').classList.remove('hidden');
-        get('app-ui').classList.add('hidden');
-    }
-});
-
-get('login-form').onsubmit = async (e) => {
-    e.preventDefault();
-    try {
-        await signInWithEmailAndPassword(auth, get('email').value, get('password').value);
-    } catch (err) {
-        get('auth-error').innerText = err.message;
-        get('auth-error').classList.remove('hidden');
-    }
-};
-
-window.logout = () => signOut(auth);
-
-function renderCollections() {
-    const list = get('collections-list');
-    list.innerHTML = collections.map(c => 
-        `<div onclick="selectCollection('${c}')" class="col-item p-3 text-sm font-medium text-gray-300 cursor-pointer border-b border-gray-800 ${currentCol === c ? 'active' : ''}">
-            <i class="fas fa-folder mr-2 ${currentCol === c ? 'text-ruby-500' : 'text-gray-500'}"></i> ${c}
-        </div>`
-    ).join('');
-}
-
-window.selectCollection = (c) => {
-    currentCol = c;
-    currentDocId = null;
-    currentDocData = null;
-    renderCollections();
-    
-    get('col-header').innerText = c;
-    get('documents-list').innerHTML = '<div class="text-center text-gray-500 text-xs mt-10"><i class="fas fa-circle-notch fa-spin"></i> Loading...</div>';
-    get('doc-id-display').innerText = 'No document selected';
-    get('fields-container').innerHTML = '<div class="flex flex-col items-center justify-center h-full text-gray-600 gap-2"><i class="fas fa-arrow-left text-2xl"></i><span>Select a document</span></div>';
-    get('doc-actions').style.display = 'none';
-    get('btn-reset-password').classList.add('hidden');
-
-    if (colUnsub) colUnsub();
-
-    let q = query(collection(db, c), limit(100));
-    if(c === 'messages' || c === 'market_items') q = query(collection(db, c), orderBy('timestamp', 'desc'), limit(50));
-
-    colUnsub = onSnapshot(q, (snapshot) => {
-        const docs = [];
-        snapshot.forEach(d => docs.push({ id: d.id, ...d.data() }));
-        renderDocsList(docs);
-    }, (err) => {
-        get('documents-list').innerHTML = `<div class="text-center text-red-500 text-xs mt-4">Error: ${err.message}<br>Check Permissions</div>`;
-    });
-};
-
-function renderDocsList(docs) {
-    const list = get('documents-list');
-    const filter = get('doc-search').value.toLowerCase();
-    
-    if (docs.length === 0) {
-        list.innerHTML = '<div class="text-center text-gray-600 text-xs mt-4">Collection is empty</div>';
-        return;
-    }
-
-    list.innerHTML = docs
-        .filter(d => d.id.toLowerCase().includes(filter))
-        .map(d => {
-            let preview = '';
-            if (d.username) preview = d.username;
-            else if (d.title) preview = d.title;
-            else if (d.text) preview = d.text.substring(0, 20);
-            else if (d.email) preview = d.email;
-            
-            return `<div onclick="selectDoc('${d.id}')" class="col-item p-3 border-b border-gray-800 cursor-pointer ${currentDocId === d.id ? 'active' : ''}">
-                <div class="text-xs font-mono font-bold text-gray-300 truncate">${d.id}</div>
-                ${preview ? `<div class="text-[10px] text-gray-500 truncate mt-0.5">${preview}</div>` : ''}
-            </div>`;
-        }).join('');
-}
-
-get('doc-search').oninput = () => {
-    const term = get('doc-search').value.toLowerCase();
-    const items = get('documents-list').querySelectorAll('.col-item');
-    items.forEach(item => {
-        const text = item.innerText.toLowerCase();
-        item.style.display = text.includes(term) ? 'block' : 'none';
-    });
-};
-
-window.selectDoc = (id) => {
-    currentDocId = id;
-    const items = get('documents-list').querySelectorAll('.col-item');
-    items.forEach(el => {
-        if(el.querySelector('.font-mono').innerText === id) el.classList.add('active');
-        else el.classList.remove('active');
-    });
-
-    get('doc-id-display').innerText = id;
-    get('doc-actions').style.display = 'flex';
-    
-    if (docUnsub) docUnsub();
-    docUnsub = onSnapshot(doc(db, currentCol, id), (docSnap) => {
-        if (docSnap.exists()) {
-            currentDocData = docSnap.data();
-            
-            // Check for password reset ability (If in users collection and has email)
-            const resetBtn = get('btn-reset-password');
-            if (currentCol === 'users' && currentDocData.email) {
-                resetBtn.classList.remove('hidden');
-                resetBtn.title = `Reset password for ${currentDocData.email}`;
-            } else {
-                resetBtn.classList.add('hidden');
-            }
-
-            renderFields(currentDocData);
-        } else {
-            get('fields-container').innerHTML = '<div class="text-center text-red-500 mt-10">Document does not exist</div>';
-            get('doc-actions').style.display = 'none';
-        }
-    });
-};
-
-function renderFields(data) {
-    const container = get('fields-container');
-    const keys = Object.keys(data).sort();
-    
-    if (keys.length === 0) {
-        container.innerHTML = '<div class="text-center text-gray-600 text-xs italic p-4">Empty document</div>';
-        return;
-    }
-
-    container.innerHTML = keys.map(key => {
-        const val = data[key];
-        let type = 'null';
-        let displayVal = 'null';
-        let isEditable = true;
-
-        if (typeof val === 'string') {
-            type = 'string';
-            displayVal = `"${val}"`;
-        } else if (typeof val === 'number') {
-            type = 'number';
-            displayVal = val;
-        } else if (typeof val === 'boolean') {
-            type = 'boolean';
-            displayVal = val;
-        } else if (val && typeof val === 'object') {
-            if (val.seconds !== undefined && val.nanoseconds !== undefined) {
-                type = 'timestamp';
-                displayVal = new Date(val.toDate()).toLocaleString();
-                isEditable = false; 
-            } else if (Array.isArray(val)) {
-                type = 'array';
-                displayVal = `[ ... ${val.length} items ]`;
-                isEditable = false;
-            } else {
-                type = 'map';
-                displayVal = `{ ... }`;
-                isEditable = false;
-            }
-        }
-
-        return `<div class="field-row py-2 flex items-start gap-3 hover:bg-gray-900/50 group">
-            <div class="w-1/3 min-w-[120px] font-mono text-xs text-gray-400 break-words pt-1">${key}</div>
-            <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="type-badge type-${type}">${type}</span>
-                    <div class="flex-1"></div>
-                    <button onclick="deleteFieldAction('${key}')" class="text-gray-600 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity px-2"><i class="fas fa-times"></i></button>
-                    ${isEditable ? `<button onclick="editField('${key}', '${type}')" class="text-gray-600 hover:text-ruby-500 opacity-0 group-hover:opacity-100 transition-opacity px-2"><i class="fas fa-pencil-alt"></i></button>` : ''}
-                </div>
-                <div class="font-mono text-sm text-gray-200 break-all bg-gray-900/50 p-1.5 rounded border border-transparent group-hover:border-gray-800">${displayVal}</div>
-            </div>
-        </div>`;
-    }).join('');
-}
-
-window.addCollectionPrompt = () => {
-    const name = prompt("Enter collection name (e.g., 'admins'):");
-    if(name && !collections.includes(name)) {
-        collections.push(name);
-        renderCollections();
-        selectCollection(name);
-    }
-};
-
-window.addDocPrompt = async () => {
-    if(!currentCol) return alert("Select a collection first");
-    const id = prompt("Enter Document ID (leave empty for auto-ID):");
-    try {
-        if(id) {
-            await setDoc(doc(db, currentCol, id), { created: new Date() });
-            selectDoc(id);
-        } else {
-            const res = await addDoc(collection(db, currentCol), { created: new Date() });
-            selectDoc(res.id);
-        }
-    } catch(e) { alert(e.message); }
-};
-
-window.deleteCurrentDoc = async () => {
-    if(!confirm("Delete document " + currentDocId + "?")) return;
-    try {
-        await deleteDoc(doc(db, currentCol, currentDocId));
-        get('doc-id-display').innerText = "No document selected";
-        get('fields-container').innerHTML = '';
-        get('doc-actions').style.display = 'none';
-        currentDocId = null;
-    } catch(e) { alert(e.message); }
-};
-
-window.sendResetEmail = async () => {
-    if(!currentDocData || !currentDocData.email) return alert("No email found in this document.");
-    if(!confirm(`Send password reset email to ${currentDocData.email}?`)) return;
-    try {
-        await sendPasswordResetEmail(auth, currentDocData.email);
-        alert("Password reset email sent to " + currentDocData.email);
-    } catch(e) {
-        alert("Error: " + e.message);
-    }
-};
-
-window.addFieldPrompt = () => {
-    showModal('Add Field', `
-        <input id="new-field-key" placeholder="Field Name" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white mb-2">
-        <select id="new-field-type" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white mb-2">
-            <option value="string">String</option>
-            <option value="number">Number</option>
-            <option value="boolean">Boolean</option>
-        </select>
-        <input id="new-field-val" placeholder="Value" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white">
-    `, async () => {
-        const key = get('new-field-key').value.trim();
-        const type = get('new-field-type').value;
-        let val = get('new-field-val').value;
-        
-        if(!key) return;
-        
-        if(type === 'number') val = Number(val);
-        if(type === 'boolean') val = (val === 'true');
-
-        await updateDoc(doc(db, currentCol, currentDocId), { [key]: val });
-        closeModal();
-    });
-};
-
-window.editField = (key, type) => {
-    const currentVal = currentDocData[key];
-    showModal('Edit ' + key, `
-        <div class="mb-2 text-xs text-gray-500 uppercase font-bold">Value (${type})</div>
-        <input id="edit-field-val" class="w-full bg-gray-950 border border-gray-700 p-2 rounded text-white" value="${currentVal}">
-    `, async () => {
-        let val = get('edit-field-val').value;
-        if(type === 'number') val = Number(val);
-        if(type === 'boolean') val = (val === 'true');
-        
-        await updateDoc(doc(db, currentCol, currentDocId), { [key]: val });
-        closeModal();
-    });
-};
-
-window.deleteFieldAction = async (key) => {
-    if(!confirm(`Delete field '${key}'?`)) return;
-    const updates = {};
-    updates[key] = deleteField();
-    await updateDoc(doc(db, currentCol, currentDocId), updates);
-};
-
-window.showModal = (title, html, onConfirm) => {
-    get('modal-title').innerText = title;
-    get('modal-content').innerHTML = html;
-    modal.classList.remove('hidden');
-    get('modal-confirm').onclick = onConfirm;
-};
-
-window.closeModal = () => {
-    modal.classList.add('hidden');
-};
-</script>
 </body>
 </html>
