@@ -130,7 +130,7 @@
     </div>
 
     <!-- ================= SETUP / ONBOARDING SCREEN ================= -->
-    <div id="setup-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+    <div id="setup-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
         <div class="w-full max-w-lg bg-[#0a0a0c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative animate-slide-up">
             <!-- Header -->
             <div class="p-6 border-b border-white/5 bg-gradient-to-r from-ruby-900/20 to-transparent">
@@ -293,6 +293,11 @@
                     <i class="fa-solid fa-gear w-5 text-center"></i>
                     <span class="font-medium">Settings</span>
                 </button>
+                
+                <button id="logout-btn" class="w-full flex items-center gap-3 px-6 py-3 text-red-400 nav-btn border-l-2 border-transparent hover:text-red-300 mt-4">
+                    <i class="fa-solid fa-right-from-bracket w-5 text-center"></i>
+                    <span class="font-medium">Logout</span>
+                </button>
             </div>
 
             <!-- Current User Profile (Bottom of Left Nav) -->
@@ -425,7 +430,8 @@
     <!-- Firebase Logic -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, collection, addDoc, setDoc, getDoc, doc, onSnapshot, query, orderBy, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -438,8 +444,8 @@
           measurementId: "G-BSQZHHY9W6"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
         const messagesRef = collection(db, "messages");
         const usersRef = collection(db, "users");
@@ -449,9 +455,11 @@
             username: '',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest',
             bio: '',
-            mood: 'online'
+            mood: 'online',
+            uid: null
         };
         let isCustomAvatar = false;
+        let currentUser = null;
 
         // --- DOM Elements ---
         const setupScreen = document.getElementById('setup-screen');
@@ -464,7 +472,7 @@
         const step2 = document.getElementById('step-2');
         const progressBar = document.getElementById('setup-progress');
         
-        // App Elements to Update
+        // App Elements
         const sidebarAvatar = document.getElementById('sidebar-avatar');
         const sidebarUsername = document.getElementById('sidebar-username');
         const sidebarStatusDot = document.getElementById('sidebar-status-dot');
@@ -473,8 +481,62 @@
         const chatContainer = document.getElementById('chat-messages');
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
+        const logoutBtn = document.getElementById('logout-btn');
 
-        // --- Global Helpers for HTML attributes ---
+        // --- AUTH & DATA LOADING ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                userProfile.uid = user.uid;
+                
+                // Check if user has a profile in Firestore
+                const docRef = doc(db, "users", user.uid);
+                const docSnap = await getDoc(docRef);
+
+                if (docSnap.exists()) {
+                    // Profile exists, load it and skip setup
+                    const data = docSnap.data();
+                    Object.assign(userProfile, data);
+                    
+                    // Show App
+                    setupScreen.style.display = 'none';
+                    appLayout.classList.remove('hidden');
+                    appLayout.classList.add('animate-message-fade');
+                    updateAppInterface();
+                    
+                    // Update Status to Online
+                    await setDoc(docRef, { 
+                        mood: 'online', 
+                        joinedAt: serverTimestamp() // Update timestamp to show at top
+                    }, { merge: true });
+
+                } else {
+                    // No profile, show setup screen
+                    setupScreen.classList.remove('hidden');
+                    
+                    // Pre-fill name from Auth or LocalStorage
+                    const savedName = localStorage.getItem('ruby_auth_name') || user.displayName;
+                    if(savedName) {
+                        setupUsername.value = savedName;
+                        // Trigger input event logic manually
+                        window.handleUsernameInput(setupUsername);
+                    }
+                }
+            } else {
+                // No user, redirect to landing
+                window.location.href = 'index.html';
+            }
+        });
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                window.location.href = 'index.html';
+            });
+        });
+
+        // --- SETUP LOGIC ---
+
         window.updateAvatarPreview = (src) => {
             avatarPreview.src = src;
             userProfile.avatar = src;
@@ -547,41 +609,40 @@
                 setupScreen.style.display = 'none';
                 appLayout.classList.remove('hidden');
                 appLayout.classList.add('animate-message-fade');
-                // Scroll to bottom after layout shift
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }, 500);
 
             // 2. Update Local Interface
             updateAppInterface();
             
-            // 3. Save User to Firestore (Online List)
-            try {
-                await addDoc(usersRef, {
-                    username: userProfile.username,
-                    avatar: userProfile.avatar,
-                    bio: userProfile.bio,
-                    mood: userProfile.mood,
-                    joinedAt: serverTimestamp()
-                });
+            // 3. Save User to Firestore (Persistent Profile)
+            if(currentUser) {
+                try {
+                    await setDoc(doc(db, "users", currentUser.uid), {
+                        username: userProfile.username,
+                        avatar: userProfile.avatar,
+                        bio: userProfile.bio,
+                        mood: userProfile.mood,
+                        uid: currentUser.uid,
+                        joinedAt: serverTimestamp()
+                    }, { merge: true });
 
-                // 4. Send System Welcome Message
-                await addDoc(messagesRef, {
-                    user: "System",
-                    role: "system",
-                    content: `User ${userProfile.username} connected to the mainframe.`,
-                    timestamp: serverTimestamp()
-                });
-            } catch (e) {
-                console.error("Error adding document: ", e);
+                    // 4. Send System Welcome Message
+                    await addDoc(messagesRef, {
+                        user: "System",
+                        role: "system",
+                        content: `User ${userProfile.username} connected to the mainframe.`,
+                        timestamp: serverTimestamp()
+                    });
+                } catch (e) {
+                    console.error("Error saving profile: ", e);
+                }
             }
         };
 
         function updateAppInterface() {
-            // Sidebar
             sidebarUsername.textContent = userProfile.username;
             sidebarAvatar.src = userProfile.avatar;
-            
-            // Sidebar Dot Color
             const color = getMoodColor(userProfile.mood);
             sidebarStatusDot.className = `absolute bottom-0 right-0 w-3 h-3 ${color} border-2 border-[#0a0a0c] rounded-full user-status-dot text-${color.replace('bg-','')}`;
         }
@@ -593,9 +654,7 @@
             return 'bg-green-500';
         }
 
-        // --- Chat Functionality (Firestore) ---
-        
-        // Listen for Messages
+        // --- Chat Functionality ---
         const qMessages = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
         onSnapshot(qMessages, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
@@ -607,7 +666,7 @@
         });
 
         function renderMessage(data) {
-            const isOwn = data.user === userProfile.username;
+            const isOwn = data.user === userProfile.username; // Note: Username collision is possible without stricter auth rules, but user ID is unique.
             const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
             
             const div = document.createElement('div');
@@ -622,7 +681,6 @@
             
             let contentHtml = data.content;
             if(data.role === 'system') {
-                 // highlight the username in system messages if it matches format
                  contentHtml = contentHtml.replace(userProfile.username, `<span class="text-ruby-400 font-bold">${userProfile.username}</span>`);
             }
 
@@ -643,7 +701,6 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        // Send Message
         messageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = messageInput.value.trim();
@@ -654,7 +711,8 @@
                         avatar: userProfile.avatar,
                         content: text,
                         timestamp: serverTimestamp(),
-                        role: 'user'
+                        role: 'user',
+                        uid: currentUser.uid
                     });
                     messageInput.value = '';
                 } catch (e) {
@@ -663,30 +721,28 @@
             }
         });
 
-        // --- Online Users Functionality (Firestore) ---
-        
-        // Listen for Users
+        // --- Online Users Functionality ---
         const qUsers = query(usersRef, orderBy("joinedAt", "desc"), limit(50));
         onSnapshot(qUsers, (snapshot) => {
-            playerListDynamic.innerHTML = ''; // Clear list to rebuild
+            playerListDynamic.innerHTML = ''; 
             let count = 0;
-            const seenUsers = new Set();
+            
+            // Using a Set to track rendered UIDs just in case, though Firestore structure prevents duplicates now
+            const seenUIDs = new Set();
 
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                // Simple dedup based on username since we append new docs on refresh
-                if (!seenUsers.has(data.username)) {
-                    seenUsers.add(data.username);
+            snapshot.forEach((docSnap) => {
+                const data = docSnap.data();
+                if (!seenUIDs.has(data.uid)) {
+                    seenUIDs.add(data.uid);
                     count++;
                     
-                    // Don't render "Me" in the dynamic list (it's already pinned at top of right sidebar)
-                    if (data.username !== userProfile.username) {
+                    // Don't render "Me" in the dynamic list
+                    if (data.uid !== currentUser?.uid) {
                         renderUserInList(data);
                     }
                 }
             });
-            // Update "Online" count (Staff + Me + Others)
-            onlineCount.textContent = count + 1; // +1 assumes staff bot is always there
+            onlineCount.textContent = count + 1; // +1 for System Bot
         });
 
         function renderUserInList(data) {
