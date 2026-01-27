@@ -3,55 +3,529 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Under Maintenance</title>
+    <title>RubyChat - Welcome</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        mono: ['"Share Tech Mono"', 'monospace'],
+                    },
+                    colors: {
+                        ruby: {
+                            50: '#fff0f3',
+                            100: '#ffe3e8',
+                            200: '#ffc9d6',
+                            300: '#ff9fb6',
+                            400: '#ff698f',
+                            500: '#ff3366', // Brand color
+                            600: '#e6194b',
+                            700: '#c20e3a',
+                            800: '#a31035',
+                            900: '#881230',
+                            950: '#4c0415',
+                        }
+                    },
+                    animation: {
+                        'float': 'float 8s ease-in-out infinite',
+                        'float-delayed': 'float 8s ease-in-out 4s infinite',
+                        'pulse-slow': 'pulse 6s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'shimmer': 'shimmer 3s linear infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                        'flash': 'flash 0.5s ease-out forwards',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0)' },
+                            '50%': { transform: 'translateY(-20px)' },
+                        },
+                        shimmer: {
+                            '0%': { backgroundPosition: '200% 0' },
+                            '100%': { backgroundPosition: '-200% 0' }
+                        },
+                        flash: {
+                            '0%': { opacity: '0', transform: 'scale(0.5)' },
+                            '50%': { opacity: '1', transform: 'scale(1.5)' },
+                            '100%': { opacity: '1', transform: 'scale(2)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
+            background-color: #050505;
+            background-image: 
+                radial-gradient(circle at 50% 0%, #2d0612 0%, transparent 70%),
+                radial-gradient(circle at 85% 30%, rgba(255, 51, 102, 0.05) 0%, transparent 50%);
+            overflow-x: hidden;
         }
-        .container {
-            max-width: 600px;
-            padding: 20px;
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
         }
-        .icon {
-            font-size: 50px;
-            margin-bottom: 20px;
-            animation: pulse 2s infinite;
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a; 
         }
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: #2c3e50;
+        ::-webkit-scrollbar-thumb {
+            background: #333; 
+            border-radius: 4px;
         }
-        p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-            color: #7f8c8d;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ff3366; 
         }
-        .strawberry-accent {
-            color: #ff4d6d; /* A little strawberry pink to match your vibe! */
-            font-weight: bold;
+
+        .glass-panel {
+            background: rgba(20, 20, 25, 0.4);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 1rem 1rem 1rem 3rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            color: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #ff3366;
+            background: rgba(0, 0, 0, 0.5);
+            box-shadow: 0 0 0 4px rgba(255, 51, 102, 0.1);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            transition: color 0.3s ease;
+        }
+
+        .input-field:focus + .input-icon {
+            color: #ff3366;
+        }
+
+        .ruby-gradient-text {
+            background: linear-gradient(135deg, #ff3366 0%, #ff9fb6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        /* Special Shimmer for the "Ruby Chat" text */
+        .ruby-shimmer-text {
+            background: linear-gradient(to right, #ff3366 20%, #fff 50%, #ff3366 80%);
+            background-size: 200% auto;
+            color: #ff3366;
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: shimmer 3s linear infinite;
+        }
+
+        .ruby-gradient-bg {
+            background: linear-gradient(135deg, #ff3366 0%, #c20e3a 100%);
+        }
+
+        /* Ambient Background Glows */
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            opacity: 0.3;
+            z-index: -1;
+            mix-blend-mode: screen;
+        }
+
+        /* Meltdown Animations */
+        @keyframes violent-shake {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); filter: hue-rotate(0deg) invert(0); }
+            10% { transform: translate(-10px, -10px) rotate(-5deg) scale(1.05); filter: hue-rotate(45deg) invert(0.2); }
+            20% { transform: translate(10px, 10px) rotate(5deg) scale(1.1); filter: hue-rotate(0deg) invert(0); }
+            30% { transform: translate(-20px, 10px) rotate(-10deg) scale(0.95); filter: hue-rotate(90deg) invert(0.5); }
+            40% { transform: translate(20px, -20px) rotate(10deg) scale(1.15); filter: hue-rotate(0deg) invert(0); }
+            50% { transform: translate(-15px, 15px) rotate(-5deg) scale(1.05); filter: hue-rotate(180deg) invert(1); }
+            60% { transform: translate(15px, -15px) rotate(5deg) scale(0.9); filter: hue-rotate(0deg) invert(0); }
+            70% { transform: translate(-30px, -20px) rotate(-15deg) scale(1.2); filter: hue-rotate(270deg) invert(0.8); }
+            80% { transform: translate(30px, 20px) rotate(15deg) scale(1.1); filter: hue-rotate(0deg) invert(0); }
+            90% { transform: translate(-10px, 10px) rotate(-5deg) scale(1.05); filter: hue-rotate(90deg) invert(0.2); }
+            100% { transform: translate(0, 0) rotate(0deg) scale(1); filter: hue-rotate(0deg) invert(0); }
+        }
+
+        .meltdown-active {
+            animation: violent-shake 0.3s infinite cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+        }
+
+        .cursor::after {
+            content: '_';
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="icon">🛠️</div>
-        <h1>We’ll be right back!</h1>
-        <p>Our site is currently undergoing <span class="strawberry-accent">scheduled maintenance</span> to make things even better. We should be back online shortly.</p>
-        <p>Thanks for your patience!</p>
+<body class="min-h-screen flex items-center justify-center text-white relative overflow-hidden">
+
+    <!-- Ambient Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="glow-orb w-[40rem] h-[40rem] bg-ruby-800/40 top-[-20%] left-[-10%] animate-float"></div>
+        <div class="glow-orb w-[35rem] h-[35rem] bg-indigo-900/30 bottom-[-10%] right-[-10%] animate-float-delayed"></div>
+        <div class="glow-orb w-96 h-96 bg-ruby-600/20 top-[40%] left-[50%] animate-pulse-slow"></div>
     </div>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-4 relative z-10 flex justify-center">
+        
+        <div class="glass-panel w-full max-w-[1000px] min-h-[600px] rounded-3xl overflow-hidden relative border-t border-white/10">
+            
+            <!-- Main Content Wrapper (Will be hidden on signup) -->
+            <div id="panel-content" class="flex flex-col md:flex-row w-full h-full transition-all duration-500 ease-out">
+                
+                <!-- Branding / Info Section (Left Side) -->
+                <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col justify-center relative overflow-hidden group">
+                    <!-- Background Image Overlay with Gradient -->
+                    <div class="absolute inset-0 bg-gradient-to-br from-black via-ruby-950/40 to-black z-0"></div>
+                    <!-- Subtle grid pattern -->
+                    <div class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 z-0"></div>
+
+                    <!-- Content -->
+                    <div class="relative z-10">
+                        <div class="flex items-center gap-3 mb-10">
+                            <div class="w-10 h-10 rounded-xl ruby-gradient-bg flex items-center justify-center shadow-lg shadow-ruby-500/20">
+                                <i class="fa-regular fa-gem text-white text-xl"></i>
+                            </div>
+                            <h1 class="text-2xl font-bold tracking-wide text-white/90">RubyChat</h1>
+                        </div>
+                        
+                        <div class="space-y-6">
+                            <h2 class="text-4xl md:text-5xl font-bold leading-tight">
+                                Connect with <br>
+                                <span class="ruby-gradient-text">Brilliance.</span>
+                            </h2>
+                            <div class="h-1 w-20 bg-ruby-500/50 rounded-full"></div>
+                            <p class="text-gray-400 text-lg leading-relaxed max-w-sm font-light">
+                                Developed, by developer, welcome...to <br>
+                                <span class="text-3xl font-bold ruby-shimmer-text inline-block mt-2">ruby chat</span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Decorative element replacing the users section -->
+                    <div class="absolute bottom-0 left-0 w-full h-1/3 bg-gradient-to-t from-ruby-900/10 to-transparent pointer-events-none"></div>
+                </div>
+
+                <!-- Form Section (Right Side) -->
+                <div class="w-full md:w-1/2 bg-black/60 backdrop-blur-xl p-8 md:p-12 relative flex items-center justify-center border-l border-white/5">
+                    
+                    <!-- Login Form -->
+                    <div id="login-form" class="w-full max-w-sm transition-all duration-500 ease-in-out absolute opacity-100 translate-x-0 z-20">
+                        <div class="mb-8 text-center md:text-left">
+                            <h3 class="text-2xl font-bold text-white mb-2">Welcome back</h3>
+                            <p class="text-gray-400 text-sm">Enter your details to access your account.</p>
+                        </div>
+
+                        <form onsubmit="handleLogin(event)">
+                            <div class="input-group">
+                                <input type="email" placeholder="Email Address" class="input-field" required>
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                            </div>
+
+                            <div class="input-group">
+                                <input type="password" placeholder="Password" class="input-field" required>
+                                <i class="fa-solid fa-lock input-icon"></i>
+                            </div>
+
+                            <div class="flex items-center justify-between mb-6 text-sm">
+                                <label class="flex items-center gap-2 cursor-pointer text-gray-400 hover:text-white transition-colors">
+                                    <input type="checkbox" class="accent-ruby-500 w-4 h-4 rounded border-gray-600 bg-gray-700">
+                                    Remember me
+                                </label>
+                                <a href="#" class="text-ruby-400 hover:text-ruby-300 transition-colors">Forgot Password?</a>
+                            </div>
+
+                            <button type="submit" class="w-full py-3.5 px-4 ruby-gradient-bg rounded-xl text-white font-semibold shadow-lg shadow-ruby-500/25 hover:shadow-ruby-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group">
+                                Sign In
+                                <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                            </button>
+                        </form>
+
+                        <div class="mt-8 text-center">
+                            <p class="text-gray-400 text-sm">
+                                Don't have an account? 
+                                <button onclick="toggleForms('signup')" class="text-white font-semibold hover:text-ruby-400 transition-colors ml-1">Sign Up</button>
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Signup Form -->
+                    <div id="signup-form" class="w-full max-w-sm transition-all duration-500 ease-in-out absolute opacity-0 translate-x-[100px] pointer-events-none z-10">
+                        <div class="mb-8 text-center md:text-left">
+                            <h3 class="text-2xl font-bold text-white mb-2">Create Account</h3>
+                            <p class="text-gray-400 text-sm">Join the community and start chatting.</p>
+                        </div>
+
+                        <form onsubmit="handleSignup(event)">
+                            <div class="input-group">
+                                <input type="text" placeholder="Full Name" class="input-field" required>
+                                <i class="fa-regular fa-user input-icon"></i>
+                            </div>
+
+                            <div class="input-group">
+                                <input type="email" placeholder="Email Address" class="input-field" required>
+                                <i class="fa-regular fa-envelope input-icon"></i>
+                            </div>
+
+                            <div class="input-group">
+                                <input type="password" placeholder="Password" class="input-field" required>
+                                <i class="fa-solid fa-lock input-icon"></i>
+                            </div>
+
+                            <div class="mb-6 text-xs text-gray-500 leading-relaxed">
+                                By creating an account, you agree to our 
+                                <a href="#" class="text-gray-300 hover:text-white underline">Terms of Service</a> and 
+                                <a href="#" class="text-gray-300 hover:text-white underline">Privacy Policy</a>.
+                            </div>
+
+                            <button type="submit" class="w-full py-3.5 px-4 ruby-gradient-bg rounded-xl text-white font-semibold shadow-lg shadow-ruby-500/25 hover:shadow-ruby-500/40 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group">
+                                Create Account
+                                <i class="fa-solid fa-sparkles group-hover:rotate-12 transition-transform"></i>
+                            </button>
+                        </form>
+
+                        <div class="mt-8 text-center">
+                            <p class="text-gray-400 text-sm">
+                                Already have an account? 
+                                <button onclick="toggleForms('login')" class="text-white font-semibold hover:text-ruby-400 transition-colors ml-1">Sign In</button>
+                            </p>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Loading Screen (Fixed Full Screen) -->
+    <div id="loading-screen" class="fixed inset-0 z-[100] flex flex-col items-center justify-center hidden opacity-0 transition-all duration-700 ease-in-out bg-[#050505]">
+        <!-- Background Gradients for Loading Screen -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+             <div class="glow-orb w-[50vw] h-[50vw] bg-ruby-800/20 top-[-10%] left-[-10%] animate-pulse-slow"></div>
+             <div class="glow-orb w-[40vw] h-[40vw] bg-indigo-900/20 bottom-[-10%] right-[-10%] animate-pulse-slow" style="animation-delay: 1s"></div>
+        </div>
+
+        <div class="relative z-10 flex flex-col items-center">
+            <div class="relative">
+                <div class="absolute inset-0 bg-ruby-500/30 blur-3xl rounded-full animate-pulse-slow"></div>
+                <!-- Spinning Ruby -->
+                <i id="loading-spinner" class="fa-regular fa-gem text-8xl text-ruby-500 animate-spin-slow drop-shadow-[0_0_30px_rgba(255,51,102,0.8)]"></i>
+            </div>
+            
+            <h2 id="loading-title" class="mt-12 text-3xl font-bold text-white tracking-[0.2em] animate-pulse">RUBYCHAT</h2>
+            <div class="mt-4 flex flex-col items-center h-8">
+                <p id="loading-text" class="text-ruby-200/70 text-base font-medium tracking-wide uppercase transition-opacity duration-300">Polishing the gems...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Explosion Overlay -->
+    <div id="explosion-overlay" class="fixed inset-0 z-[150] bg-white hidden pointer-events-none"></div>
+
+    <!-- Final Blackout / Typewriter -->
+    <div id="final-stage" class="fixed inset-0 z-[200] bg-black hidden flex items-center justify-center">
+         <div class="text-center">
+             <h1 id="typewriter-text" class="text-2xl md:text-4xl text-ruby-500 font-mono tracking-widest leading-relaxed cursor"></h1>
+         </div>
+    </div>
+
+    <!-- Toast Notification (Hidden by default) -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 glass-panel px-6 py-3 rounded-full flex items-center gap-3 shadow-2xl transition-all duration-300 translate-y-24 opacity-0 z-50">
+        <i class="fa-solid fa-circle-check text-green-400"></i>
+        <span class="text-sm font-medium" id="toast-message">Success!</span>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+
+        function toggleForms(target) {
+            if (target === 'signup') {
+                // Hide Login
+                loginForm.classList.add('opacity-0', '-translate-x-[100px]', 'pointer-events-none');
+                loginForm.classList.remove('opacity-100', 'translate-x-0', 'z-20');
+                loginForm.classList.add('z-10');
+
+                // Show Signup
+                signupForm.classList.remove('opacity-0', 'translate-x-[100px]', 'pointer-events-none', 'z-10');
+                signupForm.classList.add('opacity-100', 'translate-x-0', 'z-20');
+            } else {
+                // Hide Signup
+                signupForm.classList.add('opacity-0', 'translate-x-[100px]', 'pointer-events-none');
+                signupForm.classList.remove('opacity-100', 'translate-x-0', 'z-20');
+                signupForm.classList.add('z-10');
+
+                // Show Login
+                loginForm.classList.remove('opacity-0', '-translate-x-[100px]', 'pointer-events-none', 'z-10');
+                loginForm.classList.add('opacity-100', 'translate-x-0', 'z-20');
+            }
+        }
+
+        function showToast(message) {
+            toastMessage.textContent = message;
+            toast.classList.remove('translate-y-24', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-24', 'opacity-0');
+            }, 3000);
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i>';
+            btn.disabled = true;
+
+            setTimeout(() => {
+                btn.innerHTML = originalContent;
+                btn.disabled = false;
+                showToast('Welcome back to RubyChat!');
+            }, 1500);
+        }
+
+        function handleSignup(e) {
+            e.preventDefault();
+            const btn = e.target.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            
+            const panelContent = document.getElementById('panel-content');
+            const loadingScreen = document.getElementById('loading-screen');
+            const loadingText = document.getElementById('loading-text');
+            const explosionOverlay = document.getElementById('explosion-overlay');
+            const finalStage = document.getElementById('final-stage');
+            const typewriterText = document.getElementById('typewriter-text');
+
+            // 1. Fade out content
+            panelContent.classList.add('opacity-0', 'scale-95', 'blur-sm');
+
+            // 2. Show loading screen
+            setTimeout(() => {
+                loadingScreen.classList.remove('hidden');
+                void loadingScreen.offsetWidth;
+                loadingScreen.classList.remove('opacity-0');
+
+                // Normal loading text cycle
+                const messages = ["Polishing the gems...", "Calibrating lasers...", "Spinning up the servers...", "Refracting light..."];
+                let msgIndex = 0;
+                const textInterval = setInterval(() => {
+                    msgIndex = (msgIndex + 1) % messages.length;
+                    loadingText.style.opacity = 0;
+                    setTimeout(() => {
+                        loadingText.textContent = messages[msgIndex];
+                        loadingText.style.opacity = 1;
+                    }, 300);
+                }, 1500);
+
+                // 3. THE MELTDOWN (At 6 seconds)
+                setTimeout(() => {
+                    clearInterval(textInterval);
+                    
+                    // Trigger glitch/meltdown animations on loading screen
+                    loadingScreen.classList.add('meltdown-active');
+                    
+                    // Change text to something alarming
+                    loadingText.style.color = '#ff0000';
+                    loadingText.style.fontWeight = 'bold';
+                    loadingText.textContent = "SYSTEM INSTABILITY DETECTED...";
+                    
+                    // Random text glitches
+                    let chaos = 0;
+                    const chaosInterval = setInterval(() => {
+                        chaos++;
+                        document.body.style.filter = `hue-rotate(${Math.random() * 360}deg) contrast(${100 + chaos * 10}%)`;
+                        if(chaos % 2 === 0) loadingText.textContent = "CRITICAL ERROR: " + Math.random().toString(36).substring(7);
+                    }, 100);
+
+                    // 4. THE EXPLOSION (At 9 seconds)
+                    setTimeout(() => {
+                        clearInterval(chaosInterval);
+                        document.body.style.filter = 'none'; // Reset body filter
+                        
+                        // Show explosion
+                        explosionOverlay.classList.remove('hidden');
+                        explosionOverlay.classList.add('animate-flash');
+                        
+                        // Hide chaos
+                        loadingScreen.classList.add('hidden');
+                        
+                        // 5. THE BLACKOUT (At 9.8 seconds - shortly after explosion peak)
+                        setTimeout(() => {
+                            explosionOverlay.classList.add('hidden'); // Remove flash
+                            finalStage.classList.remove('hidden'); // Show black screen
+                            
+                            // 6. TYPEWRITER EFFECT (At 11 seconds)
+                            setTimeout(() => {
+                                const line1 = "are you ready...";
+                                const line2 = "for rubychat 2.0";
+                                let i = 0;
+                                
+                                function typeWriter() {
+                                    if (i < line1.length) {
+                                        typewriterText.innerHTML += line1.charAt(i);
+                                        i++;
+                                        setTimeout(typeWriter, 100);
+                                    } else {
+                                        // Line 1 done, wait then clear/break line
+                                        setTimeout(() => {
+                                            typewriterText.innerHTML = ""; // Clear for dramatic effect
+                                            i = 0;
+                                            
+                                            function typeWriter2() {
+                                                if (i < line2.length) {
+                                                    typewriterText.innerHTML += line2.charAt(i);
+                                                    i++;
+                                                    setTimeout(typeWriter2, 100); // Faster for second line?
+                                                }
+                                            }
+                                            typeWriter2();
+                                        }, 1000);
+                                    }
+                                }
+                                typeWriter();
+
+                            }, 1200); // Wait a bit in darkness
+
+                        }, 800); // Duration of explosion flash before black
+
+                    }, 3000); // Duration of meltdown
+
+                }, 6000); // Start meltdown after 6s
+
+            }, 500);
+        }
+    </script>
 </body>
 </html>
