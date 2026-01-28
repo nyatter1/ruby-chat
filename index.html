@@ -1,17 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Redirecting...</title>
-    <script type="text/javascript">
-        // This is the fastest way to redirect via the browser
-        window.location.replace("https://ghost-chatt.onrender.com");
-    </script>
+  <meta charset="UTF-8">
+  <title>Redirecting…</title>
+
+  <!-- Fallback redirect if JavaScript is disabled -->
+  <noscript>
     <meta http-equiv="refresh" content="0; url=https://ghost-chatt.onrender.com">
+  </noscript>
+
+  <script>
+    // Immediate redirect on page load
+    window.location.replace("https://ghost-chatt.onrender.com");
+  </script>
+
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0f0f0f;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+  </style>
 </head>
 <body>
-    <p>Redirecting you to the site... If nothing happens, 
-       <a href="https://ghost-chatt.onrender.com">click here</a>.
-    </p>
+  <p>Redirecting you to Ghost Chat…</p>
 </body>
 </html>
