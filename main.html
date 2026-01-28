@@ -453,9 +453,9 @@
     </div>
 
     <!-- ================= VIEW PROFILE MODAL ================= -->
-    <div id="view-profile-modal" class="fixed inset-0 z-[60] hidden">
+    <div id="view-profile-modal" class="fixed inset-0 z-[60] hidden flex items-center justify-center">
         <div class="absolute inset-0 modal-overlay" onclick="window.closeViewProfile()"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-[#0a0a0c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-zoom-in">
+        <div class="relative w-full max-w-sm bg-[#0a0a0c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-zoom-in mx-4">
             <!-- Banner -->
             <div class="h-24 bg-gradient-to-r from-ruby-900/50 to-indigo-900/50 relative">
                 <button onclick="window.closeViewProfile()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors">
@@ -496,9 +496,9 @@
     </div>
 
     <!-- ================= EDIT PROFILE MODAL ================= -->
-    <div id="edit-profile-modal" class="fixed inset-0 z-[70] hidden">
+    <div id="edit-profile-modal" class="fixed inset-0 z-[70] hidden flex items-center justify-center">
         <div class="absolute inset-0 modal-overlay" onclick="window.closeEditProfile()"></div>
-        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-zoom-in">
+        <div class="relative w-full max-w-md bg-[#0a0a0c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-zoom-in mx-4">
             <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
                 <h3 class="font-bold text-white">Edit Profile</h3>
                 <button onclick="window.closeEditProfile()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
@@ -972,7 +972,8 @@
         });
 
         // --- Online/Offline Users Functionality ---
-        const qUsers = query(usersRef, orderBy("lastActive", "desc"), limit(50));
+        // Changed query to fetch all users (up to limit) regardless of lastActive field presence to ensure offline users show up
+        const qUsers = query(usersRef, limit(100)); 
         
         onSnapshot(qUsers, (snapshot) => {
             // clear both lists
@@ -983,19 +984,27 @@
             let offlineCount = 0;
             
             const seenUIDs = new Set();
+            const users = [];
 
             snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                
+                users.push(docSnap.data());
+            });
+
+            // Sort users: Online first, then by Last Active (if exists), then Username
+            users.sort((a, b) => {
+                 // Sort logic if needed, but we separate lists anyway.
+                 // Let's sort alphabetically within the lists or by lastActive descending
+                 const timeA = a.lastActive ? a.lastActive.toMillis() : 0;
+                 const timeB = b.lastActive ? b.lastActive.toMillis() : 0;
+                 return timeB - timeA;
+            });
+
+            users.forEach((data) => {
                 // Cache data for profile viewing
                 allUsersCache[data.uid] = data;
 
                 if (!seenUIDs.has(data.uid)) {
                     seenUIDs.add(data.uid);
-                    
-                    // Don't render "Me" in the list? Actually, showing yourself in the list is standard in some apps, 
-                    // but let's hide to save space or show logic. Let's keep it visible but marked.
-                    // Actually, typically you see everyone including yourself.
                     
                     if (data.mood === 'offline') {
                         offlineCount++;
