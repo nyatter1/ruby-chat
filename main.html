@@ -386,13 +386,13 @@
             </div>
 
             <!-- Current User Profile (Bottom of Left Nav) -->
-            <div id="sidebar-profile-container" class="p-4 border-t border-white/5 bg-black/20 cursor-pointer hover:bg-white/5 transition-colors">
+            <div id="sidebar-profile-container" class="p-4 border-t border-white/5 bg-black/20 cursor-pointer hover:bg-white/5 transition-colors group">
                 <div class="flex items-center gap-3">
-                    <div class="relative">
-                        <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden border border-white/10">
-                            <img id="sidebar-avatar" src="" alt="Me">
+                    <div class="relative z-10">
+                        <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden border border-white/10 group-hover:border-ruby-500/50 transition-colors">
+                            <img id="sidebar-avatar" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Loading" alt="Me" class="w-full h-full object-cover">
                         </div>
-                        <div id="sidebar-status-dot" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#0a0a0c] rounded-full user-status-dot text-green-500"></div>
+                        <div id="sidebar-status-dot" class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 border-2 border-[#0a0a0c] rounded-full user-status-dot text-green-500 z-20"></div>
                     </div>
                     <div class="flex-1 min-w-0">
                         <div id="sidebar-username" class="text-sm font-bold text-white truncate">Loading...</div>
@@ -940,7 +940,7 @@
 
         // --- ONLINE/OFFLINE USER LOGIC ---
         // 1. Listen for updates from Firestore
-        const qUsers = query(usersRef, orderBy("lastSeen", "desc"), limit(50));
+        const qUsers = query(usersRef, orderBy("lastSeen", "desc"));
         
         onSnapshot(qUsers, (snapshot) => {
             allUsersData = [];
