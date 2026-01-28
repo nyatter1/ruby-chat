@@ -457,8 +457,10 @@
         <div class="absolute inset-0 modal-overlay" onclick="window.closeViewProfile()"></div>
         <div class="relative w-full max-w-sm bg-[#0a0a0c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-zoom-in mx-4">
             <!-- Banner -->
-            <div class="h-24 bg-gradient-to-r from-ruby-900/50 to-indigo-900/50 relative">
-                <button onclick="window.closeViewProfile()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors">
+            <div class="h-24 relative bg-gray-900">
+                <img id="vp-banner" src="" class="w-full h-full object-cover opacity-80" onerror="this.style.display='none'; this.parentElement.style.background='linear-gradient(to right, #4c0415, #1e1b4b)'">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent to-[#0a0a0c]/90"></div>
+                <button onclick="window.closeViewProfile()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors z-10">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
@@ -466,7 +468,7 @@
             <!-- Content -->
             <div class="px-6 pb-6 relative">
                 <!-- Avatar -->
-                <div class="relative -mt-12 mb-4 w-24 h-24 rounded-full border-4 border-[#0a0a0c] bg-[#1a1a1d] mx-auto">
+                <div class="relative -mt-12 mb-4 w-24 h-24 rounded-full border-4 border-[#0a0a0c] bg-[#1a1a1d] mx-auto z-10">
                     <img id="vp-avatar" src="" class="w-full h-full rounded-full object-cover">
                     <div id="vp-status-dot" class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-[#0a0a0c] rounded-full"></div>
                 </div>
@@ -505,14 +507,27 @@
             </div>
             
             <div class="p-6 space-y-5">
+                <!-- Banner Edit -->
+                <div>
+                    <label class="block text-xs font-mono text-gray-500 uppercase mb-2">Profile Banner</label>
+                    <div class="relative h-24 rounded-lg overflow-hidden border border-white/20 bg-gray-800 group mb-1">
+                        <img id="edit-banner-preview" src="" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onclick="window.triggerUpload('edit-banner-upload')">
+                            <i class="fa-solid fa-camera text-white"></i>
+                        </div>
+                        <input type="file" id="edit-banner-upload" class="hidden" accept="image/*" onchange="window.handleBannerUpload(this, 'edit-banner-preview')">
+                    </div>
+                    <p class="text-[10px] text-gray-500">Recommended size: 600x200</p>
+                </div>
+
                 <!-- Avatar Edit -->
                 <div class="flex items-center gap-4">
                     <div class="relative w-20 h-20 rounded-full overflow-hidden border border-white/20 bg-gray-800 shrink-0">
                         <img id="edit-preview" src="" class="w-full h-full object-cover">
                     </div>
                     <div class="flex-1 space-y-2">
-                        <button onclick="window.randomizeAvatar('edit-preview')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-1.5 rounded text-xs font-mono uppercase">Randomize</button>
-                        <button onclick="window.triggerUpload('edit-upload')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-1.5 rounded text-xs font-mono uppercase">Upload New</button>
+                        <button onclick="window.randomizeAvatar('edit-preview')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-1.5 rounded text-xs font-mono uppercase">Randomize Avatar</button>
+                        <button onclick="window.triggerUpload('edit-upload')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-1.5 rounded text-xs font-mono uppercase">Upload Avatar</button>
                         <input type="file" id="edit-upload" class="hidden" accept="image/*" onchange="window.handleAvatarUpload(this, 'edit-preview')">
                     </div>
                 </div>
@@ -573,13 +588,15 @@
         const userProfile = {
             username: '',
             avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest',
+            banner: '',
             bio: '',
             mood: 'online',
             uid: null
         };
         let isCustomAvatar = false;
         let currentUser = null;
-        let allUsersCache = {}; // Cache to store user data for profile viewing
+        let allUsersCache = {}; 
+        let heartbeatInterval = null;
 
         // --- DOM Elements ---
         const setupScreen = document.getElementById('setup-screen');
@@ -619,7 +636,7 @@
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    // Profile exists, load it and skip setup
+                    // Profile exists, load it
                     const data = docSnap.data();
                     Object.assign(userProfile, data);
                     
@@ -630,33 +647,51 @@
                     updateAppInterface();
                     
                     // Update Status to Online
-                    await setDoc(docRef, { 
-                        mood: 'online', 
-                        lastActive: serverTimestamp() 
-                    }, { merge: true });
+                    await updateHeartbeat();
+                    startHeartbeat();
 
                 } else {
                     // No profile, show setup screen
                     setupScreen.classList.remove('hidden');
                     
-                    // Pre-fill name from Auth or LocalStorage
                     const savedName = localStorage.getItem('ruby_auth_name') || user.displayName;
                     if(savedName) {
                         setupUsername.value = savedName;
-                        // Trigger input event logic manually
                         window.handleUsernameInput(setupUsername);
                     }
                 }
+                
+                // Set offline on unload
+                window.addEventListener('beforeunload', () => {
+                    setDoc(doc(db, "users", user.uid), { mood: 'offline' }, { merge: true });
+                });
+
             } else {
-                // No user, redirect to landing
+                if(heartbeatInterval) clearInterval(heartbeatInterval);
                 window.location.href = 'index.html';
             }
         });
 
+        async function updateHeartbeat() {
+            if(currentUser) {
+                try {
+                    await setDoc(doc(db, "users", currentUser.uid), { 
+                        lastActive: serverTimestamp() 
+                    }, { merge: true });
+                } catch(e) { console.error("Heartbeat failed", e); }
+            }
+        }
+
+        function startHeartbeat() {
+            if(heartbeatInterval) clearInterval(heartbeatInterval);
+            // Update heartbeat every 60 seconds
+            heartbeatInterval = setInterval(updateHeartbeat, 60000);
+        }
+
         // Logout
         logoutBtn.addEventListener('click', async () => {
             if(currentUser) {
-                // Set status to offline before signing out
+                if(heartbeatInterval) clearInterval(heartbeatInterval);
                 try {
                     await setDoc(doc(db, "users", currentUser.uid), { 
                         mood: 'offline'
@@ -674,7 +709,7 @@
         window.updateAvatarPreview = (src, imgId) => {
             const img = document.getElementById(imgId);
             if(img) img.src = src;
-            if(imgId === 'avatar-preview') userProfile.avatar = src; // Only set main profile during setup
+            if(imgId === 'avatar-preview') userProfile.avatar = src;
         };
 
         window.handleUsernameInput = (input) => {
@@ -689,7 +724,6 @@
             const seed = Math.random().toString(36).substring(7);
             const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
             window.updateAvatarPreview(url, imgId);
-            // If editing, we also update the temp variable? No, we just read the img src on save.
         };
 
         window.triggerUpload = (inputId) => {
@@ -707,8 +741,19 @@
             }
         };
 
+        // Banner Upload Handler
+        window.handleBannerUpload = (input, imgId) => {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.getElementById(imgId);
+                    if(img) img.src = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
         window.selectMood = (mood, context) => {
-            // Context 'setup' or 'edit'
             const selector = context === 'setup' ? '#step-2 .mood-btn' : '#edit-profile-modal .mood-btn';
             
             if(context === 'setup') userProfile.mood = mood;
@@ -744,7 +789,6 @@
         window.finalizeSetup = async () => {
             userProfile.bio = setupBio.value.trim() || "Just joined the network.";
             
-            // 1. Hide Setup, Show App
             setupScreen.classList.add('opacity-0', 'pointer-events-none', 'transition-opacity', 'duration-500');
             setTimeout(() => {
                 setupScreen.style.display = 'none';
@@ -753,10 +797,10 @@
                 chatContainer.scrollTop = chatContainer.scrollHeight;
             }, 500);
 
-            // 2. Update Local Interface
             updateAppInterface();
+            await updateHeartbeat();
+            startHeartbeat();
             
-            // 3. Save User to Firestore (Persistent Profile)
             if(currentUser) {
                 try {
                     await setDoc(doc(db, "users", currentUser.uid), {
@@ -769,7 +813,6 @@
                         lastActive: serverTimestamp()
                     }, { merge: true });
 
-                    // 4. Send System Welcome Message
                     await addDoc(messagesRef, {
                         user: "System",
                         role: "system",
@@ -808,12 +851,12 @@
         // --- MODAL FUNCTIONS ---
 
         window.openProfile = async (uid) => {
-            // Get user data from cache or wait for it
             const userData = allUsersCache[uid];
             if(!userData) return;
 
             const modal = document.getElementById('view-profile-modal');
             const avatar = document.getElementById('vp-avatar');
+            const banner = document.getElementById('vp-banner');
             const username = document.getElementById('vp-username');
             const bio = document.getElementById('vp-bio');
             const statusDot = document.getElementById('vp-status-dot');
@@ -821,15 +864,29 @@
             const editBtn = document.getElementById('vp-edit-btn');
 
             avatar.src = userData.avatar;
+            if(userData.banner) {
+                banner.src = userData.banner;
+                banner.style.display = 'block';
+            } else {
+                banner.style.display = 'none';
+                banner.parentElement.style.background = 'linear-gradient(to right, #4c0415, #1e1b4b)';
+            }
+
             username.textContent = userData.username;
             bio.textContent = userData.bio || "No bio available.";
             
-            const color = getMoodColor(userData.mood || 'online');
+            // Calculate effective status for view (optional, but good for consistency)
+            const now = Date.now();
+            const lastActive = userData.lastActive ? userData.lastActive.toMillis() : 0;
+            let effectiveMood = userData.mood || 'online';
+            if ((now - lastActive > 120000) && effectiveMood !== 'offline') {
+                 effectiveMood = 'offline';
+            }
+
+            const color = getMoodColor(effectiveMood);
             statusDot.className = `absolute bottom-1 right-1 w-5 h-5 ${color} border-4 border-[#0a0a0c] rounded-full`;
+            moodBadge.textContent = getMoodLabel(effectiveMood);
             
-            moodBadge.textContent = getMoodLabel(userData.mood || 'online');
-            
-            // Show edit button if it's me
             if(currentUser && uid === currentUser.uid) {
                 editBtn.classList.remove('hidden');
             } else {
@@ -844,15 +901,13 @@
         };
 
         window.openEditProfile = () => {
-            // Close view modal
             viewProfileModal.classList.add('hidden');
             
-            // Populate fields
             document.getElementById('edit-preview').src = userProfile.avatar;
+            document.getElementById('edit-banner-preview').src = userProfile.banner || '';
             document.getElementById('edit-username').value = userProfile.username;
             document.getElementById('edit-bio').value = userProfile.bio;
             
-            // Set active mood
             window.selectMood(userProfile.mood, 'edit');
             
             editProfileModal.classList.remove('hidden');
@@ -866,8 +921,8 @@
             const newUsername = document.getElementById('edit-username').value.trim();
             const newBio = document.getElementById('edit-bio').value.trim();
             const newAvatar = document.getElementById('edit-preview').src;
+            const newBanner = document.getElementById('edit-banner-preview').src;
             
-            // Find selected mood
             let newMood = 'online';
             document.querySelectorAll('#edit-profile-modal .mood-btn').forEach(btn => {
                 if(btn.classList.contains('selected')) newMood = btn.dataset.mood;
@@ -876,19 +931,19 @@
             if(!newUsername) return alert("Username cannot be empty");
 
             try {
-                // Update Firestore
                 await setDoc(doc(db, "users", currentUser.uid), {
                     username: newUsername,
                     bio: newBio,
                     avatar: newAvatar,
+                    banner: newBanner,
                     mood: newMood,
                     lastActive: serverTimestamp()
                 }, { merge: true });
 
-                // Update Local State
                 userProfile.username = newUsername;
                 userProfile.bio = newBio;
                 userProfile.avatar = newAvatar;
+                userProfile.banner = newBanner;
                 userProfile.mood = newMood;
 
                 updateAppInterface();
@@ -930,7 +985,6 @@
                  contentHtml = contentHtml.replace(userProfile.username, `<span class="text-ruby-400 font-bold">${userProfile.username}</span>`);
             }
             
-            // Add click event for profile view if it's a real user (has UID)
             const cursorClass = data.uid ? 'cursor-pointer hover:underline' : '';
             const clickAttr = data.uid ? `onclick="window.openProfile('${data.uid}')"` : '';
 
@@ -972,11 +1026,9 @@
         });
 
         // --- Online/Offline Users Functionality ---
-        // Changed query to fetch all users (up to limit) regardless of lastActive field presence to ensure offline users show up
         const qUsers = query(usersRef, limit(100)); 
         
         onSnapshot(qUsers, (snapshot) => {
-            // clear both lists
             playerListOnline.innerHTML = '';
             playerListOffline.innerHTML = '';
             
@@ -990,28 +1042,38 @@
                 users.push(docSnap.data());
             });
 
-            // Sort users: Online first, then by Last Active (if exists), then Username
+            // Sort users: Online first, then by Last Active, then Username
             users.sort((a, b) => {
-                 // Sort logic if needed, but we separate lists anyway.
-                 // Let's sort alphabetically within the lists or by lastActive descending
                  const timeA = a.lastActive ? a.lastActive.toMillis() : 0;
                  const timeB = b.lastActive ? b.lastActive.toMillis() : 0;
                  return timeB - timeA;
             });
 
+            const now = Date.now();
+
             users.forEach((data) => {
-                // Cache data for profile viewing
+                // Cache data
                 allUsersCache[data.uid] = data;
 
                 if (!seenUIDs.has(data.uid)) {
                     seenUIDs.add(data.uid);
                     
-                    if (data.mood === 'offline') {
+                    // Presence Logic:
+                    // If Last Active > 2 mins ago, treat as Offline
+                    const lastActive = data.lastActive ? data.lastActive.toMillis() : 0;
+                    const isStale = (now - lastActive) > 120000; // 2 minutes
+                    
+                    let effectiveMood = data.mood || 'online';
+                    if (isStale && effectiveMood !== 'offline') {
+                        effectiveMood = 'offline';
+                    }
+
+                    if (effectiveMood === 'offline') {
                         offlineCount++;
-                        renderUserInList(data, playerListOffline);
+                        renderUserInList(data, playerListOffline, 'offline');
                     } else {
                         onlineCount++;
-                        renderUserInList(data, playerListOnline);
+                        renderUserInList(data, playerListOnline, effectiveMood);
                     }
                 }
             });
@@ -1021,8 +1083,8 @@
             totalCount.textContent = onlineCount + offlineCount + 1; // +1 System
         });
 
-        function renderUserInList(data, container) {
-            const color = getMoodColor(data.mood || 'online');
+        function renderUserInList(data, container, effectiveMood) {
+            const color = getMoodColor(effectiveMood);
             const div = document.createElement('div');
             div.className = "flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors";
             div.onclick = () => window.openProfile(data.uid);
