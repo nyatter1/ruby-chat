@@ -113,6 +113,10 @@
         .message-group:hover {
             background: rgba(255, 255, 255, 0.02);
         }
+        
+        .message-group:hover .like-btn {
+            opacity: 1;
+        }
 
         .user-status-dot {
             box-shadow: 0 0 5px currentColor;
@@ -128,6 +132,14 @@
         .modal-overlay {
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(5px);
+        }
+
+        /* Like Button Animation */
+        .like-btn i {
+            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .like-btn:active i {
+            transform: scale(1.4);
         }
     </style>
 </head>
@@ -565,7 +577,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, setDoc, getDoc, doc, onSnapshot, query, orderBy, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, setDoc, getDoc, doc, updateDoc, arrayUnion, arrayRemove, onSnapshot, query, orderBy, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -664,6 +676,13 @@
                 // Set offline on unload
                 window.addEventListener('beforeunload', () => {
                     setDoc(doc(db, "users", user.uid), { mood: 'offline' }, { merge: true });
+                });
+                
+                // Smart Presence: update heartbeat when tab becomes visible
+                document.addEventListener("visibilitychange", () => {
+                    if (document.visibilityState === 'visible') {
+                        updateHeartbeat();
+                    }
                 });
 
             } else {
@@ -875,11 +894,14 @@
             username.textContent = userData.username;
             bio.textContent = userData.bio || "No bio available.";
             
-            // Calculate effective status for view (optional, but good for consistency)
+            // Check stale time for view consistency
             const now = Date.now();
             const lastActive = userData.lastActive ? userData.lastActive.toMillis() : 0;
+            // Allow 5 minutes of inactivity before showing offline in profile view
+            const isStale = (now - lastActive) > 300000;
+            
             let effectiveMood = userData.mood || 'online';
-            if ((now - lastActive > 120000) && effectiveMood !== 'offline') {
+            if (isStale && effectiveMood !== 'offline') {
                  effectiveMood = 'offline';
             }
 
@@ -955,23 +977,56 @@
             }
         };
 
+        // --- LIKES FUNCTIONALITY ---
+        window.toggleLike = async (msgId) => {
+            if(!currentUser) return;
+            const msgRef = doc(db, "messages", msgId);
+            
+            try {
+                const docSnap = await getDoc(msgRef);
+                if(docSnap.exists()) {
+                    const data = docSnap.data();
+                    const likes = data.likes || [];
+                    
+                    if(likes.includes(currentUser.uid)) {
+                        // Unlike
+                        await updateDoc(msgRef, {
+                            likes: arrayRemove(currentUser.uid)
+                        });
+                    } else {
+                        // Like
+                        await updateDoc(msgRef, {
+                            likes: arrayUnion(currentUser.uid)
+                        });
+                    }
+                }
+            } catch(e) {
+                console.error("Toggle like error", e);
+            }
+        };
+
         // --- Chat Functionality ---
         const qMessages = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
         onSnapshot(qMessages, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
-                    const data = change.doc.data();
-                    renderMessage(data);
+                    renderMessage(change.doc);
+                }
+                if (change.type === "modified") {
+                    updateMessage(change.doc);
                 }
             });
         });
 
-        function renderMessage(data) {
+        function renderMessage(doc) {
+            const data = doc.data();
+            const msgId = doc.id;
             const isOwn = data.user === userProfile.username; 
             const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
             
             const div = document.createElement('div');
-            div.className = `flex gap-4 p-1 px-2 rounded hover:bg-white/5 group animate-message-fade message-group`;
+            div.id = `msg-${msgId}`;
+            div.className = `flex gap-4 p-1 px-2 rounded hover:bg-white/5 group animate-message-fade message-group relative`;
             
             let nameColor = 'text-gray-300';
             if (data.role === 'admin' || data.role === 'system') nameColor = 'text-ruby-400';
@@ -988,11 +1043,18 @@
             const cursorClass = data.uid ? 'cursor-pointer hover:underline' : '';
             const clickAttr = data.uid ? `onclick="window.openProfile('${data.uid}')"` : '';
 
+            // Likes Logic
+            const likes = data.likes || [];
+            const likesCount = likes.length;
+            const isLiked = currentUser && likes.includes(currentUser.uid);
+            const heartClass = isLiked ? "fa-solid text-ruby-500" : "fa-regular text-gray-500 hover:text-ruby-400";
+            const heartOpacity = likesCount > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100";
+            
             div.innerHTML = `
                 <div class="w-10 h-10 shrink-0 mt-0.5 cursor-pointer" ${clickAttr}>
                     <img src="${avatarSrc}" class="w-full h-full rounded-full bg-gray-700 object-cover">
                 </div>
-                <div class="flex-1 min-w-0">
+                <div class="flex-1 min-w-0 pr-8">
                     <div class="flex items-center gap-2 mb-0.5">
                         <span class="font-bold text-sm ${nameColor} ${cursorClass}" ${clickAttr}>${data.user}</span>
                         ${data.role === 'system' ? '<span class="bg-ruby-500/20 text-ruby-400 text-[9px] font-bold px-1 rounded border border-ruby-500/30">SYSTEM</span>' : ''}
@@ -1000,9 +1062,33 @@
                     </div>
                     <p class="text-gray-300 text-[15px] leading-relaxed break-words">${contentHtml}</p>
                 </div>
+                <button onclick="window.toggleLike('${msgId}')" class="like-btn absolute right-2 top-2 ${heartOpacity} transition-opacity flex items-center gap-1 bg-[#0a0a0c]/80 px-2 py-1 rounded-full border border-white/5 hover:border-ruby-500/50">
+                    <i class="${heartClass} text-xs"></i>
+                    ${likesCount > 0 ? `<span class="text-[10px] font-mono text-gray-400">${likesCount}</span>` : ''}
+                </button>
             `;
             chatContainer.appendChild(div);
             chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function updateMessage(doc) {
+            const data = doc.data();
+            const msgId = doc.id;
+            const div = document.getElementById(`msg-${msgId}`);
+            if(div) {
+                 // Re-render likes button mainly
+                const likes = data.likes || [];
+                const likesCount = likes.length;
+                const isLiked = currentUser && likes.includes(currentUser.uid);
+                const heartClass = isLiked ? "fa-solid text-ruby-500" : "fa-regular text-gray-500 hover:text-ruby-400";
+                const heartOpacity = likesCount > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100";
+
+                const btn = div.querySelector('.like-btn');
+                if(btn) {
+                    btn.className = `like-btn absolute right-2 top-2 ${heartOpacity} transition-opacity flex items-center gap-1 bg-[#0a0a0c]/80 px-2 py-1 rounded-full border border-white/5 hover:border-ruby-500/50`;
+                    btn.innerHTML = `<i class="${heartClass} text-xs"></i> ${likesCount > 0 ? `<span class="text-[10px] font-mono text-gray-400">${likesCount}</span>` : ''}`;
+                }
+            }
         }
 
         messageForm.addEventListener('submit', async (e) => {
@@ -1016,7 +1102,8 @@
                         content: text,
                         timestamp: serverTimestamp(),
                         role: 'user',
-                        uid: currentUser.uid
+                        uid: currentUser.uid,
+                        likes: []
                     });
                     messageInput.value = '';
                 } catch (e) {
@@ -1042,7 +1129,7 @@
                 users.push(docSnap.data());
             });
 
-            // Sort users: Online first, then by Last Active, then Username
+            // Sort users
             users.sort((a, b) => {
                  const timeA = a.lastActive ? a.lastActive.toMillis() : 0;
                  const timeB = b.lastActive ? b.lastActive.toMillis() : 0;
@@ -1059,9 +1146,9 @@
                     seenUIDs.add(data.uid);
                     
                     // Presence Logic:
-                    // If Last Active > 2 mins ago, treat as Offline
                     const lastActive = data.lastActive ? data.lastActive.toMillis() : 0;
-                    const isStale = (now - lastActive) > 120000; // 2 minutes
+                    // INCREASED THRESHOLD: 5 Minutes (300000 ms) to account for background tabs
+                    const isStale = (now - lastActive) > 300000; 
                     
                     let effectiveMood = data.mood || 'online';
                     if (isStale && effectiveMood !== 'offline') {
