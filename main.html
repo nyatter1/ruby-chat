@@ -41,6 +41,7 @@
                         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'message-fade': 'fadeIn 0.2s ease-out forwards',
                         'slide-up': 'slideUp 0.4s ease-out forwards',
+                        'zoom-in': 'zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
                     },
                     keyframes: {
                         fadeIn: {
@@ -50,6 +51,10 @@
                         slideUp: {
                             '0%': { opacity: '0', transform: 'translateY(20px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        zoomIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' }
                         }
                     }
                 }
@@ -119,6 +124,11 @@
             border-color: #ff3366;
             color: white;
         }
+
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
     </style>
 </head>
 <body class="flex h-screen w-screen overflow-hidden text-sm">
@@ -130,7 +140,7 @@
     </div>
 
     <!-- ================= SETUP / ONBOARDING SCREEN ================= -->
-    <div id="setup-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
+    <div id="setup-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md hidden">
         <div class="w-full max-w-lg bg-[#0a0a0c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative animate-slide-up">
             <!-- Header -->
             <div class="p-6 border-b border-white/5 bg-gradient-to-r from-ruby-900/20 to-transparent">
@@ -160,20 +170,20 @@
                                     <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-white/20 group-hover:border-ruby-500 transition-colors bg-gray-800">
                                         <img id="avatar-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" class="w-full h-full object-cover">
                                     </div>
-                                    <div class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer" onclick="window.triggerUpload()">
+                                    <div class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer" onclick="window.triggerUpload('avatar-upload')">
                                         <i class="fa-solid fa-camera text-white"></i>
                                     </div>
                                 </div>
                                 
                                 <!-- Controls -->
                                 <div class="flex-1 space-y-2">
-                                    <button onclick="window.randomizeAvatar()" class="w-full bg-gray-800 hover:bg-gray-700 border border-white/10 text-white py-2 rounded-lg text-xs font-mono uppercase tracking-wide transition-colors flex items-center justify-center gap-2">
+                                    <button onclick="window.randomizeAvatar('avatar-preview')" class="w-full bg-gray-800 hover:bg-gray-700 border border-white/10 text-white py-2 rounded-lg text-xs font-mono uppercase tracking-wide transition-colors flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-dice text-ruby-400"></i> Randomize
                                     </button>
-                                    <button onclick="window.triggerUpload()" class="w-full bg-gray-800 hover:bg-gray-700 border border-white/10 text-white py-2 rounded-lg text-xs font-mono uppercase tracking-wide transition-colors flex items-center justify-center gap-2">
+                                    <button onclick="window.triggerUpload('avatar-upload')" class="w-full bg-gray-800 hover:bg-gray-700 border border-white/10 text-white py-2 rounded-lg text-xs font-mono uppercase tracking-wide transition-colors flex items-center justify-center gap-2">
                                         <i class="fa-solid fa-upload text-blue-400"></i> Upload PFP
                                     </button>
-                                    <input type="file" id="avatar-upload" class="hidden" accept="image/*" onchange="window.handleAvatarUpload(this)">
+                                    <input type="file" id="avatar-upload" class="hidden" accept="image/*" onchange="window.handleAvatarUpload(this, 'avatar-preview')">
                                 </div>
                             </div>
                             <p class="text-[10px] text-gray-500 mt-2 text-center">Randomizes based on username automatically unless customized.</p>
@@ -197,25 +207,25 @@
                     <div>
                         <label class="block text-xs font-mono text-gray-500 uppercase mb-3">Current Mood</label>
                         <div class="grid grid-cols-2 gap-3">
-                            <button onclick="window.selectMood('online')" class="mood-btn selected w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="online">
+                            <button onclick="window.selectMood('online', 'setup')" class="mood-btn selected w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="online" data-context="setup">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_currentColor]"></span>
                                     <span class="text-sm font-medium">Online</span>
                                 </div>
                             </button>
-                            <button onclick="window.selectMood('focus')" class="mood-btn w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="focus">
+                            <button onclick="window.selectMood('focus', 'setup')" class="mood-btn w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="focus" data-context="setup">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_5px_currentColor]"></span>
                                     <span class="text-sm font-medium">Focusing</span>
                                 </div>
                             </button>
-                            <button onclick="window.selectMood('idle')" class="mood-btn w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="idle">
+                            <button onclick="window.selectMood('idle', 'setup')" class="mood-btn w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="idle" data-context="setup">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_5px_currentColor]"></span>
                                     <span class="text-sm font-medium">Idle / AFK</span>
                                 </div>
                             </button>
-                            <button onclick="window.selectMood('dnd')" class="mood-btn w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="dnd">
+                            <button onclick="window.selectMood('dnd', 'setup')" class="mood-btn w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="dnd" data-context="setup">
                                 <div class="flex items-center gap-2">
                                     <span class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_5px_currentColor]"></span>
                                     <span class="text-sm font-medium">Do Not Disturb</span>
@@ -289,9 +299,9 @@
                     <i class="fa-solid fa-shop w-5 text-center"></i>
                     <span class="font-medium">Shop</span>
                 </button>
-                <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
+                <button onclick="window.openProfile(userProfile.uid)" class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
                     <i class="fa-solid fa-gear w-5 text-center"></i>
-                    <span class="font-medium">Settings</span>
+                    <span class="font-medium">My Profile</span>
                 </button>
                 
                 <button id="logout-btn" class="w-full flex items-center gap-3 px-6 py-3 text-red-400 nav-btn border-l-2 border-transparent hover:text-red-300 mt-4">
@@ -301,7 +311,7 @@
             </div>
 
             <!-- Current User Profile (Bottom of Left Nav) -->
-            <div class="p-4 border-t border-white/5 bg-black/20">
+            <div class="p-4 border-t border-white/5 bg-black/20 cursor-pointer hover:bg-white/5 transition-colors" onclick="window.openProfile(userProfile.uid)">
                 <div class="flex items-center gap-3">
                     <div class="relative">
                         <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden border border-white/10">
@@ -387,22 +397,37 @@
         <aside class="w-64 glass-panel-right flex flex-col shrink-0 z-20 hidden lg:flex">
             <!-- Header -->
             <div class="h-16 flex items-center justify-between px-5 border-b border-white/5">
-                <h3 class="font-bold text-gray-300">Online</h3>
-                <span id="online-count" class="bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded-full font-mono">0</span>
+                <h3 class="font-bold text-gray-300">Community</h3>
+                <span id="total-count" class="bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded-full font-mono">0</span>
             </div>
 
             <!-- Players List -->
             <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-6">
-                <!-- Group: All Users (Dynamic) -->
+                
+                <!-- Online Users -->
                 <div>
-                    <div class="px-3 text-xs font-mono font-bold text-gray-500 uppercase mb-2">Network Users</div>
-                    <div id="player-list-dynamic" class="space-y-1">
-                        <!-- Users injected here via Firebase -->
+                    <div class="px-3 text-xs font-mono font-bold text-gray-500 uppercase mb-2 flex justify-between">
+                        <span>Online</span>
+                        <span id="online-count-display">0</span>
+                    </div>
+                    <div id="player-list-online" class="space-y-1">
+                        <!-- Online Users injected here -->
+                    </div>
+                </div>
+
+                <!-- Offline Users -->
+                <div>
+                    <div class="px-3 text-xs font-mono font-bold text-gray-500 uppercase mb-2 flex justify-between">
+                        <span>Offline</span>
+                        <span id="offline-count-display">0</span>
+                    </div>
+                    <div id="player-list-offline" class="space-y-1 opacity-60">
+                        <!-- Offline Users injected here -->
                     </div>
                 </div>
 
                 <!-- Group: STAFF -->
-                <div>
+                <div class="pt-4 border-t border-white/5">
                     <div class="px-3 text-xs font-mono font-bold text-gray-500 uppercase mb-2 flex items-center justify-between">
                         <span>Staff</span>
                         <span class="text-[10px]">1</span>
@@ -425,6 +450,100 @@
                 </div>
             </div>
         </aside>
+    </div>
+
+    <!-- ================= VIEW PROFILE MODAL ================= -->
+    <div id="view-profile-modal" class="fixed inset-0 z-[60] hidden">
+        <div class="absolute inset-0 modal-overlay" onclick="window.closeViewProfile()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-sm bg-[#0a0a0c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-zoom-in">
+            <!-- Banner -->
+            <div class="h-24 bg-gradient-to-r from-ruby-900/50 to-indigo-900/50 relative">
+                <button onclick="window.closeViewProfile()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/40 hover:bg-black/60 text-white flex items-center justify-center transition-colors">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <!-- Content -->
+            <div class="px-6 pb-6 relative">
+                <!-- Avatar -->
+                <div class="relative -mt-12 mb-4 w-24 h-24 rounded-full border-4 border-[#0a0a0c] bg-[#1a1a1d] mx-auto">
+                    <img id="vp-avatar" src="" class="w-full h-full rounded-full object-cover">
+                    <div id="vp-status-dot" class="absolute bottom-1 right-1 w-5 h-5 bg-green-500 border-4 border-[#0a0a0c] rounded-full"></div>
+                </div>
+
+                <div class="text-center mb-6">
+                    <h2 id="vp-username" class="text-xl font-bold text-white mb-1">Username</h2>
+                    <div class="flex justify-center items-center gap-2 mb-3">
+                         <span id="vp-mood-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-white/5 border border-white/10 text-gray-400 uppercase">ONLINE</span>
+                    </div>
+                    
+                    <div class="bg-white/5 rounded-xl p-3 border border-white/5 text-left">
+                        <h4 class="text-[10px] uppercase font-mono text-gray-500 mb-1">About Me</h4>
+                        <p id="vp-bio" class="text-sm text-gray-300 italic">No bio set.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-2">
+                    <button class="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 rounded-lg font-medium transition-colors">
+                        <i class="fa-regular fa-comment-dots mr-2 text-gray-400"></i> Message
+                    </button>
+                    <button id="vp-edit-btn" onclick="window.openEditProfile()" class="hidden flex-1 bg-ruby-600 hover:bg-ruby-500 text-white py-2 rounded-lg font-bold transition-colors">
+                        <i class="fa-solid fa-pen mr-2"></i> Edit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= EDIT PROFILE MODAL ================= -->
+    <div id="edit-profile-modal" class="fixed inset-0 z-[70] hidden">
+        <div class="absolute inset-0 modal-overlay" onclick="window.closeEditProfile()"></div>
+        <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-[#0a0a0c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden animate-zoom-in">
+            <div class="p-5 border-b border-white/5 flex justify-between items-center bg-white/5">
+                <h3 class="font-bold text-white">Edit Profile</h3>
+                <button onclick="window.closeEditProfile()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="p-6 space-y-5">
+                <!-- Avatar Edit -->
+                <div class="flex items-center gap-4">
+                    <div class="relative w-20 h-20 rounded-full overflow-hidden border border-white/20 bg-gray-800 shrink-0">
+                        <img id="edit-preview" src="" class="w-full h-full object-cover">
+                    </div>
+                    <div class="flex-1 space-y-2">
+                        <button onclick="window.randomizeAvatar('edit-preview')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-1.5 rounded text-xs font-mono uppercase">Randomize</button>
+                        <button onclick="window.triggerUpload('edit-upload')" class="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-1.5 rounded text-xs font-mono uppercase">Upload New</button>
+                        <input type="file" id="edit-upload" class="hidden" accept="image/*" onchange="window.handleAvatarUpload(this, 'edit-preview')">
+                    </div>
+                </div>
+
+                <!-- Username -->
+                <div>
+                    <label class="block text-xs font-mono text-gray-500 uppercase mb-1">Username</label>
+                    <input type="text" id="edit-username" class="w-full bg-gray-900 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-ruby-500 focus:outline-none">
+                </div>
+
+                <!-- Bio -->
+                <div>
+                    <label class="block text-xs font-mono text-gray-500 uppercase mb-1">Bio</label>
+                    <textarea id="edit-bio" rows="3" class="w-full bg-gray-900 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-ruby-500 focus:outline-none resize-none"></textarea>
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label class="block text-xs font-mono text-gray-500 uppercase mb-2">Status</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="window.selectMood('online', 'edit')" class="mood-btn w-full p-2 border border-white/10 rounded flex justify-center hover:bg-white/5" data-mood="online" data-context="edit" title="Online"><div class="w-3 h-3 rounded-full bg-green-500"></div></button>
+                        <button onclick="window.selectMood('focus', 'edit')" class="mood-btn w-full p-2 border border-white/10 rounded flex justify-center hover:bg-white/5" data-mood="focus" data-context="edit" title="Focus"><div class="w-3 h-3 rounded-full bg-purple-500"></div></button>
+                        <button onclick="window.selectMood('idle', 'edit')" class="mood-btn w-full p-2 border border-white/10 rounded flex justify-center hover:bg-white/5" data-mood="idle" data-context="edit" title="Idle"><div class="w-3 h-3 rounded-full bg-yellow-500"></div></button>
+                        <button onclick="window.selectMood('dnd', 'edit')" class="mood-btn w-full p-2 border border-white/10 rounded flex justify-center hover:bg-white/5" data-mood="dnd" data-context="edit" title="DnD"><div class="w-3 h-3 rounded-full bg-red-500"></div></button>
+                        <button onclick="window.selectMood('offline', 'edit')" class="mood-btn w-full p-2 border border-white/10 rounded flex justify-center hover:bg-white/5" data-mood="offline" data-context="edit" title="Appear Offline"><div class="w-3 h-3 rounded-full bg-gray-500"></div></button>
+                    </div>
+                </div>
+
+                <button onclick="window.saveProfile()" class="w-full bg-ruby-600 hover:bg-ruby-500 text-white py-2.5 rounded-lg font-bold shadow-lg shadow-ruby-500/20 transition-all">Save Changes</button>
+            </div>
+        </div>
     </div>
 
     <!-- Firebase Logic -->
@@ -460,14 +579,13 @@
         };
         let isCustomAvatar = false;
         let currentUser = null;
+        let allUsersCache = {}; // Cache to store user data for profile viewing
 
         // --- DOM Elements ---
         const setupScreen = document.getElementById('setup-screen');
         const appLayout = document.getElementById('app-layout');
         const setupUsername = document.getElementById('setup-username');
         const setupBio = document.getElementById('setup-bio');
-        const avatarPreview = document.getElementById('avatar-preview');
-        const avatarUpload = document.getElementById('avatar-upload');
         const step1 = document.getElementById('step-1');
         const step2 = document.getElementById('step-2');
         const progressBar = document.getElementById('setup-progress');
@@ -476,12 +594,19 @@
         const sidebarAvatar = document.getElementById('sidebar-avatar');
         const sidebarUsername = document.getElementById('sidebar-username');
         const sidebarStatusDot = document.getElementById('sidebar-status-dot');
-        const playerListDynamic = document.getElementById('player-list-dynamic');
-        const onlineCount = document.getElementById('online-count');
+        const playerListOnline = document.getElementById('player-list-online');
+        const playerListOffline = document.getElementById('player-list-offline');
+        const totalCount = document.getElementById('total-count');
+        const onlineCountDisplay = document.getElementById('online-count-display');
+        const offlineCountDisplay = document.getElementById('offline-count-display');
         const chatContainer = document.getElementById('chat-messages');
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
         const logoutBtn = document.getElementById('logout-btn');
+
+        // Modal Elements
+        const viewProfileModal = document.getElementById('view-profile-modal');
+        const editProfileModal = document.getElementById('edit-profile-modal');
 
         // --- AUTH & DATA LOADING ---
         onAuthStateChanged(auth, async (user) => {
@@ -507,7 +632,7 @@
                     // Update Status to Online
                     await setDoc(docRef, { 
                         mood: 'online', 
-                        joinedAt: serverTimestamp() // Update timestamp to show at top
+                        lastActive: serverTimestamp() 
                     }, { merge: true });
 
                 } else {
@@ -529,50 +654,66 @@
         });
 
         // Logout
-        logoutBtn.addEventListener('click', () => {
+        logoutBtn.addEventListener('click', async () => {
+            if(currentUser) {
+                // Set status to offline before signing out
+                try {
+                    await setDoc(doc(db, "users", currentUser.uid), { 
+                        mood: 'offline'
+                    }, { merge: true });
+                } catch(e) { console.log("Offline set failed", e); }
+            }
+            
             signOut(auth).then(() => {
                 window.location.href = 'index.html';
             });
         });
 
-        // --- SETUP LOGIC ---
+        // --- SETUP & GENERAL LOGIC ---
 
-        window.updateAvatarPreview = (src) => {
-            avatarPreview.src = src;
-            userProfile.avatar = src;
+        window.updateAvatarPreview = (src, imgId) => {
+            const img = document.getElementById(imgId);
+            if(img) img.src = src;
+            if(imgId === 'avatar-preview') userProfile.avatar = src; // Only set main profile during setup
         };
 
         window.handleUsernameInput = (input) => {
             if (!isCustomAvatar) {
                 const seed = input.value.trim() || 'Guest';
-                window.updateAvatarPreview(`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`);
+                window.updateAvatarPreview(`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`, 'avatar-preview');
             }
         };
 
-        window.randomizeAvatar = () => {
-            isCustomAvatar = true;
+        window.randomizeAvatar = (imgId) => {
+            if(imgId === 'avatar-preview') isCustomAvatar = true;
             const seed = Math.random().toString(36).substring(7);
-            window.updateAvatarPreview(`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`);
+            const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+            window.updateAvatarPreview(url, imgId);
+            // If editing, we also update the temp variable? No, we just read the img src on save.
         };
 
-        window.triggerUpload = () => {
-            avatarUpload.click();
+        window.triggerUpload = (inputId) => {
+            document.getElementById(inputId).click();
         };
 
-        window.handleAvatarUpload = (input) => {
+        window.handleAvatarUpload = (input, imgId) => {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    isCustomAvatar = true;
-                    window.updateAvatarPreview(e.target.result);
+                    if(imgId === 'avatar-preview') isCustomAvatar = true;
+                    window.updateAvatarPreview(e.target.result, imgId);
                 }
                 reader.readAsDataURL(input.files[0]);
             }
         };
 
-        window.selectMood = (mood) => {
-            userProfile.mood = mood;
-            document.querySelectorAll('.mood-btn').forEach(btn => {
+        window.selectMood = (mood, context) => {
+            // Context 'setup' or 'edit'
+            const selector = context === 'setup' ? '#step-2 .mood-btn' : '#edit-profile-modal .mood-btn';
+            
+            if(context === 'setup') userProfile.mood = mood;
+            
+            document.querySelectorAll(selector).forEach(btn => {
                 btn.classList.remove('selected');
                 if(btn.dataset.mood === mood) btn.classList.add('selected');
             });
@@ -624,7 +765,8 @@
                         bio: userProfile.bio,
                         mood: userProfile.mood,
                         uid: currentUser.uid,
-                        joinedAt: serverTimestamp()
+                        joinedAt: serverTimestamp(),
+                        lastActive: serverTimestamp()
                     }, { merge: true });
 
                     // 4. Send System Welcome Message
@@ -651,8 +793,112 @@
             if(mood === 'dnd') return 'bg-red-500';
             if(mood === 'idle') return 'bg-yellow-500';
             if(mood === 'focus') return 'bg-purple-500';
+            if(mood === 'offline') return 'bg-gray-500';
             return 'bg-green-500';
         }
+
+        function getMoodLabel(mood) {
+             if(mood === 'dnd') return 'DO NOT DISTURB';
+             if(mood === 'idle') return 'IDLE / AFK';
+             if(mood === 'focus') return 'FOCUSING';
+             if(mood === 'offline') return 'OFFLINE';
+             return 'ONLINE';
+        }
+
+        // --- MODAL FUNCTIONS ---
+
+        window.openProfile = async (uid) => {
+            // Get user data from cache or wait for it
+            const userData = allUsersCache[uid];
+            if(!userData) return;
+
+            const modal = document.getElementById('view-profile-modal');
+            const avatar = document.getElementById('vp-avatar');
+            const username = document.getElementById('vp-username');
+            const bio = document.getElementById('vp-bio');
+            const statusDot = document.getElementById('vp-status-dot');
+            const moodBadge = document.getElementById('vp-mood-badge');
+            const editBtn = document.getElementById('vp-edit-btn');
+
+            avatar.src = userData.avatar;
+            username.textContent = userData.username;
+            bio.textContent = userData.bio || "No bio available.";
+            
+            const color = getMoodColor(userData.mood || 'online');
+            statusDot.className = `absolute bottom-1 right-1 w-5 h-5 ${color} border-4 border-[#0a0a0c] rounded-full`;
+            
+            moodBadge.textContent = getMoodLabel(userData.mood || 'online');
+            
+            // Show edit button if it's me
+            if(currentUser && uid === currentUser.uid) {
+                editBtn.classList.remove('hidden');
+            } else {
+                editBtn.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+        };
+
+        window.closeViewProfile = () => {
+            viewProfileModal.classList.add('hidden');
+        };
+
+        window.openEditProfile = () => {
+            // Close view modal
+            viewProfileModal.classList.add('hidden');
+            
+            // Populate fields
+            document.getElementById('edit-preview').src = userProfile.avatar;
+            document.getElementById('edit-username').value = userProfile.username;
+            document.getElementById('edit-bio').value = userProfile.bio;
+            
+            // Set active mood
+            window.selectMood(userProfile.mood, 'edit');
+            
+            editProfileModal.classList.remove('hidden');
+        };
+
+        window.closeEditProfile = () => {
+            editProfileModal.classList.add('hidden');
+        };
+
+        window.saveProfile = async () => {
+            const newUsername = document.getElementById('edit-username').value.trim();
+            const newBio = document.getElementById('edit-bio').value.trim();
+            const newAvatar = document.getElementById('edit-preview').src;
+            
+            // Find selected mood
+            let newMood = 'online';
+            document.querySelectorAll('#edit-profile-modal .mood-btn').forEach(btn => {
+                if(btn.classList.contains('selected')) newMood = btn.dataset.mood;
+            });
+
+            if(!newUsername) return alert("Username cannot be empty");
+
+            try {
+                // Update Firestore
+                await setDoc(doc(db, "users", currentUser.uid), {
+                    username: newUsername,
+                    bio: newBio,
+                    avatar: newAvatar,
+                    mood: newMood,
+                    lastActive: serverTimestamp()
+                }, { merge: true });
+
+                // Update Local State
+                userProfile.username = newUsername;
+                userProfile.bio = newBio;
+                userProfile.avatar = newAvatar;
+                userProfile.mood = newMood;
+
+                updateAppInterface();
+                window.closeEditProfile();
+
+            } catch(e) {
+                console.error("Save failed", e);
+                alert("Failed to save profile.");
+            }
+        };
 
         // --- Chat Functionality ---
         const qMessages = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
@@ -666,7 +912,7 @@
         });
 
         function renderMessage(data) {
-            const isOwn = data.user === userProfile.username; // Note: Username collision is possible without stricter auth rules, but user ID is unique.
+            const isOwn = data.user === userProfile.username; 
             const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
             
             const div = document.createElement('div');
@@ -683,14 +929,18 @@
             if(data.role === 'system') {
                  contentHtml = contentHtml.replace(userProfile.username, `<span class="text-ruby-400 font-bold">${userProfile.username}</span>`);
             }
+            
+            // Add click event for profile view if it's a real user (has UID)
+            const cursorClass = data.uid ? 'cursor-pointer hover:underline' : '';
+            const clickAttr = data.uid ? `onclick="window.openProfile('${data.uid}')"` : '';
 
             div.innerHTML = `
-                <div class="w-10 h-10 shrink-0 mt-0.5">
+                <div class="w-10 h-10 shrink-0 mt-0.5 cursor-pointer" ${clickAttr}>
                     <img src="${avatarSrc}" class="w-full h-full rounded-full bg-gray-700 object-cover">
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-0.5">
-                        <span class="font-bold text-sm ${nameColor} hover:underline cursor-pointer">${data.user}</span>
+                        <span class="font-bold text-sm ${nameColor} ${cursorClass}" ${clickAttr}>${data.user}</span>
                         ${data.role === 'system' ? '<span class="bg-ruby-500/20 text-ruby-400 text-[9px] font-bold px-1 rounded border border-ruby-500/30">SYSTEM</span>' : ''}
                         <span class="text-[10px] text-gray-500 font-mono opacity-0 group-hover:opacity-100 transition-opacity">${time}</span>
                     </div>
@@ -721,34 +971,53 @@
             }
         });
 
-        // --- Online Users Functionality ---
-        const qUsers = query(usersRef, orderBy("joinedAt", "desc"), limit(50));
+        // --- Online/Offline Users Functionality ---
+        const qUsers = query(usersRef, orderBy("lastActive", "desc"), limit(50));
+        
         onSnapshot(qUsers, (snapshot) => {
-            playerListDynamic.innerHTML = ''; 
-            let count = 0;
+            // clear both lists
+            playerListOnline.innerHTML = '';
+            playerListOffline.innerHTML = '';
             
-            // Using a Set to track rendered UIDs just in case, though Firestore structure prevents duplicates now
+            let onlineCount = 0;
+            let offlineCount = 0;
+            
             const seenUIDs = new Set();
 
             snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
+                
+                // Cache data for profile viewing
+                allUsersCache[data.uid] = data;
+
                 if (!seenUIDs.has(data.uid)) {
                     seenUIDs.add(data.uid);
-                    count++;
                     
-                    // Don't render "Me" in the dynamic list
-                    if (data.uid !== currentUser?.uid) {
-                        renderUserInList(data);
+                    // Don't render "Me" in the list? Actually, showing yourself in the list is standard in some apps, 
+                    // but let's hide to save space or show logic. Let's keep it visible but marked.
+                    // Actually, typically you see everyone including yourself.
+                    
+                    if (data.mood === 'offline') {
+                        offlineCount++;
+                        renderUserInList(data, playerListOffline);
+                    } else {
+                        onlineCount++;
+                        renderUserInList(data, playerListOnline);
                     }
                 }
             });
-            onlineCount.textContent = count + 1; // +1 for System Bot
+            
+            onlineCountDisplay.textContent = onlineCount;
+            offlineCountDisplay.textContent = offlineCount;
+            totalCount.textContent = onlineCount + offlineCount + 1; // +1 System
         });
 
-        function renderUserInList(data) {
+        function renderUserInList(data, container) {
             const color = getMoodColor(data.mood || 'online');
             const div = document.createElement('div');
             div.className = "flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors";
+            div.onclick = () => window.openProfile(data.uid);
+            
             div.innerHTML = `
                 <div class="relative">
                     <div class="w-8 h-8 rounded-full bg-gray-800 overflow-hidden border border-white/10">
@@ -761,7 +1030,7 @@
                     <div class="text-[10px] text-gray-500 truncate">${data.bio || ''}</div>
                 </div>
             `;
-            playerListDynamic.appendChild(div);
+            container.appendChild(div);
         }
 
     </script>
