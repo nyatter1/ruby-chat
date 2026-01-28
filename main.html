@@ -953,18 +953,28 @@
         };
 
         window.startPrivateChat = async (targetUser) => {
-            // Generate Chat ID (alphabetical sort to ensure unique conversation ID)
             const uids = [currentUser.uid, targetUser.uid].sort();
             const chatId = `${uids[0]}_${uids[1]}`;
-            
-            // Check if chat exists, if not, create placeholder structure
-            // We don't strictly need to create the doc here, switchChat can handle empty states,
-            // but we need to pass user info.
             switchChat(chatId, targetUser);
         };
 
-        window.openPrivateChatById = (chatId, targetUid) => {
-             const targetUser = allUsersCache[targetUid];
+        window.openPrivateChatById = async (chatId, targetUid) => {
+             let targetUser = allUsersCache[targetUid];
+             
+             // Fix: If user isn't in cache (e.g. offline/not in recent list), fetch them manually
+             if(!targetUser) {
+                 try {
+                     const uSnap = await getDoc(doc(db, "users", targetUid));
+                     if(uSnap.exists()) {
+                         targetUser = uSnap.data();
+                         allUsersCache[targetUid] = targetUser;
+                     } else {
+                         console.error("User not found");
+                         return;
+                     }
+                 } catch(e) { console.error("Error fetching user", e); return; }
+             }
+             
              if(targetUser) switchChat(chatId, targetUser);
         };
 
@@ -973,7 +983,6 @@
             activePrivateChatUser = targetUser;
             chatContainer.innerHTML = ''; // Clear old messages
             
-            // Update Header
             if(chatId === 'global') {
                 headerTitle.textContent = 'main-lobby';
                 headerDesc.textContent = 'Welcome to the official RubyChat lobby.';
@@ -982,10 +991,7 @@
                 navGlobalChat.classList.add('active', 'border-l-3', 'border-ruby-500');
                 navGlobalChat.classList.remove('border-transparent');
                 messageInput.placeholder = "Message #main-lobby";
-                
-                // Clear active DM styles
                 document.querySelectorAll('.dm-btn').forEach(btn => btn.classList.remove('active', 'bg-white/10'));
-
             } else {
                 headerTitle.textContent = targetUser ? targetUser.username : 'Unknown User';
                 headerDesc.textContent = 'Private Conversation';
@@ -997,13 +1003,11 @@
                 navGlobalChat.classList.add('border-transparent');
                 messageInput.placeholder = `Message ${targetUser ? targetUser.username : 'User'}`;
 
-                // Highlight DM if exists in list
                 document.querySelectorAll('.dm-btn').forEach(btn => btn.classList.remove('active', 'bg-white/10'));
                 const dmBtn = document.getElementById(`dm-${chatId}`);
                 if(dmBtn) dmBtn.classList.add('active', 'bg-white/10');
             }
 
-            // Messages Subscription
             if (unsubscribeMessages) unsubscribeMessages();
 
             if (chatId === 'global') {
@@ -1029,6 +1033,12 @@
             e.preventDefault();
             const text = messageInput.value.trim();
             if (!text || !userProfile.username) return;
+            
+            // Safeguard for private chats
+            if (currentChatId !== 'global' && (!activePrivateChatUser || !activePrivateChatUser.uid)) {
+                 console.error("Private chat user not loaded");
+                 return;
+            }
 
             messageInput.value = '';
 
@@ -1043,11 +1053,9 @@
                         uid: currentUser.uid
                     });
                 } else {
-                    // Private Chat Logic
                     const chatDocRef = doc(db, "private_chats", currentChatId);
                     const messagesSubRef = collection(chatDocRef, "messages");
                     
-                    // 1. Add message to subcollection
                     await addDoc(messagesSubRef, {
                         user: userProfile.username,
                         avatar: userProfile.avatar,
@@ -1056,45 +1064,17 @@
                         uid: currentUser.uid
                     });
 
-                    // 2. Update Parent Doc (Visibility Logic here)
-                    // If I am sending, I want the recipient to see it.
-                    // visibility logic: 'visibleTo' array.
-                    // If it's the first message, 'visibleTo' might be empty or undefined.
-                    // We ensure both participants are in it eventually, BUT 
-                    // Requirement: "wont show in ur inbox until they message back".
-                    // This implies the Sender shouldn't see it in sidebar list until Receiver replies.
-                    // So, if I am the last sender, maybe I shouldn't see it? No, that hides active convos.
-                    
-                    // Specific interpretation:
-                    // When initiating a NEW chat, only show for Receiver.
-                    // When Receiver replies, show for Sender.
-                    
                     const chatSnap = await getDoc(chatDocRef);
                     let visibleTo = [];
                     
                     if (chatSnap.exists()) {
                         const data = chatSnap.data();
                         visibleTo = data.visibleTo || [];
-                        
-                        // If I am replying to an existing chat, ensure I am in visibleTo (normal behavior)
-                        // AND ensure the other person is in visibleTo.
+                        // Ensure Recipient sees it
                         if (!visibleTo.includes(activePrivateChatUser.uid)) visibleTo.push(activePrivateChatUser.uid);
-                        
-                        // Special Rule: If I am "replying" (meaning chat exists), I should probably see it in my inbox now?
-                        // The user said: "until they message back". 
-                        // If I send message 1, hidden for me.
-                        // If I send message 2 (still no reply), hidden for me? Yes.
-                        // If they reply, visible for me.
-                        // So, I ONLY add myself to 'visibleTo' IF the chat already has me in it OR if I am the receiver responding?
-                        // Let's implement: Only add the RECIPIENT to visibleTo if not present.
-                        // I do NOT add myself.
-                        // Wait, if they reply, THEY add ME. Correct.
-                        
                     } else {
-                        // New Chat: Only visible to Recipient.
-                        if(activePrivateChatUser) {
-                             visibleTo = [activePrivateChatUser.uid];
-                        }
+                        // New Chat: Only visible to Recipient initially
+                        if(activePrivateChatUser) visibleTo = [activePrivateChatUser.uid];
                     }
 
                     await setDoc(chatDocRef, {
@@ -1123,27 +1103,26 @@
                 
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    // Identify the other user
                     const otherUid = data.participants.find(uid => uid !== currentUser.uid);
-                    if(!otherUid) return;
-
-                    // Ideally we cache user data, here we assume allUsersCache has it from the online listener.
-                    // If not, we might render a placeholder.
-                    const otherUser = allUsersCache[otherUid] || { username: 'Loading...', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Unknown' };
-                    
-                    renderDMItem(doc.id, otherUser, data.lastMessage);
-                    count++;
+                    if(otherUid) {
+                        // Fix: handle uncached users gracefully
+                        const otherUser = allUsersCache[otherUid] || { username: 'Loading...', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Unknown' };
+                        // Pass otherUid explicitly to ensure click works even if user is not in cache yet
+                        renderDMItem(doc.id, otherUser, data.lastMessage, otherUid);
+                        count++;
+                    }
                 });
                 
                 dmBadgeCount.textContent = count;
             });
         }
 
-        function renderDMItem(chatId, otherUser, lastMsg) {
+        function renderDMItem(chatId, otherUser, lastMsg, otherUid) {
             const div = document.createElement('button');
             div.id = `dm-${chatId}`;
             div.className = `dm-btn w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white ${currentChatId === chatId ? 'active bg-white/10' : ''}`;
-            div.onclick = () => window.openPrivateChatById(chatId, otherUser.uid);
+            // Use explicit UID for reliability
+            div.onclick = () => window.openPrivateChatById(chatId, otherUid || otherUser.uid);
             
             const time = lastMsg && lastMsg.timestamp ? new Date(lastMsg.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
             const preview = lastMsg ? (lastMsg.senderId === currentUser.uid ? `You: ${lastMsg.content}` : lastMsg.content) : 'New Chat';
