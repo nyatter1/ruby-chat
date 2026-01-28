@@ -259,7 +259,7 @@
         <!-- LEFT SIDEBAR: Navigation -->
         <nav class="w-64 glass-panel-left flex flex-col shrink-0 z-20 hidden md:flex">
             <!-- Logo Area -->
-            <div class="h-16 flex items-center px-6 border-b border-white/5">
+            <div class="h-16 flex items-center px-6 border-b border-white/5 cursor-pointer" onclick="window.openGlobalChat()">
                 <div class="w-8 h-8 rounded bg-gradient-to-br from-ruby-500 to-ruby-700 flex items-center justify-center shadow-lg shadow-ruby-500/20 mr-3">
                     <i class="fa-solid fa-gem text-white text-sm"></i>
                 </div>
@@ -273,28 +273,22 @@
             <div class="flex-1 overflow-y-auto py-6 space-y-1">
                 <div class="px-6 text-xs font-mono text-gray-500 uppercase tracking-widest mb-2">Menu</div>
                 
-                <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn active border-l-2 border-transparent">
+                <button onclick="window.openGlobalChat()" id="nav-global-chat" class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn active border-l-2 border-transparent">
                     <i class="fa-solid fa-comments w-5 text-center"></i>
                     <span class="font-medium">General Chat</span>
                 </button>
                 
-                <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
-                    <i class="fa-solid fa-trophy w-5 text-center"></i>
-                    <span class="font-medium">Leaderboards</span>
-                </button>
+                <div class="px-6 text-xs font-mono text-gray-500 uppercase tracking-widest mt-8 mb-2 flex justify-between">
+                    <span>Direct Messages</span>
+                    <span class="text-[10px] bg-white/10 px-1.5 rounded" id="dm-badge-count">0</span>
+                </div>
                 
-                <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
-                    <i class="fa-regular fa-newspaper w-5 text-center"></i>
-                    <span class="font-medium">News</span>
-                </button>
-                
-                <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
-                    <i class="fa-solid fa-users-gear w-5 text-center"></i>
-                    <span class="font-medium">Staff</span>
-                </button>
+                <div id="dm-list" class="space-y-1">
+                    <!-- DMs will be injected here -->
+                </div>
 
                 <div class="px-6 text-xs font-mono text-gray-500 uppercase tracking-widest mt-8 mb-2">Systems</div>
-
+                
                 <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
                     <i class="fa-solid fa-shop w-5 text-center"></i>
                     <span class="font-medium">Shop</span>
@@ -334,10 +328,13 @@
             <header class="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-dark-glass backdrop-blur-md sticky top-0 z-30">
                 <div class="flex items-center gap-3">
                     <div class="md:hidden mr-2 text-gray-400"><i class="fa-solid fa-bars"></i></div>
-                    <i class="fa-solid fa-hashtag text-gray-400 text-xl"></i>
+                    <i id="header-icon" class="fa-solid fa-hashtag text-gray-400 text-xl"></i>
+                    <div id="header-avatar" class="hidden w-8 h-8 rounded-full overflow-hidden border border-white/20">
+                         <img src="" class="w-full h-full object-cover">
+                    </div>
                     <div>
-                        <h2 class="font-bold text-white text-lg leading-tight">main-lobby</h2>
-                        <div class="text-xs text-gray-400">Welcome to the official RubyChat lobby.</div>
+                        <h2 id="header-title" class="font-bold text-white text-lg leading-tight">main-lobby</h2>
+                        <div id="header-desc" class="text-xs text-gray-400">Welcome to the official RubyChat lobby.</div>
                     </div>
                 </div>
                 <div class="flex items-center gap-4 text-gray-400">
@@ -345,8 +342,6 @@
                         <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
                         <span class="text-xs font-mono">SYSTEM: ONLINE</span>
                     </div>
-                    <button class="hover:text-white"><i class="fa-solid fa-thumbtack"></i></button>
-                    <button class="hover:text-white"><i class="fa-solid fa-bell"></i></button>
                     <div class="relative w-48 hidden lg:block">
                         <input type="text" placeholder="Search..." class="w-full bg-black/30 border border-white/10 rounded px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-ruby-500/50">
                         <i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 text-xs"></i>
@@ -356,16 +351,7 @@
 
             <!-- Messages Area -->
             <div id="chat-messages" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-1">
-                <!-- Welcome Message -->
-                <div class="flex flex-col items-center justify-center py-10 opacity-70">
-                    <div class="w-16 h-16 bg-ruby-500/10 rounded-full flex items-center justify-center mb-4">
-                        <i class="fa-solid fa-hashtag text-3xl text-ruby-500"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-white mb-1">Welcome to #main-lobby!</h3>
-                    <p class="text-gray-400 text-sm">This is the start of the #main-lobby channel.</p>
-                    <div class="w-full max-w-md h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mt-6"></div>
-                </div>
-                <!-- Chat is empty initially, waiting for user -->
+                <!-- Chat Content -->
             </div>
 
             <!-- Input Area -->
@@ -491,7 +477,7 @@
                 </div>
 
                 <div class="flex gap-2">
-                    <button class="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 rounded-lg font-medium transition-colors">
+                    <button id="vp-message-btn" class="flex-1 bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 rounded-lg font-medium transition-colors">
                         <i class="fa-regular fa-comment-dots mr-2 text-gray-400"></i> Message
                     </button>
                     <button id="vp-edit-btn" onclick="window.openEditProfile()" class="hidden flex-1 bg-ruby-600 hover:bg-ruby-500 text-white py-2 rounded-lg font-bold transition-colors">
@@ -570,7 +556,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, setDoc, getDoc, doc, updateDoc, arrayUnion, arrayRemove, onSnapshot, query, orderBy, serverTimestamp, limit } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, setDoc, getDoc, doc, updateDoc, arrayUnion, arrayRemove, onSnapshot, query, orderBy, serverTimestamp, limit, where } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         // Firebase Configuration
         const firebaseConfig = {
@@ -588,6 +574,7 @@
         const db = getFirestore(app);
         const messagesRef = collection(db, "messages");
         const usersRef = collection(db, "users");
+        const privateChatsRef = collection(db, "private_chats");
 
         // --- State Management ---
         const userProfile = {
@@ -602,7 +589,12 @@
         let currentUser = null;
         let allUsersCache = {}; 
         let heartbeatInterval = null;
-        let currentViewedUid = null; // Track which profile modal is open
+        let currentViewedUid = null; 
+        
+        // Chat State
+        let currentChatId = 'global';
+        let unsubscribeMessages = null;
+        let activePrivateChatUser = null;
 
         // --- DOM Elements ---
         const setupScreen = document.getElementById('setup-screen');
@@ -626,6 +618,15 @@
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
         const logoutBtn = document.getElementById('logout-btn');
+        const dmList = document.getElementById('dm-list');
+        const dmBadgeCount = document.getElementById('dm-badge-count');
+
+        // Header Elements
+        const headerTitle = document.getElementById('header-title');
+        const headerDesc = document.getElementById('header-desc');
+        const headerIcon = document.getElementById('header-icon');
+        const headerAvatar = document.getElementById('header-avatar');
+        const navGlobalChat = document.getElementById('nav-global-chat');
 
         // Modal Elements
         const viewProfileModal = document.getElementById('view-profile-modal');
@@ -642,24 +643,23 @@
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    // Profile exists, load it
                     const data = docSnap.data();
                     Object.assign(userProfile, data);
                     
-                    // Show App
                     setupScreen.style.display = 'none';
                     appLayout.classList.remove('hidden');
                     appLayout.classList.add('animate-message-fade');
                     updateAppInterface();
                     
-                    // Update Status to Online
                     await updateHeartbeat();
                     startHeartbeat();
+                    
+                    // Initial Load
+                    window.openGlobalChat();
+                    listenToPrivateChats();
 
                 } else {
-                    // No profile, show setup screen
                     setupScreen.classList.remove('hidden');
-                    
                     const savedName = localStorage.getItem('ruby_auth_name') || user.displayName;
                     if(savedName) {
                         setupUsername.value = savedName;
@@ -667,12 +667,10 @@
                     }
                 }
                 
-                // Set offline on unload
                 window.addEventListener('beforeunload', () => {
                     setDoc(doc(db, "users", user.uid), { mood: 'offline' }, { merge: true });
                 });
                 
-                // Smart Presence: update heartbeat when tab becomes visible
                 document.addEventListener("visibilitychange", () => {
                     if (document.visibilityState === 'visible') {
                         updateHeartbeat();
@@ -697,11 +695,9 @@
 
         function startHeartbeat() {
             if(heartbeatInterval) clearInterval(heartbeatInterval);
-            // Update heartbeat every 60 seconds
             heartbeatInterval = setInterval(updateHeartbeat, 60000);
         }
 
-        // Logout
         logoutBtn.addEventListener('click', async () => {
             if(currentUser) {
                 if(heartbeatInterval) clearInterval(heartbeatInterval);
@@ -709,16 +705,14 @@
                     await setDoc(doc(db, "users", currentUser.uid), { 
                         mood: 'offline'
                     }, { merge: true });
-                } catch(e) { console.log("Offline set failed", e); }
+                } catch(e) {}
             }
-            
             signOut(auth).then(() => {
                 window.location.href = 'index.html';
             });
         });
 
-        // --- SETUP & GENERAL LOGIC ---
-
+        // --- SETUP LOGIC (Avatar, Mood, etc.) ---
         window.updateAvatarPreview = (src, imgId) => {
             const img = document.getElementById(imgId);
             if(img) img.src = src;
@@ -739,10 +733,7 @@
             window.updateAvatarPreview(url, imgId);
         };
 
-        window.triggerUpload = (inputId) => {
-            document.getElementById(inputId).click();
-        };
-
+        window.triggerUpload = (inputId) => { document.getElementById(inputId).click(); };
         window.handleAvatarUpload = (input, imgId) => {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -753,8 +744,6 @@
                 reader.readAsDataURL(input.files[0]);
             }
         };
-
-        // Banner Upload Handler
         window.handleBannerUpload = (input, imgId) => {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -768,9 +757,7 @@
 
         window.selectMood = (mood, context) => {
             const selector = context === 'setup' ? '#step-2 .mood-btn' : '#edit-profile-modal .mood-btn';
-            
             if(context === 'setup') userProfile.mood = mood;
-            
             document.querySelectorAll(selector).forEach(btn => {
                 btn.classList.remove('selected');
                 if(btn.dataset.mood === mood) btn.classList.add('selected');
@@ -780,17 +767,13 @@
         window.nextStep = (step) => {
             if(step === 2) {
                 const name = setupUsername.value.trim();
-                if(!name) {
-                    alert("Please enter a username identity.");
-                    return;
-                }
+                if(!name) { alert("Please enter a username identity."); return; }
                 userProfile.username = name;
                 step1.classList.add('hidden');
                 step2.classList.remove('hidden');
                 progressBar.style.width = '100%';
             }
         };
-
         window.prevStep = (step) => {
             if(step === 1) {
                 step2.classList.add('hidden');
@@ -798,10 +781,8 @@
                 progressBar.style.width = '50%';
             }
         };
-
         window.finalizeSetup = async () => {
             userProfile.bio = setupBio.value.trim() || "Just joined the network.";
-            
             setupScreen.classList.add('opacity-0', 'pointer-events-none', 'transition-opacity', 'duration-500');
             setTimeout(() => {
                 setupScreen.style.display = 'none';
@@ -825,16 +806,13 @@
                         joinedAt: serverTimestamp(),
                         lastActive: serverTimestamp()
                     }, { merge: true });
-
                     await addDoc(messagesRef, {
                         user: "System",
                         role: "system",
                         content: `User ${userProfile.username} connected to the mainframe.`,
                         timestamp: serverTimestamp()
                     });
-                } catch (e) {
-                    console.error("Error saving profile: ", e);
-                }
+                } catch (e) { console.error(e); }
             }
         };
 
@@ -844,7 +822,6 @@
             const color = getMoodColor(userProfile.mood);
             sidebarStatusDot.className = `absolute bottom-0 right-0 w-3 h-3 ${color} border-2 border-[#0a0a0c] rounded-full user-status-dot text-${color.replace('bg-','')}`;
         }
-
         function getMoodColor(mood) {
             if(mood === 'dnd') return 'bg-red-500';
             if(mood === 'idle') return 'bg-yellow-500';
@@ -852,7 +829,6 @@
             if(mood === 'offline') return 'bg-gray-500';
             return 'bg-green-500';
         }
-
         function getMoodLabel(mood) {
              if(mood === 'dnd') return 'DO NOT DISTURB';
              if(mood === 'idle') return 'IDLE / AFK';
@@ -861,15 +837,12 @@
              return 'ONLINE';
         }
 
-        // --- MODAL FUNCTIONS ---
-
+        // --- PROFILE LOGIC ---
         window.openProfile = async (uid) => {
             const userData = allUsersCache[uid];
             if(!userData) return;
-
             currentViewedUid = uid;
             updateProfileModalUI(userData);
-
             document.getElementById('view-profile-modal').classList.remove('hidden');
         };
 
@@ -881,8 +854,8 @@
             const statusDot = document.getElementById('vp-status-dot');
             const moodBadge = document.getElementById('vp-mood-badge');
             const editBtn = document.getElementById('vp-edit-btn');
+            const messageBtn = document.getElementById('vp-message-btn');
             const likeBtn = document.getElementById('vp-like-btn');
-            const likeIcon = document.getElementById('vp-like-icon');
             const likeCount = document.getElementById('vp-like-count');
 
             avatar.src = userData.avatar;
@@ -900,11 +873,8 @@
             const now = Date.now();
             const lastActive = userData.lastActive ? userData.lastActive.toMillis() : 0;
             const isStale = (now - lastActive) > 300000;
-            
             let effectiveMood = userData.mood || 'online';
-            if (isStale && effectiveMood !== 'offline') {
-                 effectiveMood = 'offline';
-            }
+            if (isStale && effectiveMood !== 'offline') effectiveMood = 'offline';
 
             const color = getMoodColor(effectiveMood);
             statusDot.className = `absolute bottom-1 right-1 w-5 h-5 ${color} border-4 border-[#0a0a0c] rounded-full`;
@@ -912,35 +882,19 @@
             
             if(currentUser && userData.uid === currentUser.uid) {
                 editBtn.classList.remove('hidden');
+                messageBtn.classList.add('hidden');
             } else {
                 editBtn.classList.add('hidden');
+                messageBtn.classList.remove('hidden');
+                messageBtn.onclick = () => {
+                    window.closeViewProfile();
+                    window.startPrivateChat(userData);
+                };
             }
 
-            // Profile Likes Logic
             const likes = userData.likes || [];
             likeCount.textContent = likes.length;
-            
-            const isMe = currentUser && currentUser.uid === userData.uid;
-            const isLiked = currentUser && likes.includes(currentUser.uid);
-            
-            // Reset handler
             likeBtn.onclick = () => window.toggleProfileLike(userData.uid);
-            
-            if (isMe) {
-                // Own profile: Disabled style
-                likeBtn.className = "flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-500 cursor-default opacity-50";
-                likeIcon.className = "fa-solid fa-heart";
-                likeBtn.onclick = null;
-            } else {
-                // Other profile: Active
-                if (isLiked) {
-                    likeBtn.className = "flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-ruby-500/10 border border-ruby-500/50 text-ruby-500 hover:bg-ruby-500/20 transition-all cursor-pointer";
-                    likeIcon.className = "fa-solid fa-heart";
-                } else {
-                    likeBtn.className = "flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-ruby-400 transition-all cursor-pointer";
-                    likeIcon.className = "fa-regular fa-heart";
-                }
-            }
         }
 
         window.toggleProfileLike = async (targetUid) => {
@@ -949,7 +903,6 @@
             try {
                 const userData = allUsersCache[targetUid];
                 const likes = userData?.likes || [];
-                
                 if(likes.includes(currentUser.uid)) {
                      await updateDoc(userRef, { likes: arrayRemove(currentUser.uid) });
                 } else {
@@ -962,76 +915,259 @@
             document.getElementById('view-profile-modal').classList.add('hidden');
             currentViewedUid = null;
         };
-
         window.openEditProfile = () => {
             viewProfileModal.classList.add('hidden');
-            
             document.getElementById('edit-preview').src = userProfile.avatar;
             document.getElementById('edit-banner-preview').src = userProfile.banner || '';
             document.getElementById('edit-username').value = userProfile.username;
             document.getElementById('edit-bio').value = userProfile.bio;
-            
             window.selectMood(userProfile.mood, 'edit');
-            
             editProfileModal.classList.remove('hidden');
         };
-
-        window.closeEditProfile = () => {
-            editProfileModal.classList.add('hidden');
-        };
-
+        window.closeEditProfile = () => { editProfileModal.classList.add('hidden'); };
         window.saveProfile = async () => {
             const newUsername = document.getElementById('edit-username').value.trim();
             const newBio = document.getElementById('edit-bio').value.trim();
             const newAvatar = document.getElementById('edit-preview').src;
             const newBanner = document.getElementById('edit-banner-preview').src;
-            
             let newMood = 'online';
             document.querySelectorAll('#edit-profile-modal .mood-btn').forEach(btn => {
                 if(btn.classList.contains('selected')) newMood = btn.dataset.mood;
             });
-
             if(!newUsername) return alert("Username cannot be empty");
-
             try {
                 await setDoc(doc(db, "users", currentUser.uid), {
-                    username: newUsername,
-                    bio: newBio,
-                    avatar: newAvatar,
-                    banner: newBanner,
-                    mood: newMood,
-                    lastActive: serverTimestamp()
+                    username: newUsername, bio: newBio, avatar: newAvatar, banner: newBanner, mood: newMood, lastActive: serverTimestamp()
                 }, { merge: true });
-
-                userProfile.username = newUsername;
-                userProfile.bio = newBio;
-                userProfile.avatar = newAvatar;
-                userProfile.banner = newBanner;
-                userProfile.mood = newMood;
-
+                userProfile.username = newUsername; userProfile.bio = newBio; userProfile.avatar = newAvatar; userProfile.banner = newBanner; userProfile.mood = newMood;
                 updateAppInterface();
                 window.closeEditProfile();
-
-            } catch(e) {
-                console.error("Save failed", e);
-                alert("Failed to save profile.");
-            }
+            } catch(e) { console.error(e); }
         };
 
-        // --- Chat Functionality ---
-        const qMessages = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
-        onSnapshot(qMessages, (snapshot) => {
-            snapshot.docChanges().forEach((change) => {
-                if (change.type === "added") {
-                    renderMessage(change.doc);
+        // --- CHAT SYSTEM (GLOBAL & PRIVATE) ---
+
+        window.openGlobalChat = () => {
+            if(currentChatId === 'global') return;
+            switchChat('global');
+        };
+
+        window.startPrivateChat = async (targetUser) => {
+            // Generate Chat ID (alphabetical sort to ensure unique conversation ID)
+            const uids = [currentUser.uid, targetUser.uid].sort();
+            const chatId = `${uids[0]}_${uids[1]}`;
+            
+            // Check if chat exists, if not, create placeholder structure
+            // We don't strictly need to create the doc here, switchChat can handle empty states,
+            // but we need to pass user info.
+            switchChat(chatId, targetUser);
+        };
+
+        window.openPrivateChatById = (chatId, targetUid) => {
+             const targetUser = allUsersCache[targetUid];
+             if(targetUser) switchChat(chatId, targetUser);
+        };
+
+        function switchChat(chatId, targetUser = null) {
+            currentChatId = chatId;
+            activePrivateChatUser = targetUser;
+            chatContainer.innerHTML = ''; // Clear old messages
+            
+            // Update Header
+            if(chatId === 'global') {
+                headerTitle.textContent = 'main-lobby';
+                headerDesc.textContent = 'Welcome to the official RubyChat lobby.';
+                headerIcon.classList.remove('hidden');
+                headerAvatar.classList.add('hidden');
+                navGlobalChat.classList.add('active', 'border-l-3', 'border-ruby-500');
+                navGlobalChat.classList.remove('border-transparent');
+                messageInput.placeholder = "Message #main-lobby";
+                
+                // Clear active DM styles
+                document.querySelectorAll('.dm-btn').forEach(btn => btn.classList.remove('active', 'bg-white/10'));
+
+            } else {
+                headerTitle.textContent = targetUser ? targetUser.username : 'Unknown User';
+                headerDesc.textContent = 'Private Conversation';
+                headerIcon.classList.add('hidden');
+                headerAvatar.classList.remove('hidden');
+                if(targetUser) headerAvatar.querySelector('img').src = targetUser.avatar;
+                
+                navGlobalChat.classList.remove('active', 'border-ruby-500');
+                navGlobalChat.classList.add('border-transparent');
+                messageInput.placeholder = `Message ${targetUser ? targetUser.username : 'User'}`;
+
+                // Highlight DM if exists in list
+                document.querySelectorAll('.dm-btn').forEach(btn => btn.classList.remove('active', 'bg-white/10'));
+                const dmBtn = document.getElementById(`dm-${chatId}`);
+                if(dmBtn) dmBtn.classList.add('active', 'bg-white/10');
+            }
+
+            // Messages Subscription
+            if (unsubscribeMessages) unsubscribeMessages();
+
+            if (chatId === 'global') {
+                const q = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
+                unsubscribeMessages = onSnapshot(q, (snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") renderMessage(change.doc);
+                    });
+                });
+            } else {
+                const messagesSubRef = collection(db, "private_chats", chatId, "messages");
+                const q = query(messagesSubRef, orderBy("timestamp", "asc"), limit(100));
+                unsubscribeMessages = onSnapshot(q, (snapshot) => {
+                    snapshot.docChanges().forEach((change) => {
+                        if (change.type === "added") renderMessage(change.doc);
+                    });
+                });
+            }
+        }
+
+        // Send Message
+        messageForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text || !userProfile.username) return;
+
+            messageInput.value = '';
+
+            try {
+                if (currentChatId === 'global') {
+                    await addDoc(messagesRef, {
+                        user: userProfile.username,
+                        avatar: userProfile.avatar,
+                        content: text,
+                        timestamp: serverTimestamp(),
+                        role: 'user',
+                        uid: currentUser.uid
+                    });
+                } else {
+                    // Private Chat Logic
+                    const chatDocRef = doc(db, "private_chats", currentChatId);
+                    const messagesSubRef = collection(chatDocRef, "messages");
+                    
+                    // 1. Add message to subcollection
+                    await addDoc(messagesSubRef, {
+                        user: userProfile.username,
+                        avatar: userProfile.avatar,
+                        content: text,
+                        timestamp: serverTimestamp(),
+                        uid: currentUser.uid
+                    });
+
+                    // 2. Update Parent Doc (Visibility Logic here)
+                    // If I am sending, I want the recipient to see it.
+                    // visibility logic: 'visibleTo' array.
+                    // If it's the first message, 'visibleTo' might be empty or undefined.
+                    // We ensure both participants are in it eventually, BUT 
+                    // Requirement: "wont show in ur inbox until they message back".
+                    // This implies the Sender shouldn't see it in sidebar list until Receiver replies.
+                    // So, if I am the last sender, maybe I shouldn't see it? No, that hides active convos.
+                    
+                    // Specific interpretation:
+                    // When initiating a NEW chat, only show for Receiver.
+                    // When Receiver replies, show for Sender.
+                    
+                    const chatSnap = await getDoc(chatDocRef);
+                    let visibleTo = [];
+                    
+                    if (chatSnap.exists()) {
+                        const data = chatSnap.data();
+                        visibleTo = data.visibleTo || [];
+                        
+                        // If I am replying to an existing chat, ensure I am in visibleTo (normal behavior)
+                        // AND ensure the other person is in visibleTo.
+                        if (!visibleTo.includes(activePrivateChatUser.uid)) visibleTo.push(activePrivateChatUser.uid);
+                        
+                        // Special Rule: If I am "replying" (meaning chat exists), I should probably see it in my inbox now?
+                        // The user said: "until they message back". 
+                        // If I send message 1, hidden for me.
+                        // If I send message 2 (still no reply), hidden for me? Yes.
+                        // If they reply, visible for me.
+                        // So, I ONLY add myself to 'visibleTo' IF the chat already has me in it OR if I am the receiver responding?
+                        // Let's implement: Only add the RECIPIENT to visibleTo if not present.
+                        // I do NOT add myself.
+                        // Wait, if they reply, THEY add ME. Correct.
+                        
+                    } else {
+                        // New Chat: Only visible to Recipient.
+                        if(activePrivateChatUser) {
+                             visibleTo = [activePrivateChatUser.uid];
+                        }
+                    }
+
+                    await setDoc(chatDocRef, {
+                        participants: [currentUser.uid, activePrivateChatUser.uid],
+                        lastMessage: {
+                            content: text,
+                            senderId: currentUser.uid,
+                            timestamp: serverTimestamp()
+                        },
+                        visibleTo: visibleTo,
+                        updatedAt: serverTimestamp()
+                    }, { merge: true });
                 }
-            });
+            } catch (e) {
+                console.error("Error sending message: ", e);
+            }
         });
 
+        // --- SIDEBAR DM LIST ---
+        function listenToPrivateChats() {
+            const q = query(privateChatsRef, where("visibleTo", "array-contains", currentUser.uid), orderBy("updatedAt", "desc"));
+            
+            onSnapshot(q, (snapshot) => {
+                dmList.innerHTML = '';
+                let count = 0;
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    // Identify the other user
+                    const otherUid = data.participants.find(uid => uid !== currentUser.uid);
+                    if(!otherUid) return;
+
+                    // Ideally we cache user data, here we assume allUsersCache has it from the online listener.
+                    // If not, we might render a placeholder.
+                    const otherUser = allUsersCache[otherUid] || { username: 'Loading...', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Unknown' };
+                    
+                    renderDMItem(doc.id, otherUser, data.lastMessage);
+                    count++;
+                });
+                
+                dmBadgeCount.textContent = count;
+            });
+        }
+
+        function renderDMItem(chatId, otherUser, lastMsg) {
+            const div = document.createElement('button');
+            div.id = `dm-${chatId}`;
+            div.className = `dm-btn w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white ${currentChatId === chatId ? 'active bg-white/10' : ''}`;
+            div.onclick = () => window.openPrivateChatById(chatId, otherUser.uid);
+            
+            const time = lastMsg && lastMsg.timestamp ? new Date(lastMsg.timestamp.toDate()).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '';
+            const preview = lastMsg ? (lastMsg.senderId === currentUser.uid ? `You: ${lastMsg.content}` : lastMsg.content) : 'New Chat';
+
+            div.innerHTML = `
+                <div class="relative w-8 h-8 shrink-0">
+                    <img src="${otherUser.avatar}" class="w-full h-full rounded-full bg-gray-700 object-cover">
+                    <div class="absolute bottom-0 right-0 w-2 h-2 bg-gray-500 rounded-full border border-black"></div> 
+                </div>
+                <div class="flex-1 min-w-0 text-left">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium text-sm text-gray-200 truncate">${otherUser.username}</span>
+                        <span class="text-[9px] text-gray-600">${time}</span>
+                    </div>
+                    <div class="text-[10px] text-gray-500 truncate">${preview}</div>
+                </div>
+            `;
+            dmList.appendChild(div);
+        }
+
+        // --- GENERAL HELPERS ---
         function renderMessage(doc) {
             const data = doc.data();
-            const msgId = doc.id;
-            const isOwn = data.user === userProfile.username; 
+            const isOwn = data.uid === currentUser.uid; // Use UID for stricter check
             const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
             
             const div = document.createElement('div');
@@ -1045,12 +1181,10 @@
             if (data.role === 'system') avatarSrc = "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin";
             
             let contentHtml = data.content;
-            if(data.role === 'system') {
-                 contentHtml = contentHtml.replace(userProfile.username, `<span class="text-ruby-400 font-bold">${userProfile.username}</span>`);
-            }
+            if(data.role === 'system') contentHtml = contentHtml.replace(userProfile.username, `<span class="text-ruby-400 font-bold">${userProfile.username}</span>`);
             
-            const cursorClass = data.uid ? 'cursor-pointer hover:underline' : '';
             const clickAttr = data.uid ? `onclick="window.openProfile('${data.uid}')"` : '';
+            const cursorClass = data.uid ? 'cursor-pointer hover:underline' : '';
 
             div.innerHTML = `
                 <div class="w-10 h-10 shrink-0 mt-0.5 cursor-pointer" ${clickAttr}>
@@ -1069,44 +1203,17 @@
             chatContainer.scrollTop = chatContainer.scrollHeight;
         }
 
-        messageForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const text = messageInput.value.trim();
-            if (text && userProfile.username) {
-                try {
-                    await addDoc(messagesRef, {
-                        user: userProfile.username,
-                        avatar: userProfile.avatar,
-                        content: text,
-                        timestamp: serverTimestamp(),
-                        role: 'user',
-                        uid: currentUser.uid
-                    });
-                    messageInput.value = '';
-                } catch (e) {
-                    console.error("Error sending message: ", e);
-                }
-            }
-        });
-
-        // --- Online/Offline Users Functionality ---
+        // --- ONLINE USERS ---
         const qUsers = query(usersRef, limit(100)); 
-        
         onSnapshot(qUsers, (snapshot) => {
             playerListOnline.innerHTML = '';
             playerListOffline.innerHTML = '';
-            
             let onlineCount = 0;
             let offlineCount = 0;
-            
             const seenUIDs = new Set();
             const users = [];
 
-            snapshot.forEach((docSnap) => {
-                users.push(docSnap.data());
-            });
-
-            // Sort users
+            snapshot.forEach((docSnap) => { users.push(docSnap.data()); });
             users.sort((a, b) => {
                  const timeA = a.lastActive ? a.lastActive.toMillis() : 0;
                  const timeB = b.lastActive ? b.lastActive.toMillis() : 0;
@@ -1114,28 +1221,16 @@
             });
 
             const now = Date.now();
-
             users.forEach((data) => {
-                // Cache data
                 allUsersCache[data.uid] = data;
-
-                // Live Update for Profile Modal
-                if (currentViewedUid === data.uid) {
-                    updateProfileModalUI(data);
-                }
+                if (currentViewedUid === data.uid) updateProfileModalUI(data);
 
                 if (!seenUIDs.has(data.uid)) {
                     seenUIDs.add(data.uid);
-                    
-                    // Presence Logic:
                     const lastActive = data.lastActive ? data.lastActive.toMillis() : 0;
-                    // INCREASED THRESHOLD: 5 Minutes (300000 ms) to account for background tabs
                     const isStale = (now - lastActive) > 300000; 
-                    
                     let effectiveMood = data.mood || 'online';
-                    if (isStale && effectiveMood !== 'offline') {
-                        effectiveMood = 'offline';
-                    }
+                    if (isStale && effectiveMood !== 'offline') effectiveMood = 'offline';
 
                     if (effectiveMood === 'offline') {
                         offlineCount++;
@@ -1146,10 +1241,9 @@
                     }
                 }
             });
-            
             onlineCountDisplay.textContent = onlineCount;
             offlineCountDisplay.textContent = offlineCount;
-            totalCount.textContent = onlineCount + offlineCount + 1; // +1 System
+            totalCount.textContent = onlineCount + offlineCount + 1;
         });
 
         function renderUserInList(data, container, effectiveMood) {
@@ -1157,7 +1251,6 @@
             const div = document.createElement('div');
             div.className = "flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors";
             div.onclick = () => window.openProfile(data.uid);
-            
             div.innerHTML = `
                 <div class="relative">
                     <div class="w-8 h-8 rounded-full bg-gray-800 overflow-hidden border border-white/10">
@@ -1172,7 +1265,6 @@
             `;
             container.appendChild(div);
         }
-
     </script>
 </body>
 </html>
