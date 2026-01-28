@@ -113,10 +113,6 @@
         .message-group:hover {
             background: rgba(255, 255, 255, 0.02);
         }
-        
-        .message-group:hover .like-btn {
-            opacity: 1;
-        }
 
         .user-status-dot {
             box-shadow: 0 0 5px currentColor;
@@ -132,14 +128,6 @@
         .modal-overlay {
             background: rgba(0, 0, 0, 0.7);
             backdrop-filter: blur(5px);
-        }
-
-        /* Like Button Animation */
-        .like-btn i {
-            transition: transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .like-btn:active i {
-            transform: scale(1.4);
         }
     </style>
 </head>
@@ -489,6 +477,11 @@
                     <h2 id="vp-username" class="text-xl font-bold text-white mb-1">Username</h2>
                     <div class="flex justify-center items-center gap-2 mb-3">
                          <span id="vp-mood-badge" class="px-2 py-0.5 rounded text-[10px] font-mono bg-white/5 border border-white/10 text-gray-400 uppercase">ONLINE</span>
+                         <!-- Profile Like Button -->
+                         <button id="vp-like-btn" class="flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-400 transition-colors group">
+                             <i id="vp-like-icon" class="fa-regular fa-heart text-xs"></i>
+                             <span id="vp-like-count" class="text-xs font-mono">0</span>
+                         </button>
                     </div>
                     
                     <div class="bg-white/5 rounded-xl p-3 border border-white/5 text-left">
@@ -609,6 +602,7 @@
         let currentUser = null;
         let allUsersCache = {}; 
         let heartbeatInterval = null;
+        let currentViewedUid = null; // Track which profile modal is open
 
         // --- DOM Elements ---
         const setupScreen = document.getElementById('setup-screen');
@@ -873,7 +867,13 @@
             const userData = allUsersCache[uid];
             if(!userData) return;
 
-            const modal = document.getElementById('view-profile-modal');
+            currentViewedUid = uid;
+            updateProfileModalUI(userData);
+
+            document.getElementById('view-profile-modal').classList.remove('hidden');
+        };
+
+        function updateProfileModalUI(userData) {
             const avatar = document.getElementById('vp-avatar');
             const banner = document.getElementById('vp-banner');
             const username = document.getElementById('vp-username');
@@ -881,6 +881,9 @@
             const statusDot = document.getElementById('vp-status-dot');
             const moodBadge = document.getElementById('vp-mood-badge');
             const editBtn = document.getElementById('vp-edit-btn');
+            const likeBtn = document.getElementById('vp-like-btn');
+            const likeIcon = document.getElementById('vp-like-icon');
+            const likeCount = document.getElementById('vp-like-count');
 
             avatar.src = userData.avatar;
             if(userData.banner) {
@@ -894,10 +897,8 @@
             username.textContent = userData.username;
             bio.textContent = userData.bio || "No bio available.";
             
-            // Check stale time for view consistency
             const now = Date.now();
             const lastActive = userData.lastActive ? userData.lastActive.toMillis() : 0;
-            // Allow 5 minutes of inactivity before showing offline in profile view
             const isStale = (now - lastActive) > 300000;
             
             let effectiveMood = userData.mood || 'online';
@@ -909,17 +910,57 @@
             statusDot.className = `absolute bottom-1 right-1 w-5 h-5 ${color} border-4 border-[#0a0a0c] rounded-full`;
             moodBadge.textContent = getMoodLabel(effectiveMood);
             
-            if(currentUser && uid === currentUser.uid) {
+            if(currentUser && userData.uid === currentUser.uid) {
                 editBtn.classList.remove('hidden');
             } else {
                 editBtn.classList.add('hidden');
             }
 
-            modal.classList.remove('hidden');
+            // Profile Likes Logic
+            const likes = userData.likes || [];
+            likeCount.textContent = likes.length;
+            
+            const isMe = currentUser && currentUser.uid === userData.uid;
+            const isLiked = currentUser && likes.includes(currentUser.uid);
+            
+            // Reset handler
+            likeBtn.onclick = () => window.toggleProfileLike(userData.uid);
+            
+            if (isMe) {
+                // Own profile: Disabled style
+                likeBtn.className = "flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-500 cursor-default opacity-50";
+                likeIcon.className = "fa-solid fa-heart";
+                likeBtn.onclick = null;
+            } else {
+                // Other profile: Active
+                if (isLiked) {
+                    likeBtn.className = "flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-ruby-500/10 border border-ruby-500/50 text-ruby-500 hover:bg-ruby-500/20 transition-all cursor-pointer";
+                    likeIcon.className = "fa-solid fa-heart";
+                } else {
+                    likeBtn.className = "flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:bg-white/10 hover:text-ruby-400 transition-all cursor-pointer";
+                    likeIcon.className = "fa-regular fa-heart";
+                }
+            }
+        }
+
+        window.toggleProfileLike = async (targetUid) => {
+            if(!currentUser) return;
+            const userRef = doc(db, "users", targetUid);
+            try {
+                const userData = allUsersCache[targetUid];
+                const likes = userData?.likes || [];
+                
+                if(likes.includes(currentUser.uid)) {
+                     await updateDoc(userRef, { likes: arrayRemove(currentUser.uid) });
+                } else {
+                     await updateDoc(userRef, { likes: arrayUnion(currentUser.uid) });
+                }
+            } catch(e) { console.error(e); }
         };
 
         window.closeViewProfile = () => {
-            viewProfileModal.classList.add('hidden');
+            document.getElementById('view-profile-modal').classList.add('hidden');
+            currentViewedUid = null;
         };
 
         window.openEditProfile = () => {
@@ -977,43 +1018,12 @@
             }
         };
 
-        // --- LIKES FUNCTIONALITY ---
-        window.toggleLike = async (msgId) => {
-            if(!currentUser) return;
-            const msgRef = doc(db, "messages", msgId);
-            
-            try {
-                const docSnap = await getDoc(msgRef);
-                if(docSnap.exists()) {
-                    const data = docSnap.data();
-                    const likes = data.likes || [];
-                    
-                    if(likes.includes(currentUser.uid)) {
-                        // Unlike
-                        await updateDoc(msgRef, {
-                            likes: arrayRemove(currentUser.uid)
-                        });
-                    } else {
-                        // Like
-                        await updateDoc(msgRef, {
-                            likes: arrayUnion(currentUser.uid)
-                        });
-                    }
-                }
-            } catch(e) {
-                console.error("Toggle like error", e);
-            }
-        };
-
         // --- Chat Functionality ---
         const qMessages = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
         onSnapshot(qMessages, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
                 if (change.type === "added") {
                     renderMessage(change.doc);
-                }
-                if (change.type === "modified") {
-                    updateMessage(change.doc);
                 }
             });
         });
@@ -1025,7 +1035,6 @@
             const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
             
             const div = document.createElement('div');
-            div.id = `msg-${msgId}`;
             div.className = `flex gap-4 p-1 px-2 rounded hover:bg-white/5 group animate-message-fade message-group relative`;
             
             let nameColor = 'text-gray-300';
@@ -1043,18 +1052,11 @@
             const cursorClass = data.uid ? 'cursor-pointer hover:underline' : '';
             const clickAttr = data.uid ? `onclick="window.openProfile('${data.uid}')"` : '';
 
-            // Likes Logic
-            const likes = data.likes || [];
-            const likesCount = likes.length;
-            const isLiked = currentUser && likes.includes(currentUser.uid);
-            const heartClass = isLiked ? "fa-solid text-ruby-500" : "fa-regular text-gray-500 hover:text-ruby-400";
-            const heartOpacity = likesCount > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100";
-            
             div.innerHTML = `
                 <div class="w-10 h-10 shrink-0 mt-0.5 cursor-pointer" ${clickAttr}>
                     <img src="${avatarSrc}" class="w-full h-full rounded-full bg-gray-700 object-cover">
                 </div>
-                <div class="flex-1 min-w-0 pr-8">
+                <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-0.5">
                         <span class="font-bold text-sm ${nameColor} ${cursorClass}" ${clickAttr}>${data.user}</span>
                         ${data.role === 'system' ? '<span class="bg-ruby-500/20 text-ruby-400 text-[9px] font-bold px-1 rounded border border-ruby-500/30">SYSTEM</span>' : ''}
@@ -1062,33 +1064,9 @@
                     </div>
                     <p class="text-gray-300 text-[15px] leading-relaxed break-words">${contentHtml}</p>
                 </div>
-                <button onclick="window.toggleLike('${msgId}')" class="like-btn absolute right-2 top-2 ${heartOpacity} transition-opacity flex items-center gap-1 bg-[#0a0a0c]/80 px-2 py-1 rounded-full border border-white/5 hover:border-ruby-500/50">
-                    <i class="${heartClass} text-xs"></i>
-                    ${likesCount > 0 ? `<span class="text-[10px] font-mono text-gray-400">${likesCount}</span>` : ''}
-                </button>
             `;
             chatContainer.appendChild(div);
             chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        function updateMessage(doc) {
-            const data = doc.data();
-            const msgId = doc.id;
-            const div = document.getElementById(`msg-${msgId}`);
-            if(div) {
-                 // Re-render likes button mainly
-                const likes = data.likes || [];
-                const likesCount = likes.length;
-                const isLiked = currentUser && likes.includes(currentUser.uid);
-                const heartClass = isLiked ? "fa-solid text-ruby-500" : "fa-regular text-gray-500 hover:text-ruby-400";
-                const heartOpacity = likesCount > 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100";
-
-                const btn = div.querySelector('.like-btn');
-                if(btn) {
-                    btn.className = `like-btn absolute right-2 top-2 ${heartOpacity} transition-opacity flex items-center gap-1 bg-[#0a0a0c]/80 px-2 py-1 rounded-full border border-white/5 hover:border-ruby-500/50`;
-                    btn.innerHTML = `<i class="${heartClass} text-xs"></i> ${likesCount > 0 ? `<span class="text-[10px] font-mono text-gray-400">${likesCount}</span>` : ''}`;
-                }
-            }
         }
 
         messageForm.addEventListener('submit', async (e) => {
@@ -1102,8 +1080,7 @@
                         content: text,
                         timestamp: serverTimestamp(),
                         role: 'user',
-                        uid: currentUser.uid,
-                        likes: []
+                        uid: currentUser.uid
                     });
                     messageInput.value = '';
                 } catch (e) {
@@ -1141,6 +1118,11 @@
             users.forEach((data) => {
                 // Cache data
                 allUsersCache[data.uid] = data;
+
+                // Live Update for Profile Modal
+                if (currentViewedUid === data.uid) {
+                    updateProfileModalUI(data);
+                }
 
                 if (!seenUIDs.has(data.uid)) {
                     seenUIDs.add(data.uid);
