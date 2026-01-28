@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RubyChat - Initialize</title>
+    <title>RubyChat - Network</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
@@ -40,7 +40,8 @@
                     animation: {
                         'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
                         'message-fade': 'fadeIn 0.2s ease-out forwards',
-                        'slide-up': 'slideUp 0.4s ease-out forwards',
+                        'slide-up': 'slideUp 0.3s ease-out forwards',
+                        'pop-in': 'popIn 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards',
                     },
                     keyframes: {
                         fadeIn: {
@@ -50,6 +51,10 @@
                         slideUp: {
                             '0%': { opacity: '0', transform: 'translateY(20px)' },
                             '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        popIn: {
+                            '0%': { opacity: '0', transform: 'scale(0.95)' },
+                            '100%': { opacity: '1', transform: 'scale(1)' }
                         }
                     }
                 }
@@ -66,18 +71,10 @@
             color: #e2e8f0;
         }
 
-        /* Custom Scrollbar */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255, 51, 102, 0.2); border-radius: 3px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #ff3366; }
-
-        .glass-panel {
-            background: var(--dark-glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-right: 1px solid var(--dark-border);
-        }
 
         .glass-panel-left {
             background: rgba(10, 10, 12, 0.8);
@@ -113,7 +110,6 @@
             box-shadow: 0 0 5px currentColor;
         }
 
-        /* Mood Selection */
         .mood-btn.selected {
             background: rgba(255, 51, 102, 0.2);
             border-color: #ff3366;
@@ -123,185 +119,138 @@
 </head>
 <body class="flex h-screen w-screen overflow-hidden text-sm">
 
-    <!-- Ambient Background Effects -->
+    <!-- Ambient Background -->
     <div class="fixed inset-0 overflow-hidden pointer-events-none -z-10">
         <div class="absolute w-[800px] h-[800px] bg-ruby-900/10 top-[-200px] left-[-200px] blur-[150px] animate-pulse-slow"></div>
         <div class="absolute w-[600px] h-[600px] bg-indigo-900/10 bottom-[-100px] right-[-100px] blur-[150px]"></div>
     </div>
 
-    <!-- ================= SETUP / ONBOARDING SCREEN ================= -->
+    <!-- ================= SETUP SCREEN ================= -->
     <div id="setup-screen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden">
         <div class="w-full max-w-lg bg-[#0a0a0c] border border-white/10 rounded-2xl shadow-2xl overflow-hidden relative animate-slide-up">
-            <!-- Header -->
             <div class="p-6 border-b border-white/5 bg-gradient-to-r from-ruby-900/20 to-transparent">
                 <div class="flex items-center gap-3 mb-1">
                     <i class="fa-solid fa-gem text-ruby-500 text-xl"></i>
                     <h2 class="text-xl font-bold text-white tracking-wide">SYSTEM INITIALIZATION</h2>
                 </div>
-                <p class="text-gray-400 text-xs font-mono">Create your digital persona to access the network.</p>
+                <p class="text-gray-400 text-xs font-mono">Create your digital persona.</p>
             </div>
-
-            <!-- Steps Container -->
-            <div class="p-8">
-                
-                <!-- Step 1: Identity & Avatar -->
-                <div id="step-1" class="space-y-6">
-                    <div>
-                        <label class="block text-xs font-mono text-gray-500 uppercase mb-2">Identify Yourself (Username)</label>
-                        <input type="text" id="setup-username" oninput="window.handleUsernameInput(this)" class="w-full bg-gray-900 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-ruby-500 focus:ring-1 focus:ring-ruby-500 transition-all placeholder-gray-600" placeholder="e.g. CyberPunk2077">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-mono text-gray-500 uppercase mb-3">Avatar Setup</label>
-                        <div class="bg-white/5 rounded-xl p-4 border border-white/10">
-                            <div class="flex items-center gap-5">
-                                <!-- Preview -->
-                                <div class="relative group shrink-0">
-                                    <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-white/20 group-hover:border-ruby-500 transition-colors bg-gray-800">
-                                        <img id="avatar-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" class="w-full h-full object-cover">
-                                    </div>
-                                    <div class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer" onclick="window.triggerUpload()">
-                                        <i class="fa-solid fa-camera text-white"></i>
-                                    </div>
-                                </div>
-                                
-                                <!-- Controls -->
-                                <div class="flex-1 space-y-2">
-                                    <button onclick="window.randomizeAvatar()" class="w-full bg-gray-800 hover:bg-gray-700 border border-white/10 text-white py-2 rounded-lg text-xs font-mono uppercase tracking-wide transition-colors flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-dice text-ruby-400"></i> Randomize
-                                    </button>
-                                    <button onclick="window.triggerUpload()" class="w-full bg-gray-800 hover:bg-gray-700 border border-white/10 text-white py-2 rounded-lg text-xs font-mono uppercase tracking-wide transition-colors flex items-center justify-center gap-2">
-                                        <i class="fa-solid fa-upload text-blue-400"></i> Upload PFP
-                                    </button>
-                                    <input type="file" id="avatar-upload" class="hidden" accept="image/*" onchange="window.handleAvatarUpload(this)">
-                                </div>
+            <div class="p-8 space-y-6">
+                <div>
+                    <label class="block text-xs font-mono text-gray-500 uppercase mb-2">Username</label>
+                    <input type="text" id="setup-username" oninput="window.handleUsernameInput(this)" class="w-full bg-gray-900 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-ruby-500 transition-all" placeholder="CyberPunk2077">
+                </div>
+                <div>
+                    <label class="block text-xs font-mono text-gray-500 uppercase mb-3">Avatar</label>
+                    <div class="flex items-center gap-5">
+                        <div class="relative group shrink-0">
+                            <div class="w-24 h-24 rounded-full overflow-hidden border-2 border-white/20 bg-gray-800">
+                                <img id="avatar-preview" src="https://api.dicebear.com/7.x/avataaars/svg?seed=Guest" class="w-full h-full object-cover">
                             </div>
-                            <p class="text-[10px] text-gray-500 mt-2 text-center">Randomizes based on username automatically unless customized.</p>
+                            <div class="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity rounded-full cursor-pointer" onclick="window.randomizeAvatar()">
+                                <i class="fa-solid fa-dice text-white"></i>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="pt-4 flex justify-end">
-                        <button onclick="window.nextStep(2)" class="bg-white text-black px-6 py-2 rounded-lg font-bold hover:bg-ruby-50 transition-colors flex items-center gap-2">
-                            Next Step <i class="fa-solid fa-arrow-right"></i>
-                        </button>
+                        <button onclick="window.randomizeAvatar()" class="bg-gray-800 hover:bg-gray-700 border border-white/10 text-white px-4 py-2 rounded-lg text-xs font-mono uppercase">Randomize</button>
                     </div>
                 </div>
-
-                <!-- Step 2: Persona -->
-                <div id="step-2" class="space-y-6 hidden">
-                    <div>
-                        <label class="block text-xs font-mono text-gray-500 uppercase mb-2">Status Bio</label>
-                        <textarea id="setup-bio" rows="3" class="w-full bg-gray-900 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-ruby-500 transition-all placeholder-gray-600 resize-none" placeholder="What's on your mind?"></textarea>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-mono text-gray-500 uppercase mb-3">Current Mood</label>
-                        <div class="grid grid-cols-2 gap-3">
-                            <button onclick="window.selectMood('online')" class="mood-btn selected w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="online">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_currentColor]"></span>
-                                    <span class="text-sm font-medium">Online</span>
-                                </div>
-                            </button>
-                            <button onclick="window.selectMood('focus')" class="mood-btn w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="focus">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-purple-500 shadow-[0_0_5px_currentColor]"></span>
-                                    <span class="text-sm font-medium">Focusing</span>
-                                </div>
-                            </button>
-                            <button onclick="window.selectMood('idle')" class="mood-btn w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="idle">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-yellow-500 shadow-[0_0_5px_currentColor]"></span>
-                                    <span class="text-sm font-medium">Idle / AFK</span>
-                                </div>
-                            </button>
-                            <button onclick="window.selectMood('dnd')" class="mood-btn w-full p-3 border border-white/10 rounded-lg text-left hover:bg-white/5 transition-all" data-mood="dnd">
-                                <div class="flex items-center gap-2">
-                                    <span class="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_5px_currentColor]"></span>
-                                    <span class="text-sm font-medium">Do Not Disturb</span>
-                                </div>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="pt-4 flex justify-between items-center">
-                        <button onclick="window.prevStep(1)" class="text-gray-400 hover:text-white transition-colors text-sm">
-                            <i class="fa-solid fa-arrow-left mr-1"></i> Back
-                        </button>
-                        <button onclick="window.finalizeSetup()" class="bg-ruby-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-ruby-500 transition-colors shadow-lg shadow-ruby-500/20 flex items-center gap-2">
-                            Enter Network <i class="fa-solid fa-network-wired"></i>
-                        </button>
-                    </div>
+                <div class="pt-4 flex justify-end">
+                    <button onclick="window.finalizeSetup()" class="bg-ruby-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-ruby-500 transition-colors">Enter Network</button>
                 </div>
-
-            </div>
-            
-            <!-- Progress Bar -->
-            <div class="h-1 w-full bg-gray-800">
-                <div id="setup-progress" class="h-full bg-ruby-500 w-1/2 transition-all duration-300"></div>
             </div>
         </div>
     </div>
 
+    <!-- ================= PROFILE MODAL (View/Edit) ================= -->
+    <div id="profile-modal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+        <div class="w-full max-w-md bg-[#0f0f12] border border-white/10 rounded-2xl shadow-2xl relative animate-pop-in overflow-hidden">
+            <!-- Header Background -->
+            <div class="h-32 bg-gradient-to-r from-ruby-900/40 to-indigo-900/40 relative">
+                <button onclick="window.closeProfile()" class="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <!-- Profile Content -->
+            <div class="px-8 pb-8 -mt-12 relative">
+                <!-- Avatar -->
+                <div class="flex justify-between items-end mb-4">
+                    <div class="relative group">
+                        <div class="w-24 h-24 rounded-full border-4 border-[#0f0f12] bg-gray-800 overflow-hidden">
+                            <img id="profile-img" src="" class="w-full h-full object-cover">
+                        </div>
+                        <!-- Edit Overlay (Only visible in edit mode) -->
+                        <div id="profile-edit-avatar-overlay" class="absolute inset-0 rounded-full border-4 border-transparent flex items-center justify-center bg-black/50 opacity-0 cursor-pointer hidden hover:opacity-100 transition-opacity" onclick="window.randomizeEditAvatar()">
+                            <i class="fa-solid fa-dice text-white"></i>
+                        </div>
+                    </div>
+                    <div id="profile-status-badge" class="bg-green-500/20 text-green-400 border border-green-500/30 px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wide">
+                        Online
+                    </div>
+                </div>
 
-    <!-- ================= MAIN APP LAYOUT (Hidden Initially) ================= -->
+                <!-- Info Display Mode -->
+                <div id="profile-view-mode">
+                    <h2 id="profile-name" class="text-2xl font-bold text-white mb-1">Username</h2>
+                    <p id="profile-bio" class="text-gray-400 text-sm mb-6 leading-relaxed">No bio set.</p>
+                    <button id="btn-edit-profile" onclick="window.enableEditMode()" class="hidden w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white py-2 rounded-lg text-sm font-medium transition-colors">Edit Profile</button>
+                </div>
+
+                <!-- Edit Mode -->
+                <div id="profile-edit-mode" class="hidden space-y-4">
+                    <div>
+                        <label class="text-[10px] uppercase text-gray-500 font-mono">Username</label>
+                        <input type="text" id="edit-username" class="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-white text-sm focus:border-ruby-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase text-gray-500 font-mono">Bio</label>
+                        <textarea id="edit-bio" rows="2" class="w-full bg-black/30 border border-white/10 rounded px-3 py-2 text-white text-sm focus:border-ruby-500 outline-none resize-none"></textarea>
+                    </div>
+                    <div>
+                        <label class="text-[10px] uppercase text-gray-500 font-mono mb-2 block">Mood Status</label>
+                        <div class="grid grid-cols-4 gap-2">
+                            <button onclick="window.setEditMood('online')" class="edit-mood-btn p-2 rounded bg-black/30 border border-white/10 hover:border-green-500 transition-colors" data-mood="online"><div class="w-3 h-3 bg-green-500 rounded-full mx-auto shadow-[0_0_5px_currentColor]"></div></button>
+                            <button onclick="window.setEditMood('focus')" class="edit-mood-btn p-2 rounded bg-black/30 border border-white/10 hover:border-purple-500 transition-colors" data-mood="focus"><div class="w-3 h-3 bg-purple-500 rounded-full mx-auto shadow-[0_0_5px_currentColor]"></div></button>
+                            <button onclick="window.setEditMood('idle')" class="edit-mood-btn p-2 rounded bg-black/30 border border-white/10 hover:border-yellow-500 transition-colors" data-mood="idle"><div class="w-3 h-3 bg-yellow-500 rounded-full mx-auto shadow-[0_0_5px_currentColor]"></div></button>
+                            <button onclick="window.setEditMood('dnd')" class="edit-mood-btn p-2 rounded bg-black/30 border border-white/10 hover:border-red-500 transition-colors" data-mood="dnd"><div class="w-3 h-3 bg-red-500 rounded-full mx-auto shadow-[0_0_5px_currentColor]"></div></button>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button onclick="window.saveProfile()" class="flex-1 bg-ruby-600 hover:bg-ruby-500 text-white py-2 rounded-lg text-sm font-bold shadow-lg shadow-ruby-500/20">Save Changes</button>
+                        <button onclick="window.cancelEdit()" class="px-4 bg-white/5 hover:bg-white/10 text-white py-2 rounded-lg text-sm">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= APP LAYOUT ================= -->
     <div id="app-layout" class="hidden flex h-full w-full">
-        <!-- LEFT SIDEBAR: Navigation -->
+        <!-- LEFT SIDEBAR -->
         <nav class="w-64 glass-panel-left flex flex-col shrink-0 z-20 hidden md:flex">
-            <!-- Logo Area -->
             <div class="h-16 flex items-center px-6 border-b border-white/5">
                 <div class="w-8 h-8 rounded bg-gradient-to-br from-ruby-500 to-ruby-700 flex items-center justify-center shadow-lg shadow-ruby-500/20 mr-3">
                     <i class="fa-solid fa-gem text-white text-sm"></i>
                 </div>
                 <div>
                     <h1 class="font-bold text-lg tracking-wide text-white">RubyChat</h1>
-                    <div class="text-[10px] text-ruby-400 font-mono tracking-wider">COMMUNITY v2.0</div>
+                    <div class="text-[10px] text-ruby-400 font-mono tracking-wider">NETWORK</div>
                 </div>
             </div>
 
-            <!-- Navigation Menu -->
             <div class="flex-1 overflow-y-auto py-6 space-y-1">
-                <div class="px-6 text-xs font-mono text-gray-500 uppercase tracking-widest mb-2">Menu</div>
-                
+                <div class="px-6 text-xs font-mono text-gray-500 uppercase tracking-widest mb-2">Channels</div>
                 <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn active border-l-2 border-transparent">
-                    <i class="fa-solid fa-comments w-5 text-center"></i>
-                    <span class="font-medium">General Chat</span>
+                    <i class="fa-solid fa-comments w-5 text-center"></i><span class="font-medium">General</span>
                 </button>
                 
-                <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
-                    <i class="fa-solid fa-trophy w-5 text-center"></i>
-                    <span class="font-medium">Leaderboards</span>
-                </button>
-                
-                <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
-                    <i class="fa-regular fa-newspaper w-5 text-center"></i>
-                    <span class="font-medium">News</span>
-                </button>
-                
-                <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
-                    <i class="fa-solid fa-users-gear w-5 text-center"></i>
-                    <span class="font-medium">Staff</span>
-                </button>
-
-                <div class="px-6 text-xs font-mono text-gray-500 uppercase tracking-widest mt-8 mb-2">Systems</div>
-
-                <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
-                    <i class="fa-solid fa-shop w-5 text-center"></i>
-                    <span class="font-medium">Shop</span>
-                </button>
-                <button class="w-full flex items-center gap-3 px-6 py-3 text-gray-400 nav-btn border-l-2 border-transparent hover:text-white">
-                    <i class="fa-solid fa-gear w-5 text-center"></i>
-                    <span class="font-medium">Settings</span>
-                </button>
-                
-                <button id="logout-btn" class="w-full flex items-center gap-3 px-6 py-3 text-red-400 nav-btn border-l-2 border-transparent hover:text-red-300 mt-4">
-                    <i class="fa-solid fa-right-from-bracket w-5 text-center"></i>
-                    <span class="font-medium">Logout</span>
-                </button>
+                <div class="mt-auto pt-10 px-6">
+                    <button id="logout-btn" class="w-full py-2 border border-red-500/30 text-red-400 rounded hover:bg-red-500/10 text-xs font-mono uppercase transition-colors">
+                        Disconnect
+                    </button>
+                </div>
             </div>
 
-            <!-- Current User Profile (Bottom of Left Nav) -->
-            <div class="p-4 border-t border-white/5 bg-black/20">
+            <!-- My Profile Bar -->
+            <div class="p-4 border-t border-white/5 bg-black/20 cursor-pointer hover:bg-white/5 transition-colors" id="my-sidebar-profile">
                 <div class="flex items-center gap-3">
                     <div class="relative">
                         <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden border border-white/10">
@@ -311,117 +260,54 @@
                     </div>
                     <div class="flex-1 min-w-0">
                         <div id="sidebar-username" class="text-sm font-bold text-white truncate">Guest</div>
-                        <div class="text-xs text-gray-500 truncate font-mono">#9284</div>
+                        <div class="text-xs text-gray-500 truncate font-mono">#ID</div>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <!-- CENTER: Main Chat Area -->
+        <!-- CENTER CHAT -->
         <main class="flex-1 flex flex-col relative bg-black/20 z-10 min-w-0">
-            
-            <!-- Chat Header -->
             <header class="h-16 flex items-center justify-between px-6 border-b border-white/5 bg-dark-glass backdrop-blur-md sticky top-0 z-30">
                 <div class="flex items-center gap-3">
-                    <div class="md:hidden mr-2 text-gray-400"><i class="fa-solid fa-bars"></i></div>
                     <i class="fa-solid fa-hashtag text-gray-400 text-xl"></i>
                     <div>
                         <h2 class="font-bold text-white text-lg leading-tight">main-lobby</h2>
-                        <div class="text-xs text-gray-400">Welcome to the official RubyChat lobby.</div>
-                    </div>
-                </div>
-                <div class="flex items-center gap-4 text-gray-400">
-                    <div class="hidden sm:flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-full border border-white/5">
-                        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                        <span class="text-xs font-mono">SYSTEM: ONLINE</span>
-                    </div>
-                    <button class="hover:text-white"><i class="fa-solid fa-thumbtack"></i></button>
-                    <button class="hover:text-white"><i class="fa-solid fa-bell"></i></button>
-                    <div class="relative w-48 hidden lg:block">
-                        <input type="text" placeholder="Search..." class="w-full bg-black/30 border border-white/10 rounded px-3 py-1.5 text-xs text-gray-300 focus:outline-none focus:border-ruby-500/50">
-                        <i class="fa-solid fa-magnifying-glass absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 text-xs"></i>
+                        <div class="text-xs text-gray-400">Public secure channel.</div>
                     </div>
                 </div>
             </header>
 
-            <!-- Messages Area -->
             <div id="chat-messages" class="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-1">
-                <!-- Welcome Message -->
                 <div class="flex flex-col items-center justify-center py-10 opacity-70">
                     <div class="w-16 h-16 bg-ruby-500/10 rounded-full flex items-center justify-center mb-4">
                         <i class="fa-solid fa-hashtag text-3xl text-ruby-500"></i>
                     </div>
                     <h3 class="text-xl font-bold text-white mb-1">Welcome to #main-lobby!</h3>
-                    <p class="text-gray-400 text-sm">This is the start of the #main-lobby channel.</p>
-                    <div class="w-full max-w-md h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mt-6"></div>
+                    <div class="w-full max-w-md h-px bg-white/10 mt-6"></div>
                 </div>
-                <!-- Chat is empty initially, waiting for user -->
             </div>
 
-            <!-- Input Area -->
             <div class="p-4 px-6 pb-6 bg-transparent">
-                <div class="relative bg-[#1a1a1d] rounded-xl border border-white/10 shadow-lg focus-within:border-ruby-500/50 focus-within:ring-1 focus-within:ring-ruby-500/20 transition-all">
-                    <!-- Attachments bar -->
-                    <div class="flex items-center gap-1 p-2 border-b border-white/5">
-                        <button class="w-8 h-8 rounded hover:bg-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors"><i class="fa-solid fa-plus-circle"></i></button>
-                        <div class="h-4 w-px bg-white/10 mx-1"></div>
-                        <button class="w-8 h-8 rounded hover:bg-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors"><i class="fa-solid fa-gift"></i></button>
-                        <button class="w-8 h-8 rounded hover:bg-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-colors"><i class="fa-solid fa-image"></i></button>
-                    </div>
-                    
+                <div class="relative bg-[#1a1a1d] rounded-xl border border-white/10 shadow-lg focus-within:border-ruby-500/50 transition-all">
                     <form id="message-form" class="flex items-end gap-2 p-3">
                         <input type="text" id="message-input" autocomplete="off" placeholder="Message #main-lobby" class="w-full bg-transparent text-gray-200 placeholder-gray-500 focus:outline-none text-base resize-none h-auto max-h-32 py-1">
-                        <div class="flex items-center gap-2 pb-1">
-                             <button type="button" class="text-gray-400 hover:text-yellow-400 transition-colors"><i class="fa-solid fa-face-smile"></i></button>
-                             <button type="submit" class="bg-ruby-600 hover:bg-ruby-500 text-white p-2 rounded-lg transition-colors shadow-lg shadow-ruby-500/20"><i class="fa-solid fa-paper-plane text-xs"></i></button>
-                        </div>
+                        <button type="submit" class="bg-ruby-600 hover:bg-ruby-500 text-white p-2 rounded-lg transition-colors"><i class="fa-solid fa-paper-plane text-xs"></i></button>
                     </form>
-                </div>
-                <div class="text-center mt-2 text-[10px] text-gray-600 font-mono">
-                    RubyChat v2.0 &bull; <span class="text-green-500">Secure Connection</span>
                 </div>
             </div>
         </main>
 
-        <!-- RIGHT SIDEBAR: Online Players -->
+        <!-- RIGHT SIDEBAR: ONLINE -->
         <aside class="w-64 glass-panel-right flex flex-col shrink-0 z-20 hidden lg:flex">
-            <!-- Header -->
             <div class="h-16 flex items-center justify-between px-5 border-b border-white/5">
                 <h3 class="font-bold text-gray-300">Online</h3>
                 <span id="online-count" class="bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded-full font-mono">0</span>
             </div>
-
-            <!-- Players List -->
-            <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-6">
-                <!-- Group: All Users (Dynamic) -->
-                <div>
-                    <div class="px-3 text-xs font-mono font-bold text-gray-500 uppercase mb-2">Network Users</div>
-                    <div id="player-list-dynamic" class="space-y-1">
-                        <!-- Users injected here via Firebase -->
-                    </div>
-                </div>
-
-                <!-- Group: STAFF -->
-                <div>
-                    <div class="px-3 text-xs font-mono font-bold text-gray-500 uppercase mb-2 flex items-center justify-between">
-                        <span>Staff</span>
-                        <span class="text-[10px]">1</span>
-                    </div>
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors">
-                            <div class="relative">
-                                <div class="w-8 h-8 rounded-full bg-ruby-900 border border-ruby-500/50 overflow-hidden">
-                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Admin">
-                                </div>
-                                <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-ruby-500 border-2 border-[#0a0a0c] rounded-full user-status-dot text-ruby-500"></div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm font-bold text-ruby-400 group-hover:text-ruby-300">System</div>
-                                <div class="text-[10px] text-gray-500 truncate">Bot</div>
-                            </div>
-                            <i class="fa-solid fa-shield-halved text-ruby-500 text-xs opacity-50 group-hover:opacity-100"></i>
-                        </div>
-                    </div>
+            <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-2">
+                <div class="px-3 text-xs font-mono font-bold text-gray-500 uppercase mb-2">Active Users</div>
+                <div id="player-list-dynamic" class="space-y-1">
+                    <!-- Users injected here -->
                 </div>
             </div>
         </aside>
@@ -450,251 +336,151 @@
         const messagesRef = collection(db, "messages");
         const usersRef = collection(db, "users");
 
-        // --- State Management ---
-        const userProfile = {
-            username: '',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Guest',
-            bio: '',
-            mood: 'online',
-            uid: null
-        };
-        let isCustomAvatar = false;
+        // --- State ---
         let currentUser = null;
+        let localProfile = { username: 'Guest', avatar: '', bio: '', mood: 'online', uid: '' };
+        let activeUsersCache = {};
+        let editProfileState = {};
 
-        // --- DOM Elements ---
+        // --- DOM ---
         const setupScreen = document.getElementById('setup-screen');
         const appLayout = document.getElementById('app-layout');
-        const setupUsername = document.getElementById('setup-username');
-        const setupBio = document.getElementById('setup-bio');
-        const avatarPreview = document.getElementById('avatar-preview');
-        const avatarUpload = document.getElementById('avatar-upload');
-        const step1 = document.getElementById('step-1');
-        const step2 = document.getElementById('step-2');
-        const progressBar = document.getElementById('setup-progress');
-        
-        // App Elements
-        const sidebarAvatar = document.getElementById('sidebar-avatar');
-        const sidebarUsername = document.getElementById('sidebar-username');
-        const sidebarStatusDot = document.getElementById('sidebar-status-dot');
-        const playerListDynamic = document.getElementById('player-list-dynamic');
-        const onlineCount = document.getElementById('online-count');
         const chatContainer = document.getElementById('chat-messages');
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
-        const logoutBtn = document.getElementById('logout-btn');
-
-        // --- AUTH & DATA LOADING ---
+        const playerList = document.getElementById('player-list-dynamic');
+        
+        // --- AUTH & INIT ---
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
-                userProfile.uid = user.uid;
+                localProfile.uid = user.uid;
                 
-                // Check if user has a profile in Firestore
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
-                    // Profile exists, load it and skip setup
-                    const data = docSnap.data();
-                    Object.assign(userProfile, data);
-                    
-                    // Show App
-                    setupScreen.style.display = 'none';
-                    appLayout.classList.remove('hidden');
-                    appLayout.classList.add('animate-message-fade');
-                    updateAppInterface();
-                    
-                    // Update Status to Online
-                    await setDoc(docRef, { 
-                        mood: 'online', 
-                        joinedAt: serverTimestamp() // Update timestamp to show at top
-                    }, { merge: true });
-
+                    // Load Profile
+                    Object.assign(localProfile, docSnap.data());
+                    initApp();
                 } else {
-                    // No profile, show setup screen
+                    // New Setup
                     setupScreen.classList.remove('hidden');
-                    
-                    // Pre-fill name from Auth or LocalStorage
                     const savedName = localStorage.getItem('ruby_auth_name') || user.displayName;
-                    if(savedName) {
-                        setupUsername.value = savedName;
-                        // Trigger input event logic manually
-                        window.handleUsernameInput(setupUsername);
-                    }
+                    if(savedName) document.getElementById('setup-username').value = savedName;
+                    window.randomizeAvatar();
                 }
             } else {
-                // No user, redirect to landing
                 window.location.href = 'index.html';
             }
         });
 
-        // Logout
-        logoutBtn.addEventListener('click', () => {
-            signOut(auth).then(() => {
-                window.location.href = 'index.html';
+        async function initApp() {
+            setupScreen.style.display = 'none';
+            appLayout.classList.remove('hidden');
+            appLayout.classList.add('animate-message-fade');
+            
+            updateSidebarSelf();
+            startHeartbeat();
+            
+            // Welcome msg
+            await addDoc(messagesRef, {
+                user: "System",
+                role: "system",
+                content: `User ${localProfile.username} connected.`,
+                timestamp: serverTimestamp()
             });
+        }
+
+        // --- PRESENCE SYSTEM (HEARTBEAT) ---
+        function startHeartbeat() {
+            // Initial Pulse
+            sendPulse();
+            // Pulse every 60s
+            setInterval(sendPulse, 60000);
+            
+            // Set offline on unload
+            window.addEventListener('beforeunload', () => {
+                const docRef = doc(db, "users", currentUser.uid);
+                // Try to beacon status (best effort)
+                navigator.sendBeacon && navigator.sendBeacon("", ""); // Placeholder, Firestore doesn't support beacon natively
+                // We rely on heartbeat timeout mostly, but can try:
+                setDoc(docRef, { status: 'offline' }, { merge: true });
+            });
+        }
+
+        async function sendPulse() {
+            if(!currentUser) return;
+            await setDoc(doc(db, "users", currentUser.uid), {
+                lastActive: serverTimestamp(),
+                status: 'online'
+            }, { merge: true });
+        }
+
+        // --- LOGOUT ---
+        document.getElementById('logout-btn').addEventListener('click', async () => {
+            if(currentUser) {
+                await setDoc(doc(db, "users", currentUser.uid), { status: 'offline' }, { merge: true });
+                await signOut(auth);
+            }
         });
 
         // --- SETUP LOGIC ---
-
-        window.updateAvatarPreview = (src) => {
-            avatarPreview.src = src;
-            userProfile.avatar = src;
-        };
-
-        window.handleUsernameInput = (input) => {
-            if (!isCustomAvatar) {
-                const seed = input.value.trim() || 'Guest';
-                window.updateAvatarPreview(`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`);
-            }
-        };
-
         window.randomizeAvatar = () => {
-            isCustomAvatar = true;
             const seed = Math.random().toString(36).substring(7);
-            window.updateAvatarPreview(`https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`);
-        };
-
-        window.triggerUpload = () => {
-            avatarUpload.click();
-        };
-
-        window.handleAvatarUpload = (input) => {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    isCustomAvatar = true;
-                    window.updateAvatarPreview(e.target.result);
-                }
-                reader.readAsDataURL(input.files[0]);
-            }
-        };
-
-        window.selectMood = (mood) => {
-            userProfile.mood = mood;
-            document.querySelectorAll('.mood-btn').forEach(btn => {
-                btn.classList.remove('selected');
-                if(btn.dataset.mood === mood) btn.classList.add('selected');
-            });
-        };
-
-        window.nextStep = (step) => {
-            if(step === 2) {
-                const name = setupUsername.value.trim();
-                if(!name) {
-                    alert("Please enter a username identity.");
-                    return;
-                }
-                userProfile.username = name;
-                step1.classList.add('hidden');
-                step2.classList.remove('hidden');
-                progressBar.style.width = '100%';
-            }
-        };
-
-        window.prevStep = (step) => {
-            if(step === 1) {
-                step2.classList.add('hidden');
-                step1.classList.remove('hidden');
-                progressBar.style.width = '50%';
-            }
+            const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+            document.getElementById('avatar-preview').src = url;
+            localProfile.avatar = url;
         };
 
         window.finalizeSetup = async () => {
-            userProfile.bio = setupBio.value.trim() || "Just joined the network.";
+            const name = document.getElementById('setup-username').value.trim() || 'Anon';
+            localProfile.username = name;
+            localProfile.bio = "New to the network.";
             
-            // 1. Hide Setup, Show App
-            setupScreen.classList.add('opacity-0', 'pointer-events-none', 'transition-opacity', 'duration-500');
-            setTimeout(() => {
-                setupScreen.style.display = 'none';
-                appLayout.classList.remove('hidden');
-                appLayout.classList.add('animate-message-fade');
-                chatContainer.scrollTop = chatContainer.scrollHeight;
-            }, 500);
-
-            // 2. Update Local Interface
-            updateAppInterface();
-            
-            // 3. Save User to Firestore (Persistent Profile)
-            if(currentUser) {
-                try {
-                    await setDoc(doc(db, "users", currentUser.uid), {
-                        username: userProfile.username,
-                        avatar: userProfile.avatar,
-                        bio: userProfile.bio,
-                        mood: userProfile.mood,
-                        uid: currentUser.uid,
-                        joinedAt: serverTimestamp()
-                    }, { merge: true });
-
-                    // 4. Send System Welcome Message
-                    await addDoc(messagesRef, {
-                        user: "System",
-                        role: "system",
-                        content: `User ${userProfile.username} connected to the mainframe.`,
-                        timestamp: serverTimestamp()
-                    });
-                } catch (e) {
-                    console.error("Error saving profile: ", e);
-                }
-            }
+            await setDoc(doc(db, "users", currentUser.uid), {
+                ...localProfile,
+                joinedAt: serverTimestamp(),
+                lastActive: serverTimestamp(),
+                status: 'online'
+            });
+            initApp();
         };
 
-        function updateAppInterface() {
-            sidebarUsername.textContent = userProfile.username;
-            sidebarAvatar.src = userProfile.avatar;
-            const color = getMoodColor(userProfile.mood);
-            sidebarStatusDot.className = `absolute bottom-0 right-0 w-3 h-3 ${color} border-2 border-[#0a0a0c] rounded-full user-status-dot text-${color.replace('bg-','')}`;
-        }
-
-        function getMoodColor(mood) {
-            if(mood === 'dnd') return 'bg-red-500';
-            if(mood === 'idle') return 'bg-yellow-500';
-            if(mood === 'focus') return 'bg-purple-500';
-            return 'bg-green-500';
-        }
-
-        // --- Chat Functionality ---
+        // --- CHAT LOGIC ---
         const qMessages = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
         onSnapshot(qMessages, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
-                if (change.type === "added") {
-                    const data = change.doc.data();
-                    renderMessage(data);
-                }
+                if (change.type === "added") renderMessage(change.doc.data());
             });
         });
 
         function renderMessage(data) {
-            const isOwn = data.user === userProfile.username; // Note: Username collision is possible without stricter auth rules, but user ID is unique.
-            const time = data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Now';
-            
             const div = document.createElement('div');
             div.className = `flex gap-4 p-1 px-2 rounded hover:bg-white/5 group animate-message-fade message-group`;
             
             let nameColor = 'text-gray-300';
-            if (data.role === 'admin' || data.role === 'system') nameColor = 'text-ruby-400';
-            else if (isOwn) nameColor = 'text-white';
+            if (data.role === 'system') nameColor = 'text-ruby-400';
+            else if (data.uid === currentUser?.uid) nameColor = 'text-white';
+
+            let avatar = data.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=sys";
+            let content = data.content;
             
-            let avatarSrc = data.avatar || "https://api.dicebear.com/7.x/avataaars/svg?seed=Guest";
-            if (data.role === 'system') avatarSrc = "https://api.dicebear.com/7.x/avataaars/svg?seed=Admin";
-            
-            let contentHtml = data.content;
-            if(data.role === 'system') {
-                 contentHtml = contentHtml.replace(userProfile.username, `<span class="text-ruby-400 font-bold">${userProfile.username}</span>`);
-            }
+            // Clickable User
+            const userAttr = data.role !== 'system' ? `onclick="window.openProfile('${data.uid}')"` : '';
+            const cursorClass = data.role !== 'system' ? 'cursor-pointer hover:underline' : '';
 
             div.innerHTML = `
-                <div class="w-10 h-10 shrink-0 mt-0.5">
-                    <img src="${avatarSrc}" class="w-full h-full rounded-full bg-gray-700 object-cover">
+                <div class="w-10 h-10 shrink-0 mt-0.5 cursor-pointer" ${userAttr}>
+                    <img src="${avatar}" class="w-full h-full rounded-full bg-gray-700 object-cover">
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="flex items-center gap-2 mb-0.5">
-                        <span class="font-bold text-sm ${nameColor} hover:underline cursor-pointer">${data.user}</span>
+                        <span class="font-bold text-sm ${nameColor} ${cursorClass}" ${userAttr}>${data.user}</span>
                         ${data.role === 'system' ? '<span class="bg-ruby-500/20 text-ruby-400 text-[9px] font-bold px-1 rounded border border-ruby-500/30">SYSTEM</span>' : ''}
-                        <span class="text-[10px] text-gray-500 font-mono opacity-0 group-hover:opacity-100 transition-opacity">${time}</span>
+                        <span class="text-[10px] text-gray-500 font-mono opacity-0 group-hover:opacity-100">${data.timestamp ? new Date(data.timestamp.toDate()).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : ''}</span>
                     </div>
-                    <p class="text-gray-300 text-[15px] leading-relaxed break-words">${contentHtml}</p>
+                    <p class="text-gray-300 text-[15px] leading-relaxed break-words">${content}</p>
                 </div>
             `;
             chatContainer.appendChild(div);
@@ -704,64 +490,213 @@
         messageForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             const text = messageInput.value.trim();
-            if (text && userProfile.username) {
-                try {
-                    await addDoc(messagesRef, {
-                        user: userProfile.username,
-                        avatar: userProfile.avatar,
-                        content: text,
-                        timestamp: serverTimestamp(),
-                        role: 'user',
-                        uid: currentUser.uid
-                    });
-                    messageInput.value = '';
-                } catch (e) {
-                    console.error("Error sending message: ", e);
-                }
+            if (text && currentUser) {
+                await addDoc(messagesRef, {
+                    user: localProfile.username,
+                    avatar: localProfile.avatar,
+                    content: text,
+                    timestamp: serverTimestamp(),
+                    role: 'user',
+                    uid: currentUser.uid
+                });
+                messageInput.value = '';
             }
         });
 
-        // --- Online Users Functionality ---
-        const qUsers = query(usersRef, orderBy("joinedAt", "desc"), limit(50));
+        // --- ONLINE LIST & USER SYNC ---
+        const qUsers = query(usersRef, orderBy("lastActive", "desc"), limit(50));
         onSnapshot(qUsers, (snapshot) => {
-            playerListDynamic.innerHTML = ''; 
-            let count = 0;
-            
-            // Using a Set to track rendered UIDs just in case, though Firestore structure prevents duplicates now
-            const seenUIDs = new Set();
+            const now = Date.now();
+            let onlineCount = 0;
+            playerList.innerHTML = '';
+            activeUsersCache = {}; // Reset cache
 
-            snapshot.forEach((docSnap) => {
-                const data = docSnap.data();
-                if (!seenUIDs.has(data.uid)) {
-                    seenUIDs.add(data.uid);
-                    count++;
-                    
-                    // Don't render "Me" in the dynamic list
-                    if (data.uid !== currentUser?.uid) {
-                        renderUserInList(data);
+            snapshot.forEach(docSnap => {
+                const user = docSnap.data();
+                activeUsersCache[docSnap.id] = user; // Store for profile lookup
+
+                // Online Logic: status is 'online' AND last pulse within 2 mins
+                let isOnline = false;
+                if (user.status === 'online' && user.lastActive) {
+                    const diff = now - user.lastActive.toMillis();
+                    if (diff < 120000) isOnline = true; // 2 mins tolerance
+                }
+
+                if (isOnline) {
+                    onlineCount++;
+                    // Don't list myself in sidebar
+                    if (docSnap.id !== currentUser.uid) {
+                        renderUserItem(user, docSnap.id);
                     }
                 }
             });
-            onlineCount.textContent = count + 1; // +1 for System Bot
+            document.getElementById('online-count').textContent = onlineCount;
         });
 
-        function renderUserInList(data) {
-            const color = getMoodColor(data.mood || 'online');
+        function renderUserItem(user, uid) {
+            const color = getMoodColor(user.mood);
             const div = document.createElement('div');
             div.className = "flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors";
+            div.onclick = () => window.openProfile(uid);
             div.innerHTML = `
                 <div class="relative">
                     <div class="w-8 h-8 rounded-full bg-gray-800 overflow-hidden border border-white/10">
-                        <img src="${data.avatar}" alt="${data.username}" class="w-full h-full object-cover">
+                        <img src="${user.avatar}" class="w-full h-full object-cover">
                     </div>
                     <div class="absolute bottom-0 right-0 w-2.5 h-2.5 ${color} border-2 border-[#0a0a0c] rounded-full"></div>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <div class="text-sm font-bold text-gray-300 group-hover:text-white">${data.username}</div>
-                    <div class="text-[10px] text-gray-500 truncate">${data.bio || ''}</div>
+                    <div class="text-sm font-bold text-gray-300 group-hover:text-white">${user.username}</div>
+                    <div class="text-[10px] text-gray-500 truncate">${user.bio || ''}</div>
                 </div>
             `;
-            playerListDynamic.appendChild(div);
+            playerList.appendChild(div);
+        }
+
+        // --- PROFILE SYSTEM ---
+        
+        // Open my own profile
+        document.getElementById('my-sidebar-profile').onclick = () => window.openProfile(currentUser.uid);
+
+        window.openProfile = (uid) => {
+            const user = (uid === currentUser.uid) ? localProfile : activeUsersCache[uid];
+            if (!user) return; // Should not happen usually
+
+            const modal = document.getElementById('profile-modal');
+            const isMe = (uid === currentUser.uid);
+
+            // Populate Data
+            document.getElementById('profile-img').src = user.avatar;
+            document.getElementById('profile-name').textContent = user.username;
+            document.getElementById('profile-bio').textContent = user.bio || "No bio available.";
+            
+            // Status Badge
+            const badge = document.getElementById('profile-status-badge');
+            // Determine visual status
+            let statusText = "Offline";
+            let statusClass = "bg-gray-500/20 text-gray-400 border-gray-500/30";
+            
+            // Simple online check for UI badge
+            const now = Date.now();
+            let isOnline = false;
+            if(user.status === 'online' || isMe) { // I am always online to myself
+                 // For others, check timestamp
+                 if(isMe || (user.lastActive && (now - user.lastActive.toMillis() < 120000))) {
+                     isOnline = true;
+                 }
+            }
+
+            if(isOnline) {
+                if(user.mood === 'dnd') { statusText = "Do Not Disturb"; statusClass = "bg-red-500/20 text-red-400 border-red-500/30"; }
+                else if(user.mood === 'idle') { statusText = "Idle"; statusClass = "bg-yellow-500/20 text-yellow-400 border-yellow-500/30"; }
+                else if(user.mood === 'focus') { statusText = "Focusing"; statusClass = "bg-purple-500/20 text-purple-400 border-purple-500/30"; }
+                else { statusText = "Online"; statusClass = "bg-green-500/20 text-green-400 border-green-500/30"; }
+            }
+
+            badge.className = `px-3 py-1 rounded-full text-xs font-mono uppercase tracking-wide border ${statusClass}`;
+            badge.textContent = statusText;
+
+            // Show Edit Button if Me
+            const editBtn = document.getElementById('btn-edit-profile');
+            if(isMe) editBtn.classList.remove('hidden');
+            else editBtn.classList.add('hidden');
+
+            // Reset View Mode
+            document.getElementById('profile-view-mode').classList.remove('hidden');
+            document.getElementById('profile-edit-mode').classList.add('hidden');
+            document.getElementById('profile-edit-avatar-overlay').classList.add('hidden');
+
+            // Show Modal
+            modal.classList.remove('hidden');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+        };
+
+        window.closeProfile = () => {
+            const modal = document.getElementById('profile-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        };
+
+        // --- EDIT PROFILE ---
+        window.enableEditMode = () => {
+            editProfileState = { ...localProfile }; // Clone current state
+            
+            document.getElementById('profile-view-mode').classList.add('hidden');
+            document.getElementById('profile-edit-mode').classList.remove('hidden');
+            document.getElementById('profile-edit-avatar-overlay').classList.remove('hidden'); // Show dice overlay
+
+            document.getElementById('edit-username').value = editProfileState.username;
+            document.getElementById('edit-bio').value = editProfileState.bio;
+            
+            // Highlight current mood btn
+            updateEditMoodUI(editProfileState.mood);
+        };
+
+        window.cancelEdit = () => {
+            // Revert image in UI just in case it was randomized but not saved
+            document.getElementById('profile-img').src = localProfile.avatar;
+            
+            document.getElementById('profile-edit-mode').classList.add('hidden');
+            document.getElementById('profile-view-mode').classList.remove('hidden');
+            document.getElementById('profile-edit-avatar-overlay').classList.add('hidden');
+        };
+
+        window.randomizeEditAvatar = () => {
+            const seed = Math.random().toString(36).substring(7);
+            const url = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+            document.getElementById('profile-img').src = url;
+            editProfileState.avatar = url;
+        };
+
+        window.setEditMood = (mood) => {
+            editProfileState.mood = mood;
+            updateEditMoodUI(mood);
+        };
+
+        function updateEditMoodUI(activeMood) {
+            document.querySelectorAll('.edit-mood-btn').forEach(btn => {
+                if(btn.dataset.mood === activeMood) {
+                    btn.classList.add('border-ruby-500', 'bg-white/10');
+                    btn.classList.remove('border-white/10', 'bg-black/30');
+                } else {
+                    btn.classList.remove('border-ruby-500', 'bg-white/10');
+                    btn.classList.add('border-white/10', 'bg-black/30');
+                }
+            });
+        }
+
+        window.saveProfile = async () => {
+            const newName = document.getElementById('edit-username').value.trim();
+            const newBio = document.getElementById('edit-bio').value.trim();
+            
+            if(!newName) return alert("Username cannot be empty");
+
+            // Update State
+            localProfile.username = newName;
+            localProfile.bio = newBio;
+            localProfile.mood = editProfileState.mood;
+            localProfile.avatar = editProfileState.avatar; // if changed
+
+            // Update Firebase
+            await setDoc(doc(db, "users", currentUser.uid), localProfile, { merge: true });
+
+            // Update UI
+            updateSidebarSelf();
+            window.openProfile(currentUser.uid); // Refresh view
+        };
+
+        function updateSidebarSelf() {
+            document.getElementById('sidebar-username').textContent = localProfile.username;
+            document.getElementById('sidebar-avatar').src = localProfile.avatar;
+            const color = getMoodColor(localProfile.mood);
+            document.getElementById('sidebar-status-dot').className = `absolute bottom-0 right-0 w-3 h-3 ${color} border-2 border-[#0a0a0c] rounded-full user-status-dot`;
+        }
+
+        function getMoodColor(mood) {
+            if(mood === 'dnd') return 'bg-red-500';
+            if(mood === 'idle') return 'bg-yellow-500';
+            if(mood === 'focus') return 'bg-purple-500';
+            return 'bg-green-500';
         }
 
     </script>
