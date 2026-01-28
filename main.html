@@ -119,6 +119,11 @@
             border-color: #ff3366;
             color: white;
         }
+        
+        .offline-filter {
+            filter: grayscale(1);
+            opacity: 0.6;
+        }
     </style>
 </head>
 <body class="flex h-screen w-screen overflow-hidden text-sm">
@@ -258,11 +263,17 @@
                 <img id="modal-banner-img" src="" class="w-full h-full object-cover">
                 <div class="absolute inset-0 bg-black/10"></div>
                 
-                <!-- Edit Banner Trigger -->
-                <div id="edit-banner-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onclick="window.randomizeBanner()" class="bg-black/70 hover:bg-ruby-600 text-white px-4 py-2 rounded-lg text-sm backdrop-blur border border-white/20 transition-all font-medium">
-                        <i class="fa-solid fa-shuffle mr-2"></i> Random Banner
-                    </button>
+                <!-- Edit Banner Overlay (Only visible in edit mode) -->
+                <div id="edit-banner-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-black/40 animate-message-fade">
+                    <div class="flex gap-2">
+                         <button onclick="window.randomizeBanner()" class="bg-black/70 hover:bg-ruby-600 text-white px-3 py-1.5 rounded-lg text-xs backdrop-blur border border-white/20 transition-all font-medium">
+                            <i class="fa-solid fa-shuffle mr-1"></i> Random
+                        </button>
+                        <button onclick="window.triggerUpload('banner-upload')" class="bg-black/70 hover:bg-blue-600 text-white px-3 py-1.5 rounded-lg text-xs backdrop-blur border border-white/20 transition-all font-medium">
+                            <i class="fa-solid fa-upload mr-1"></i> Upload
+                        </button>
+                        <input type="file" id="banner-upload" class="hidden" accept="image/*" onchange="window.handleBannerUpload(this)">
+                    </div>
                 </div>
             </div>
 
@@ -276,8 +287,8 @@
                             <img id="modal-avatar-preview" src="" class="w-full h-full object-cover">
                         </div>
                         
-                        <!-- Avatar Edit Overlay -->
-                        <div id="modal-avatar-overlay" class="hidden absolute inset-0 rounded-full flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 cursor-pointer border-[6px] border-transparent transition-opacity" onclick="window.triggerUpload('modal-avatar-upload')">
+                        <!-- Avatar Edit Overlay (Only visible in edit mode) -->
+                        <div id="modal-avatar-overlay" class="hidden absolute inset-0 rounded-full flex items-center justify-center bg-black/50 cursor-pointer border-[6px] border-transparent animate-message-fade" onclick="window.triggerUpload('modal-avatar-upload')">
                             <i class="fa-solid fa-camera text-white text-xl"></i>
                         </div>
                         <input type="file" id="modal-avatar-upload" class="hidden" accept="image/*" onchange="window.handleAvatarUpload(this, 'modal-avatar-preview')">
@@ -287,19 +298,29 @@
                 <!-- Username & Bio -->
                 <div class="text-center space-y-4">
                     <div>
-                        <input type="text" id="modal-username" class="bg-transparent text-2xl font-bold text-white text-center w-full focus:outline-none focus:border-b focus:border-ruby-500 border-b border-transparent transition-all placeholder-gray-600" placeholder="Username" disabled>
+                        <input type="text" id="modal-username" class="bg-transparent text-2xl font-bold text-white text-center w-full focus:outline-none focus:border-b focus:border-ruby-500 border-b border-transparent transition-all placeholder-gray-600 disabled:opacity-100" placeholder="Username" disabled>
                         <div id="modal-uid-display" class="text-[10px] font-mono text-gray-500 mt-1">#0000</div>
                     </div>
 
                     <div class="bg-white/5 rounded-xl p-4 border border-white/5 text-left">
                         <label class="block text-[10px] font-mono text-gray-500 uppercase mb-2 font-bold tracking-wider">Biography</label>
-                        <textarea id="modal-bio" rows="4" class="w-full bg-transparent border-none text-gray-300 text-sm focus:ring-0 resize-none p-0 leading-relaxed placeholder-gray-600" placeholder="Write something about yourself..." disabled></textarea>
+                        <textarea id="modal-bio" rows="4" class="w-full bg-transparent border-none text-gray-300 text-sm focus:ring-0 resize-none p-0 leading-relaxed placeholder-gray-600 disabled:text-gray-300" placeholder="Write something about yourself..." disabled></textarea>
+                    </div>
+                    
+                    <!-- View Mode Controls -->
+                    <div id="modal-view-controls" class="hidden">
+                         <button onclick="window.enableEditMode()" class="w-full bg-white/5 hover:bg-white/10 text-white py-3 rounded-xl font-bold border border-white/10 transition-all flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+                        </button>
                     </div>
 
-                    <!-- Action Buttons -->
-                    <div id="modal-edit-controls" class="hidden pt-2">
+                    <!-- Edit Mode Controls -->
+                    <div id="modal-edit-controls" class="hidden space-y-2 pt-2 animate-slide-up">
                         <button id="modal-save-btn" onclick="window.saveProfileChanges()" class="w-full bg-ruby-600 hover:bg-ruby-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-ruby-500/20 transition-all">
-                            Save Profile
+                            Save Changes
+                        </button>
+                        <button onclick="window.viewUserProfile(userProfile.uid)" class="w-full bg-transparent hover:bg-white/5 text-gray-400 py-2 rounded-xl text-xs font-mono transition-all">
+                            Cancel
                         </button>
                     </div>
                 </div>
@@ -365,7 +386,7 @@
             </div>
 
             <!-- Current User Profile (Bottom of Left Nav) -->
-            <div class="p-4 border-t border-white/5 bg-black/20 cursor-pointer hover:bg-white/5 transition-colors" onclick="window.editMyProfile()">
+            <div class="p-4 border-t border-white/5 bg-black/20 cursor-pointer hover:bg-white/5 transition-colors" onclick="window.viewUserProfile(userProfile.uid)">
                 <div class="flex items-center gap-3">
                     <div class="relative">
                         <div class="w-10 h-10 rounded-full bg-gray-700 overflow-hidden border border-white/10">
@@ -377,7 +398,7 @@
                         <div id="sidebar-username" class="text-sm font-bold text-white truncate">Guest</div>
                         <div class="text-xs text-gray-500 truncate font-mono">#9284</div>
                     </div>
-                    <i class="fa-solid fa-pen-to-square text-gray-500 text-xs"></i>
+                    <i class="fa-solid fa-eye text-gray-500 text-xs"></i>
                 </div>
             </div>
         </nav>
@@ -452,40 +473,31 @@
         <aside class="w-64 glass-panel-right flex flex-col shrink-0 z-20 hidden lg:flex">
             <!-- Header -->
             <div class="h-16 flex items-center justify-between px-5 border-b border-white/5">
-                <h3 class="font-bold text-gray-300">Online</h3>
+                <h3 class="font-bold text-gray-300">Network</h3>
                 <span id="online-count" class="bg-gray-800 text-gray-400 text-xs px-2 py-0.5 rounded-full font-mono">0</span>
             </div>
 
             <!-- Players List -->
             <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-6">
-                <!-- Group: All Users (Dynamic) -->
+                <!-- Group: Online Users -->
                 <div>
-                    <div class="px-3 text-xs font-mono font-bold text-gray-500 uppercase mb-2">Network Users</div>
-                    <div id="player-list-dynamic" class="space-y-1">
-                        <!-- Users injected here via Firebase -->
+                    <div class="px-3 text-xs font-mono font-bold text-green-500 uppercase mb-2 flex justify-between">
+                        <span>Online</span>
+                        <span id="online-section-count" class="text-[10px] opacity-70">0</span>
+                    </div>
+                    <div id="player-list-online" class="space-y-1">
+                        <!-- Online Users injected here -->
                     </div>
                 </div>
-
-                <!-- Group: STAFF -->
+                
+                <!-- Group: Offline Users -->
                 <div>
-                    <div class="px-3 text-xs font-mono font-bold text-gray-500 uppercase mb-2 flex items-center justify-between">
-                        <span>Staff</span>
-                        <span class="text-[10px]">1</span>
+                    <div class="px-3 text-xs font-mono font-bold text-gray-600 uppercase mb-2 flex justify-between">
+                        <span>Offline</span>
+                        <span id="offline-section-count" class="text-[10px] opacity-70">0</span>
                     </div>
-                    <div class="space-y-1">
-                        <div class="flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors">
-                            <div class="relative">
-                                <div class="w-8 h-8 rounded-full bg-ruby-900 border border-ruby-500/50 overflow-hidden">
-                                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Admin" alt="Admin">
-                                </div>
-                                <div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-ruby-500 border-2 border-[#0a0a0c] rounded-full user-status-dot text-ruby-500"></div>
-                            </div>
-                            <div class="flex-1 min-w-0">
-                                <div class="text-sm font-bold text-ruby-400 group-hover:text-ruby-300">System</div>
-                                <div class="text-[10px] text-gray-500 truncate">Bot</div>
-                            </div>
-                            <i class="fa-solid fa-shield-halved text-ruby-500 text-xs opacity-50 group-hover:opacity-100"></i>
-                        </div>
+                    <div id="player-list-offline" class="space-y-1 opacity-60">
+                         <!-- Offline Users injected here -->
                     </div>
                 </div>
             </div>
@@ -545,8 +557,12 @@
         const sidebarAvatar = document.getElementById('sidebar-avatar');
         const sidebarUsername = document.getElementById('sidebar-username');
         const sidebarStatusDot = document.getElementById('sidebar-status-dot');
-        const playerListDynamic = document.getElementById('player-list-dynamic');
         const onlineCount = document.getElementById('online-count');
+        const onlineSectionCount = document.getElementById('online-section-count');
+        const offlineSectionCount = document.getElementById('offline-section-count');
+        const playerListOnline = document.getElementById('player-list-online');
+        const playerListOffline = document.getElementById('player-list-offline');
+        
         const chatContainer = document.getElementById('chat-messages');
         const messageForm = document.getElementById('message-form');
         const messageInput = document.getElementById('message-input');
@@ -561,6 +577,7 @@
         const modalUsername = document.getElementById('modal-username');
         const modalUidDisplay = document.getElementById('modal-uid-display');
         const modalBio = document.getElementById('modal-bio');
+        const modalViewControls = document.getElementById('modal-view-controls');
         const modalEditControls = document.getElementById('modal-edit-controls');
         const modalSaveBtn = document.getElementById('modal-save-btn');
 
@@ -571,6 +588,9 @@
                 currentUser = user;
                 userProfile.uid = user.uid;
                 
+                // Start Heartbeat
+                startHeartbeat(user.uid);
+
                 // Check if user has a profile in Firestore
                 const docRef = doc(db, "users", user.uid);
                 const docSnap = await getDoc(docRef);
@@ -590,11 +610,6 @@
                     appLayout.classList.remove('hidden');
                     appLayout.classList.add('animate-message-fade');
                     updateAppInterface();
-                    
-                    // Update Status to Online
-                    await setDoc(docRef, { 
-                        mood: 'online'
-                    }, { merge: true });
 
                 } else {
                     // No profile, show setup screen
@@ -609,6 +624,26 @@
                 window.location.href = 'index.html';
             }
         });
+
+        // --- HEARTBEAT SYSTEM ---
+        function startHeartbeat(uid) {
+             const updatePresence = () => {
+                 setDoc(doc(db, "users", uid), { 
+                     lastSeen: serverTimestamp(),
+                     mood: userProfile.mood // Sync mood as well
+                 }, { merge: true });
+             };
+             
+             // Initial update
+             updatePresence();
+             // Update every 60 seconds
+             setInterval(updatePresence, 60000);
+             
+             // Update on visibility change
+             document.addEventListener("visibilitychange", () => {
+                 if (!document.hidden) updatePresence();
+             });
+        }
 
         logoutBtn.addEventListener('click', () => {
             signOut(auth).then(() => {
@@ -636,6 +671,7 @@
             if(targetId === 'modal-avatar-preview') pendingModalAvatar = url;
         };
         window.triggerUpload = (id) => document.getElementById(id).click();
+        
         window.handleAvatarUpload = (input, previewId) => {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
@@ -648,6 +684,18 @@
                 reader.readAsDataURL(input.files[0]);
             }
         };
+
+        window.handleBannerUpload = (input) => {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    modalBannerImg.src = e.target.result;
+                    pendingModalBanner = e.target.result;
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        };
+
         window.selectMood = (mood) => {
             userProfile.mood = mood;
             document.querySelectorAll('.mood-btn').forEach(btn => {
@@ -686,7 +734,8 @@
                 await setDoc(doc(db, "users", currentUser.uid), {
                     ...userProfile,
                     uid: currentUser.uid,
-                    joinedAt: serverTimestamp()
+                    joinedAt: serverTimestamp(),
+                    lastSeen: serverTimestamp()
                 }, { merge: true });
                 await addDoc(messagesRef, {
                     user: "System",
@@ -712,7 +761,7 @@
             return 'bg-green-500';
         }
 
-        // --- MODAL LOGIC (Banner, PFP, Bio) ---
+        // --- MODAL LOGIC (Banner, PFP, Bio, Mode Switching) ---
 
         window.randomizeBanner = () => {
             const seed = Math.random().toString(36).substring(7);
@@ -721,41 +770,12 @@
             pendingModalBanner = url;
         };
 
-        window.editMyProfile = () => {
-            // Edit Mode Setup
-            pendingModalAvatar = userProfile.avatar;
-            pendingModalBanner = userProfile.banner;
-
-            // Populate Fields
-            modalUsername.value = userProfile.username;
-            modalUsername.disabled = false;
-            
-            modalAvatarPreview.src = userProfile.avatar;
-            modalBannerImg.src = userProfile.banner;
-            
-            modalBio.value = userProfile.bio;
-            modalBio.disabled = false;
-            
-            modalUidDisplay.textContent = '#' + userProfile.uid.substring(0, 4);
-            
-            // Toggle Visibility
-            editBannerOverlay.classList.remove('hidden');
-            modalAvatarOverlay.classList.remove('hidden');
-            modalEditControls.classList.remove('hidden');
-            
-            profileModal.classList.remove('hidden');
-        };
-
+        // 1. View User (Read Only Mode)
         window.viewUserProfile = async (uid) => {
-            if (uid === currentUser.uid) {
-                window.editMyProfile();
-                return;
-            }
-
             // View Mode Setup
             profileModal.classList.remove('hidden');
             
-            // Loading State
+            // Prepare for loading state
             modalUsername.value = "Loading...";
             modalBio.value = "Accessing database...";
             modalAvatarPreview.src = "https://api.dicebear.com/7.x/avataaars/svg?seed=Loading";
@@ -765,10 +785,11 @@
             modalUsername.disabled = true;
             modalBio.disabled = true;
             
-            // Hide Edit UI
+            // Hide Edit Controls, Show View Controls
             editBannerOverlay.classList.add('hidden');
             modalAvatarOverlay.classList.add('hidden');
             modalEditControls.classList.add('hidden');
+            modalViewControls.classList.add('hidden'); // Hidden by default until we know if it's us
 
             try {
                 const docRef = doc(db, "users", uid);
@@ -782,6 +803,14 @@
                     modalBannerImg.src = data.banner || 'https://picsum.photos/seed/cyber/600/200';
                     modalUidDisplay.textContent = '#' + uid.substring(0, 4);
 
+                    // Show edit button only if it is the current user
+                    if (uid === currentUser.uid) {
+                         modalViewControls.classList.remove('hidden');
+                         // Populate pending values in case they decide to edit
+                         pendingModalAvatar = data.avatar;
+                         pendingModalBanner = data.banner || 'https://picsum.photos/seed/cyber/600/200';
+                    }
+
                 } else {
                     modalUsername.value = "User not found";
                 }
@@ -791,6 +820,19 @@
             }
         };
 
+        // 2. Enable Edit Mode (For Own Profile)
+        window.enableEditMode = () => {
+            modalUsername.disabled = false;
+            modalBio.disabled = false;
+            
+            editBannerOverlay.classList.remove('hidden');
+            modalAvatarOverlay.classList.remove('hidden');
+            
+            modalViewControls.classList.add('hidden');
+            modalEditControls.classList.remove('hidden');
+        };
+
+        // 3. Save Changes
         window.saveProfileChanges = async () => {
             const newName = modalUsername.value.trim();
             if (!newName) return alert("Username cannot be empty");
@@ -819,7 +861,7 @@
                 console.error("Error updating profile", e);
                 alert("Failed to save profile.");
             } finally {
-                modalSaveBtn.textContent = "Save Profile";
+                modalSaveBtn.textContent = "Save Changes";
                 modalSaveBtn.disabled = false;
             }
         };
@@ -829,7 +871,7 @@
         };
 
 
-        // --- CHAT & USERS (Standard Rendering) ---
+        // --- CHAT & USERS (Sorted Rendering) ---
         const qMessages = query(messagesRef, orderBy("timestamp", "asc"), limit(100));
         onSnapshot(qMessages, (snapshot) => {
             snapshot.docChanges().forEach((change) => {
@@ -886,40 +928,77 @@
             }
         });
 
-        const qUsers = query(usersRef, orderBy("joinedAt", "desc"), limit(50));
+        // Query users
+        const qUsers = query(usersRef, orderBy("lastSeen", "desc"), limit(50));
+        
         onSnapshot(qUsers, (snapshot) => {
-            playerListDynamic.innerHTML = ''; 
-            let count = 0;
+            playerListOnline.innerHTML = ''; 
+            playerListOffline.innerHTML = '';
+            
+            let onlineCountNum = 0;
+            let offlineCountNum = 0;
             const seenUIDs = new Set();
+            const now = new Date();
+
             snapshot.forEach((docSnap) => {
                 const data = docSnap.data();
                 if (!seenUIDs.has(data.uid)) {
                     seenUIDs.add(data.uid);
-                    count++;
-                    if (data.uid !== currentUser?.uid) renderUserInList(data);
+                    
+                    // Determine Online/Offline status (2 minute threshold)
+                    let isOnline = false;
+                    if (data.lastSeen) {
+                        const lastSeenDate = data.lastSeen.toDate();
+                        const diffMs = now - lastSeenDate;
+                        if (diffMs < 120000) { // 2 minutes
+                            isOnline = true;
+                        }
+                    }
+
+                    if (isOnline) {
+                        onlineCountNum++;
+                        renderUserInList(data, true);
+                    } else {
+                        offlineCountNum++;
+                        renderUserInList(data, false);
+                    }
                 }
             });
-            onlineCount.textContent = count + 1;
+            onlineCount.textContent = onlineCountNum;
+            onlineSectionCount.textContent = onlineCountNum;
+            offlineSectionCount.textContent = offlineCountNum;
         });
 
-        function renderUserInList(data) {
+        function renderUserInList(data, isOnline) {
             const color = getMoodColor(data.mood || 'online');
             const div = document.createElement('div');
-            div.className = "flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors";
+            // If offline, add opacity/grayscale class
+            div.className = `flex items-center gap-3 p-2 rounded hover:bg-white/5 cursor-pointer group transition-colors ${!isOnline ? 'offline-filter' : ''}`;
             div.onclick = () => window.viewUserProfile(data.uid);
+            
+            // Status indicator: Green/Mood color if online, Grey hollow if offline
+            const statusIndicator = isOnline 
+                ? `<div class="absolute bottom-0 right-0 w-2.5 h-2.5 ${color} border-2 border-[#0a0a0c] rounded-full"></div>`
+                : `<div class="absolute bottom-0 right-0 w-2.5 h-2.5 bg-transparent border-2 border-gray-500 rounded-full"></div>`;
+
             div.innerHTML = `
                 <div class="relative">
                     <div class="w-8 h-8 rounded-full bg-gray-800 overflow-hidden border border-white/10">
                         <img src="${data.avatar}" class="w-full h-full object-cover">
                     </div>
-                    <div class="absolute bottom-0 right-0 w-2.5 h-2.5 ${color} border-2 border-[#0a0a0c] rounded-full"></div>
+                    ${statusIndicator}
                 </div>
                 <div class="flex-1 min-w-0">
                     <div class="text-sm font-bold text-gray-300 group-hover:text-white">${data.username}</div>
                     <div class="text-[10px] text-gray-500 truncate">${data.bio || ''}</div>
                 </div>
             `;
-            playerListDynamic.appendChild(div);
+            
+            if (isOnline) {
+                playerListOnline.appendChild(div);
+            } else {
+                playerListOffline.appendChild(div);
+            }
         }
     </script>
 </body>
